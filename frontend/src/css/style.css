@@ -26,3 +26,18 @@
 .btn-outline-gold {
   @apply border border-yellow-700/50 text-yellow-500 font-bold tracking-[0.3em] uppercase text-[10px] transition-all duration-500 hover:bg-yellow-500/5;
 }
+
+/* Capa forta per enfosquir fons clars com el de la platja */
+.hero-overlay-strong {
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.3) 0%,   /* Part de dalt: una mica fosca */
+    rgba(0, 0, 0, 0.7) 60%,  /* Part del mig: bastant fosca */
+    rgba(0, 0, 0, 0.95) 100% /* Part de baix: gairebé negra pels botons */
+  );
+}
+
+/* Ombra extra per al text blanc petit perquè "salti" */
+.text-pop-shadow {
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.9);
+}
