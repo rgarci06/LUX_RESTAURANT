@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cormorant+Garamond:ital,wght@1,300;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cormorant+Garamond:ital,wght@1,300;1,500&family=Montserrat:wght@300;400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,38 +6,74 @@
 
 :root {
   --gold-primary: #d4af37;
-  --gold-secondary: #f1d592;
 }
 
 .font-luxury-title { font-family: 'Cinzel', serif; }
 .font-luxury-serif { font-family: 'Cormorant Garamond', serif; }
+.font-montserrat { font-family: 'Montserrat', sans-serif; }
 
-/* Efecte de focus de llum central */
-.hero-vignette {
-  background: radial-gradient(circle, rgba(20,20,20,0) 0%, rgba(0,0,0,0.9) 100%);
+@layer components {
+  
+  /* --- NAVBAR LINKS (Línia Perfecta) --- */
+  .nav-link {
+    @apply text-[10px] uppercase tracking-[0.4em] font-medium text-gray-200 transition-all duration-300 relative py-1;
+  }
+  
+  /* La línia base (invisible per defecte) */
+  .nav-link::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-0 h-[1px] bg-yellow-500 transition-all duration-300 ease-out;
+  }
+  
+  /* Estat Hover: La línia s'estén */
+  .nav-link:hover::after {
+    @apply w-full;
+  }
+  .nav-link:hover {
+    @apply text-white;
+  }
+
+  /* Estat Actiu: La línia es queda fixa al 100% */
+  .active-link {
+    @apply text-white;
+  }
+  .active-link::after {
+    width: 100%;
+  }
+
+  /* --- BOTONS I ALTRES --- */
+  .btn-gold {
+    background: linear-gradient(135deg, #d4af37 0%, #f1d592 50%, #d4af37 100%);
+    @apply text-black font-bold tracking-[0.3em] uppercase text-[10px] transition-all duration-500 shadow-lg hover:shadow-yellow-500/20 hover:scale-105;
+  }
+
+  .btn-outline {
+    @apply border border-yellow-500/50 text-yellow-500 font-bold tracking-[0.3em] uppercase text-[10px] transition-all duration-500 hover:bg-yellow-500/10 hover:border-yellow-500 backdrop-blur-sm;
+  }
+
+  .login-link {
+    @apply flex items-center gap-3 text-[10px] font-bold tracking-widest text-gray-300 hover:text-white transition-colors duration-300;
+  }
+
+  .icon-transition {
+    @apply absolute top-0 left-0 w-8 h-8 transition-all duration-500 ease-in-out;
+  }
 }
 
-/* Botó amb degradat metàl·lic */
-.btn-metallic-gold {
-  background: linear-gradient(135deg, #d4af37 0%, #f1d592 50%, #d4af37 100%);
-  @apply text-black font-bold tracking-[0.3em] uppercase text-[10px] transition-all duration-500;
+/* UTILITATS */
+.overlay-gradient {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 60%, rgba(0, 0, 0, 0.95) 100%);
 }
 
-.btn-outline-gold {
-  @apply border border-yellow-700/50 text-yellow-500 font-bold tracking-[0.3em] uppercase text-[10px] transition-all duration-500 hover:bg-yellow-500/5;
+.glow-separator {
+    background: radial-gradient(50% 50% at 50% 50%, rgba(212, 175, 55, 0.15) 0%, rgba(0, 0, 0, 0) 100%);
+    filter: blur(20px);
+    width: 100%;
+    height: 150px;
+    margin: -50px 0;
+    pointer-events: none;
 }
 
-/* Capa forta per enfosquir fons clars com el de la platja */
-.hero-overlay-strong {
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.3) 0%,   /* Part de dalt: una mica fosca */
-    rgba(0, 0, 0, 0.7) 60%,  /* Part del mig: bastant fosca */
-    rgba(0, 0, 0, 0.95) 100% /* Part de baix: gairebé negra pels botons */
-  );
-}
-
-/* Ombra extra per al text blanc petit perquè "salti" */
-.text-pop-shadow {
-    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.9);
+.text-shadow-soft {
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
