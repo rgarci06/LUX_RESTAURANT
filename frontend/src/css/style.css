@@ -1,79 +1,116 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cormorant+Garamond:ital,wght@1,300;1,500&family=Montserrat:wght@300;400;500&display=swap');
+/* ========================================= */
+/* src/css/style.css - GLOBAL BÁSICO */
+/* ========================================= */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@300;400;700&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* --- RESET BÁSICO --- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-:root {
-  --gold-primary: #d4af37;
+body {
+    background-color: #000;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
 }
 
-.font-luxury-title { font-family: 'Cinzel', serif; }
-.font-luxury-serif { font-family: 'Cormorant Garamond', serif; }
-.font-montserrat { font-family: 'Montserrat', sans-serif; }
+a { text-decoration: none; color: inherit; }
+ul { list-style: none; }
 
-@layer components {
-  
-  /* --- NAVBAR LINKS (Línia Perfecta) --- */
-  .nav-link {
-    @apply text-[10px] uppercase tracking-[0.4em] font-medium text-gray-200 transition-all duration-300 relative py-1;
-  }
-  
-  /* La línia base (invisible per defecte) */
-  .nav-link::after {
-    content: '';
-    @apply absolute bottom-0 left-0 w-0 h-[1px] bg-yellow-500 transition-all duration-300 ease-out;
-  }
-  
-  /* Estat Hover: La línia s'estén */
-  .nav-link:hover::after {
-    @apply w-full;
-  }
-  .nav-link:hover {
-    @apply text-white;
-  }
+/* --- CLASES DE FUENTE --- */
+.font-title { font-family: 'Cinzel', serif; }
 
-  /* Estat Actiu: La línia es queda fixa al 100% */
-  .active-link {
-    @apply text-white;
-  }
-  .active-link::after {
-    width: 100%;
-  }
-
-  /* --- BOTONS I ALTRES --- */
-  .btn-gold {
-    background: linear-gradient(135deg, #d4af37 0%, #f1d592 50%, #d4af37 100%);
-    @apply text-black font-bold tracking-[0.3em] uppercase text-[10px] transition-all duration-500 shadow-lg hover:shadow-yellow-500/20 hover:scale-105;
-  }
-
-  .btn-outline {
-    @apply border border-yellow-500/50 text-yellow-500 font-bold tracking-[0.3em] uppercase text-[10px] transition-all duration-500 hover:bg-yellow-500/10 hover:border-yellow-500 backdrop-blur-sm;
-  }
-
-  .login-link {
-    @apply flex items-center gap-3 text-[10px] font-bold tracking-widest text-gray-300 hover:text-white transition-colors duration-300;
-  }
-
-  .icon-transition {
-    @apply absolute top-0 left-0 w-8 h-8 transition-all duration-500 ease-in-out;
-  }
+/* --- HEADER --- */
+.main-header {
+    position: fixed; top: 0; left: 0; width: 100%;
+    padding: 15px 30px;
+    background-color: #000; /* Fondo negro sólido, sin transparencias */
+    z-index: 100;
+    border-bottom: 1px solid #333;
 }
 
-/* UTILITATS */
-.overlay-gradient {
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 60%, rgba(0, 0, 0, 0.95) 100%);
+.header-container {
+    display: flex; justify-content: space-between; align-items: center;
 }
 
-.glow-separator {
-    background: radial-gradient(50% 50% at 50% 50%, rgba(212, 175, 55, 0.15) 0%, rgba(0, 0, 0, 0) 100%);
-    filter: blur(20px);
-    width: 100%;
-    height: 150px;
-    margin: -50px 0;
-    pointer-events: none;
+.logo-group { display: flex; align-items: center; gap: 10px; }
+.logo-group img { height: 40px; }
+.logo-text span { display: block; line-height: 1; }
+
+.desktop-nav { display: none; gap: 30px; }
+.desktop-nav a { 
+    font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #ccc; 
+}
+.desktop-nav a:hover { color: #d4af37; } /* Cambio de color instantáneo */
+
+.header-actions { display: flex; align-items: center; gap: 15px; }
+.login-btn { font-size: 12px; text-transform: uppercase; color: #d4af37; font-weight: bold; }
+
+/* Burger Menu (Móvil) */
+.burger-btn { background: none; border: none; color: #d4af37; font-size: 24px; cursor: pointer; }
+@media (min-width: 768px) {
+    .desktop-nav { display: flex; }
+    .burger-btn { display: none; }
 }
 
-.text-shadow-soft {
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+/* --- HERO SECTION --- */
+.hero-section {
+    position: relative; height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 20px;
 }
+
+.hero-bg {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+}
+.hero-bg img {
+    width: 100%; height: 100%; object-fit: cover; opacity: 0.5;
+}
+
+.hero-content h1 {
+    font-size: 60px; color: #d4af37; margin-bottom: 10px; line-height: 1;
+}
+.hero-content h2 {
+    font-size: 20px; letter-spacing: 5px; margin-bottom: 20px;
+}
+.hero-content p {
+    font-size: 18px; color: #ccc; margin-bottom: 30px; font-style: italic;
+}
+
+/* Botones Básicos */
+.btn {
+    padding: 12px 24px; text-transform: uppercase; font-size: 12px; letter-spacing: 2px;
+    border: none; cursor: pointer; display: inline-block; font-weight: bold;
+}
+.btn-gold { background-color: #d4af37; color: #000; }
+.btn-gold:hover { background-color: #fff; }
+
+.btn-outline { border: 1px solid #d4af37; color: #d4af37; background: transparent; }
+.btn-outline:hover { background-color: #d4af37; color: #000; }
+
+.hero-buttons { display: flex; gap: 15px; }
+
+/* --- FEATURES --- */
+.features-section { padding: 60px 20px; background-color: #111; border-top: 1px solid #333; }
+.features-grid {
+    display: grid; grid-template-columns: 1fr; gap: 40px; max-width: 1000px; margin: 0 auto; text-align: center;
+}
+@media (min-width: 768px) { .features-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.feature-card h3 { color: #d4af37; margin: 15px 0; font-size: 16px; letter-spacing: 2px; }
+.feature-card p { font-size: 14px; color: #aaa; line-height: 1.5; }
+.feature-icon svg { width: 40px; height: 40px; color: #d4af37; }
+
+/* --- FOOTER --- */
+.main-footer { padding: 40px 20px; background-color: #000; border-top: 1px solid #333; text-align: center; font-size: 11px; color: #888; }
+.footer-links { margin-top: 15px; display: flex; gap: 20px; justify-content: center; text-transform: uppercase; }
+
+/* --- UTILIDADES --- */
+.hidden { display: none !important; }
+
+/* Menú Móvil Básico */
+.mobile-menu-overlay {
+    display: none; /* Oculto por defecto */
+    position: fixed; top: 60px; left: 0; width: 100%; height: 100%;
+    background-color: #000; padding: 40px; text-align: center;
+}
+.mobile-menu-open { display: block; } /* Clase para mostrarlo con JS */
+.mobile-link { display: block; font-size: 20px; margin-bottom: 20px; color: #fff; }

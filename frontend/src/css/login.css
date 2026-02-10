@@ -1,136 +1,65 @@
 /* ========================================= */
-/* src/css/login.css (LIMPIO) */
+/* src/css/login.css - LOGIN BÁSICO */
 /* ========================================= */
 
-/* 1. FONDO Y CONTENEDOR */
+/* Fondo Estático */
 .login-bg {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+    background-color: #111; /* Color sólido por si falla la imagen */
 }
 .login-bg img {
-    width: 100%; height: 100%; object-fit: cover; opacity: 0.6;
-}
-.login-overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.8) 100%);
-    backdrop-filter: blur(3px);
+    width: 100%; height: 100%; object-fit: cover; opacity: 0.4;
 }
 
+/* Contenedor */
 .login-container {
-    position: relative; z-index: 10; min-height: 100vh;
-    display: flex; align-items: center; justify-content: center; padding: 20px;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
 }
 
-/* 2. TARJETA DE CRISTAL */
+/* Tarjeta Sólida (Sin Blur) */
 .glass-card {
-    background: rgba(10, 10, 10, 0.65);
-    border: 1px solid rgba(212, 175, 55, 0.2);
-    backdrop-filter: blur(20px);
-    box-shadow: 0 30px 60px -10px rgba(0, 0, 0, 0.6);
-    border-radius: 24px;
-    padding: 3rem 2.5rem;
-    width: 100%; max-width: 380px;
+    background-color: #1a1a1a; /* Fondo gris oscuro sólido */
+    border: 1px solid #333;
+    width: 100%; max-width: 350px;
+    padding: 40px 30px;
     text-align: center;
-    position: relative;
-    overflow: hidden;
 }
 
-/* 3. LOGO Y TEXTOS */
-.login-logo {
-    width: 75px; display: block; margin: 0 auto 1.5rem auto;
-    filter: drop-shadow(0 0 10px rgba(212,175,55,0.4));
-}
-.login-welcome {
-    font-size: 10px; letter-spacing: 3px; color: #d4af37; text-transform: uppercase; margin-bottom: 8px;
-}
-.login-title {
-    font-family: 'Cinzel', serif; font-size: 22px; letter-spacing: 2px; color: white; margin-bottom: 35px;
-}
+/* Textos */
+.login-logo { width: 60px; margin: 0 auto 20px; display: block; }
+.login-title { font-family: 'Cinzel', serif; color: #fff; margin-bottom: 30px; font-size: 20px; }
 
-/* 4. INPUTS */
-.input-group { margin-bottom: 22px; text-align: left; }
-
-.label-luxury {
-    display: block; font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,0.7);
-    margin-bottom: 6px; font-weight: bold; text-transform: uppercase;
-}
+/* Inputs Básicos */
+.input-group { margin-bottom: 20px; text-align: left; }
+.label-luxury { display: block; font-size: 10px; color: #888; margin-bottom: 5px; text-transform: uppercase; }
 
 .input-luxury {
-    width: 100%; background: transparent; border: none;
-    border-bottom: 1px solid rgba(255,255,255,0.2);
-    color: #fff; padding: 12px 0; font-size: 15px; outline: none; transition: 0.3s;
+    width: 100%; background: #000; border: 1px solid #444;
+    color: #fff; padding: 10px; font-size: 14px;
 }
-.input-luxury:focus { border-bottom: 1px solid #d4af37; }
-.input-luxury::placeholder { 
-    color: rgba(255,255,255,0.4); font-size: 14px; font-weight: 300;
-}
+.input-luxury:focus { border-color: #d4af37; outline: none; }
 
-/* 5. CHECKBOX MEJORADO */
+/* Botones y Links */
 .form-options {
     display: flex; justify-content: space-between; align-items: center;
-    margin-top: 15px; margin-bottom: 35px; font-size: 12px;
+    font-size: 11px; margin-bottom: 20px; color: #ccc;
 }
-
-.remember-box { display: flex; align-items: center; cursor: pointer; color: #ddd; transition: color 0.3s;}
-.remember-box:hover { color: white; }
-.remember-box input { display: none; }
-
-.remember-box span::before {
-    content: ''; display: inline-block; 
-    width: 16px; height: 16px; margin-right: 10px;
-    border: 1px solid rgba(212,175,55,0.6); border-radius: 4px;
-    background: rgba(0,0,0,0.4); transition: 0.2s;
-    vertical-align: middle;
-}
-
-.remember-box input:checked + span::before {
-    background-color: #d4af37; border-color: #d4af37;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
-    background-size: 80%; background-position: center; background-repeat: no-repeat;
-    box-shadow: 0 0 10px rgba(212,175,55,0.6);
-}
-
-.forgot-link { color: #aaa; text-decoration: none; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; font-weight: 600; }
-.forgot-link:hover { color: #d4af37; }
-
-/* 6. BOTÓN */
 .btn-login {
-    width: 100%; padding: 16px 0; border: none; border-radius: 6px;
-    background: linear-gradient(135deg, #d4af37 0%, #f1d592 50%, #d4af37 100%);
-    color: #000; font-weight: 800; font-size: 11px; letter-spacing: 3px;
-    cursor: pointer; text-transform: uppercase; 
-    box-shadow: 0 5px 20px rgba(212,175,55,0.15); transition: all 0.3s ease;
+    width: 100%; background-color: #d4af37; color: #000; border: none;
+    padding: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase;
+    margin-bottom: 20px;
 }
-.btn-login:hover { 
-    transform: translateY(-3px) scale(1.02); 
-    box-shadow: 0 10px 30px rgba(212,175,55,0.4); 
-}
+.btn-login:hover { background-color: #fff; }
 
-/* 7. FOOTER */
-.form-footer { font-size: 11px; color: #888; margin-top: 25px; }
-.link-switch { color: #d4af37; font-weight: bold; cursor: pointer; margin-left: 5px; transition: color 0.3s; }
-.link-switch:hover { color: white; }
+.link-switch { color: #d4af37; cursor: pointer; font-weight: bold; }
 
-.hidden { display: none !important; }
-.form-visible { animation: fadeIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(15px) scale(0.98); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-}
+/* Utilidad para mostrar/ocultar instantáneamente */
+.hidden { display: none; }
+.form-visible { display: block; }
 
 /* Botón Volver */
 .back-btn {
-    position: fixed; top: 30px; left: 30px; color: rgba(255,255,255,0.6);
-    text-decoration: none; font-size: 10px; letter-spacing: 3px;
-    display: flex; align-items: center; gap: 8px; text-transform: uppercase; z-index: 50; transition: 0.3s;
-}
-.back-btn:hover { color: #d4af37; padding-left: 5px; }
-
-/* TEXTO BLANCO PARA EL FORMULARIO DE RECUPERAR */
-.forgot-description {
-    font-size: 13px;
-    color: #e5e7eb; /* Blanco grisáceo */
-    margin-bottom: 20px;
-    line-height: 1.6;
-    font-weight: 400;
+    position: fixed; top: 20px; left: 20px; color: #ccc; font-size: 12px; text-transform: uppercase;
 }

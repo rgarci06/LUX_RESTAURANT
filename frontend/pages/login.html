@@ -3,106 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/src/assets/logo-sinfondo.png" />
     <link rel="stylesheet" href="../src/css/style.css">
     <link rel="stylesheet" href="../src/css/login.css">
-    <title>Acceso | LUX Restaurant</title>
+    <title>Acceso</title>
 </head>
 <body>
 
     <div class="login-bg">
         <img src="../src/assets/fondo.png" alt="Fondo">
-        <div class="login-overlay"></div>
     </div>
 
-    <a href="../index.html" class="back-btn">
-        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-        VOLVER AL INICIO
-    </a>
+    <a href="../index.html" class="back-btn">← Volver</a>
 
-    <main class="login-container">
+    <div class="login-container">
         <div class="glass-card">
             
             <img src="../src/assets/logo-sinfondo.png" class="login-logo" alt="Logo">
-            <p class="login-welcome">Bienvenido a Lux</p>
             <h2 id="form-title" class="login-title">INICIAR SESIÓN</h2>
 
             <form id="login-form" class="form-visible">
                 <div class="input-group">
                     <label class="label-luxury">Email</label>
-                    <input type="email" class="input-luxury" placeholder="ejemplo@correo.com">
+                    <input type="email" class="input-luxury">
                 </div>
-                
                 <div class="input-group">
                     <label class="label-luxury">Contraseña</label>
-                    <input type="password" class="input-luxury" placeholder="Tu contraseña">
+                    <input type="password" class="input-luxury">
                 </div>
 
                 <div class="form-options">
-                    <label class="remember-box">
-                        <input type="checkbox"> 
-                        <span>Recordarme</span>
-                    </label>
-                    <a href="#" id="link-forgot" class="forgot-link">¿Olvidaste la clave?</a>
+                    <label><input type="checkbox"> Recordarme</label>
+                    <a href="#" id="link-forgot" style="color:#888">¿Olvidaste la clave?</a>
                 </div>
 
                 <button type="button" class="btn-login">ACCEDER</button>
-
-                <p class="form-footer">
-                    ¿No tienes cuenta? 
-                    <span id="btn-to-register" class="link-switch">REGÍSTRATE</span>
+                <p style="font-size: 11px; color: #888;">
+                    ¿No tienes cuenta? <span id="btn-to-register" class="link-switch">REGÍSTRATE</span>
                 </p>
             </form>
 
             <form id="register-form" class="hidden">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div class="input-group">
-                        <label class="label-luxury">Nombre</label>
-                        <input type="text" class="input-luxury" placeholder="Juan">
-                    </div>
-                    <div class="input-group">
-                        <label class="label-luxury">Apellido</label>
-                        <input type="text" class="input-luxury" placeholder="Pérez">
-                    </div>
+                <div class="input-group">
+                    <label class="label-luxury">Nombre</label>
+                    <input type="text" class="input-luxury">
                 </div>
-
                 <div class="input-group">
                     <label class="label-luxury">Email</label>
-                    <input type="email" class="input-luxury" placeholder="ejemplo@correo.com">
+                    <input type="email" class="input-luxury">
                 </div>
-                
                 <div class="input-group">
                     <label class="label-luxury">Contraseña</label>
-                    <input type="password" class="input-luxury" placeholder="Crea una contraseña">
+                    <input type="password" class="input-luxury">
                 </div>
 
-                <button type="button" class="btn-login" style="margin-top: 10px;">CREAR CUENTA</button>
-
-                <p class="form-footer">
-                    ¿Ya eres cliente? 
-                    <span id="btn-to-login" class="link-switch">ACCEDER</span>
+                <button type="button" class="btn-login">CREAR CUENTA</button>
+                <p style="font-size: 11px; color: #888;">
+                    ¿Ya tienes cuenta? <span id="btn-to-login" class="link-switch">ACCEDER</span>
                 </p>
             </form>
 
             <form id="forgot-form" class="hidden">
-                <p class="forgot-description">
-                    Introduce tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
-                </p>
-
+                <p style="font-size:12px; color:#ccc; margin-bottom:15px;">Introduce tu email para recuperar la contraseña.</p>
                 <div class="input-group">
                     <label class="label-luxury">Email</label>
-                    <input type="email" class="input-luxury" placeholder="ejemplo@correo.com">
+                    <input type="email" class="input-luxury">
                 </div>
-
-                <button type="button" class="btn-login" style="margin-top: 10px;">ENVIAR ENLACE</button>
-
-                <p class="form-footer">
-                    <span id="btn-back-from-forgot" class="link-switch" style="margin:0;">VOLVER A INICIAR SESIÓN</span>
+                <button type="button" class="btn-login">ENVIAR</button>
+                <p style="font-size: 11px;">
+                    <span id="btn-back-from-forgot" class="link-switch">VOLVER</span>
                 </p>
             </form>
 
         </div>
-    </main>
+    </div>
 
     <script src="../src/js/login.js"></script>
 </body>
