@@ -2,10 +2,10 @@
 /* src/css/menu.css - CARTA DIGITAL */
 /* ========================================= */
 
-/* 1. HERO DEL MENÚ (Más corto que la home) */
+/* 1. HERO DEL MENÚ */
 .menu-hero {
     position: relative;
-    height: 40vh; /* Menos altura que la home */
+    height: 45vh; /* Ligeramente más alto para albergar el H1 más grande */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -23,6 +23,15 @@
 
 .menu-title-block {
     position: relative; z-index: 10; text-align: center; margin-top: 40px;
+    width: 100%;
+    padding: 0 20px;
+}
+
+/* H1 EN GRANDE GRANDE */
+.menu-title-block h1 {
+    font-size: clamp(3rem, 8vw, 5rem); /* Tamaño dinámico: muy grande en PC */
+    line-height: 1.1;
+    text-shadow: 0 0 30px rgba(0,0,0,0.8);
 }
 
 /* 2. PESTAÑAS (TABS) DE CATEGORÍAS */
@@ -30,10 +39,10 @@
     display: flex;
     justify-content: center;
     gap: 20px;
-    padding: 20px;
+    padding: 25px;
     background: #000;
     position: sticky;
-    top: 80px; /* Se queda pegado al bajar (debajo del header) */
+    top: 80px; 
     z-index: 40;
     border-bottom: 1px solid rgba(255,255,255,0.1);
     flex-wrap: wrap;
@@ -43,10 +52,10 @@
     background: transparent;
     border: 1px solid rgba(255,255,255,0.1);
     color: #888;
-    padding: 10px 25px;
+    padding: 12px 30px;
     text-transform: uppercase;
     letter-spacing: 2px;
-    font-size: 10px;
+    font-size: 12px; /* Ligeramente más grande */
     cursor: pointer;
     transition: all 0.3s;
     border-radius: 99px;
@@ -68,10 +77,17 @@
 
 /* 3. CONTENIDO DE LA CARTA */
 .menu-container {
-    max-width: 1000px;
+    max-width: 1100px; /* Un poco más ancho para las fuentes grandes */
     margin: 0 auto;
-    padding: 40px 20px 80px 20px;
+    padding: 60px 20px 100px 20px;
     min-height: 50vh;
+}
+
+/* Títulos de categorías (Selección del Sumiller, El dulce final, etc.) */
+.menu-category h2 {
+    font-size: 2.2rem; /* Mucho más grande */
+    margin-bottom: 60px;
+    letter-spacing: 1px;
 }
 
 /* Categoría (oculta por defecto) */
@@ -80,49 +96,50 @@
     animation: fadeIn 0.6s ease forwards;
 }
 .menu-category.active {
-    display: block; /* Grid de 2 columnas en PC */
+    display: block;
 }
 
 /* Grid para los platos */
 .menu-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 50px;
 }
 
 /* En PC (pantallas grandes), 2 columnas */
 @media (min-width: 768px) {
-    .menu-grid { grid-template-columns: 1fr 1fr; gap: 60px; }
+    .menu-grid { grid-template-columns: 1fr 1fr; gap: 80px; }
 }
 
 /* 4. ÍTEM DEL MENÚ (PLATO) */
 .menu-item {
-    padding-bottom: 20px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding-bottom: 25px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
     transition: transform 0.3s;
 }
 
 .menu-item:hover {
-    transform: translateX(5px);
+    transform: translateX(10px);
 }
 
 .item-header {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 .item-name {
     font-family: 'Cinzel', serif;
-    font-size: 16px;
+    font-size: 26px; /* Letra de plato más grande */
     color: #fff;
     letter-spacing: 1px;
+    font-weight: 700;
 }
 
 .item-price {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 18px;
+    font-size: 28px; /* Precio más grande */
     color: #d4af37;
     font-weight: bold;
     font-style: italic;
@@ -130,25 +147,25 @@
 
 .item-desc {
     font-family: 'Montserrat', sans-serif;
-    font-size: 12px;
-    color: #888;
-    line-height: 1.6;
+    font-size: 17px; /* Descripción más grande y legible */
+    color: #bbb;
+    line-height: 1.7;
     font-weight: 300;
 }
 
-/* Etiquetas (Vegano, Picante, etc) */
+/* Etiquetas (S/G, VEG) */
 .badge {
-    font-size: 8px;
-    border: 1px solid #444;
-    padding: 2px 6px;
+    font-size: 10px;
+    border: 1px solid #d4af37;
+    padding: 3px 8px;
     border-radius: 4px;
-    margin-left: 8px;
-    color: #aaa;
+    margin-left: 10px;
+    color: #d4af37;
     text-transform: uppercase;
     vertical-align: middle;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(15px); }
     to { opacity: 1; transform: translateY(0); }
 }
