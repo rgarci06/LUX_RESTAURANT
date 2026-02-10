@@ -5,167 +5,85 @@
 /* 1. HERO DEL MENÚ */
 .menu-hero {
     position: relative;
-    height: 45vh; /* Ligeramente más alto para albergar el H1 más grande */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #000;
-    overflow: hidden;
+    height: 40vh;
+    display: flex; align-items: center; justify-content: center;
+    background-color: #000; overflow: hidden;
 }
 
-.menu-hero img {
-    position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.5;
-}
+.menu-hero img { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
+
+/* Overlay suave para que se lea el texto */
 .hero-overlay {
     position: absolute; inset: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.3), #000);
+    background: linear-gradient(to bottom, rgba(0,0,0,0.3), #050505);
 }
 
-.menu-title-block {
-    position: relative; z-index: 10; text-align: center; margin-top: 40px;
-    width: 100%;
-    padding: 0 20px;
-}
-
-/* H1 EN GRANDE GRANDE */
+.menu-title-block { position: relative; z-index: 10; text-align: center; margin-top: 40px; }
 .menu-title-block h1 {
-    font-size: clamp(3rem, 8vw, 5rem); /* Tamaño dinámico: muy grande en PC */
-    line-height: 1.1;
-    text-shadow: 0 0 30px rgba(0,0,0,0.8);
+    font-size: 3rem; font-family: 'Cinzel', serif; letter-spacing: 0.3em; color: #fff;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
 }
+@media (min-width: 768px) { .menu-title-block h1 { font-size: 4rem; } }
 
-/* 2. PESTAÑAS (TABS) DE CATEGORÍAS */
+.title-separator { width: 100px; height: 3px; background: #ffd700; margin: 20px auto 0; box-shadow: 0 0 10px rgba(255,215,0,0.5); }
+
+
+/* 2. PESTAÑAS (TABS) */
 .menu-tabs {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    padding: 25px;
-    background: #000;
-    position: sticky;
-    top: 80px; 
-    z-index: 40;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    flex-wrap: wrap;
+    display: flex; justify-content: center; gap: 15px; padding: 20px;
+    background: #050505; position: sticky; top: 80px; z-index: 40;
+    border-bottom: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap;
+    backdrop-filter: blur(10px);
 }
 
 .tab-btn {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.1);
-    color: #888;
-    padding: 12px 30px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    font-size: 12px; /* Ligeramente más grande */
-    cursor: pointer;
-    transition: all 0.3s;
-    border-radius: 99px;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 600;
+    background: transparent; border: 1px solid rgba(255,255,255,0.1);
+    color: #888; padding: 10px 25px; text-transform: uppercase; letter-spacing: 2px;
+    font-size: 10px; cursor: pointer; transition: all 0.3s; border-radius: 99px;
+    font-family: 'Montserrat', sans-serif; font-weight: 600;
 }
 
-.tab-btn:hover {
-    color: #fff;
-    border-color: #d4af37;
-}
+.tab-btn:hover { color: #fff; border-color: #ffd700; }
 
 .tab-btn.active {
-    background: #d4af37;
-    color: #000;
-    border-color: #d4af37;
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+    background: #ffd700; color: #000; border-color: #ffd700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
 }
 
-/* 3. CONTENIDO DE LA CARTA */
+
+/* 3. CONTENIDO CARTA */
 .menu-container {
-    max-width: 1100px; /* Un poco más ancho para las fuentes grandes */
-    margin: 0 auto;
-    padding: 60px 20px 100px 20px;
-    min-height: 50vh;
+    max-width: 1000px; margin: 0 auto; padding: 60px 20px 80px 20px; min-height: 50vh;
 }
 
-/* Títulos de categorías (Selección del Sumiller, El dulce final, etc.) */
-.menu-category h2 {
-    font-size: 2.2rem; /* Mucho más grande */
-    margin-bottom: 60px;
-    letter-spacing: 1px;
+.menu-category { display: none; animation: fadeIn 0.6s ease forwards; }
+.menu-category.active { display: block; }
+
+/* Título de Categoría (Sustituye a las clases inline) */
+.category-title {
+    text-align: center; font-family: 'Cormorant Garamond', serif;
+    font-size: 24px; color: #aaa; font-style: italic; margin-bottom: 50px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
 }
 
-/* Categoría (oculta por defecto) */
-.menu-category {
-    display: none;
-    animation: fadeIn 0.6s ease forwards;
-}
-.menu-category.active {
-    display: block;
-}
 
-/* Grid para los platos */
-.menu-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 50px;
-}
+/* 4. GRID DE PLATOS */
+.menu-grid { display: grid; grid-template-columns: 1fr; gap: 40px; }
+@media (min-width: 768px) { .menu-grid { grid-template-columns: 1fr 1fr; gap: 60px; } }
 
-/* En PC (pantallas grandes), 2 columnas */
-@media (min-width: 768px) {
-    .menu-grid { grid-template-columns: 1fr 1fr; gap: 80px; }
-}
+.menu-item { padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.08); transition: transform 0.3s; }
+.menu-item:hover { transform: translateX(5px); }
 
-/* 4. ÍTEM DEL MENÚ (PLATO) */
-.menu-item {
-    padding-bottom: 25px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    transition: transform 0.3s;
-}
+.item-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
 
-.menu-item:hover {
-    transform: translateX(10px);
-}
+.item-name { font-family: 'Cinzel', serif; font-size: 16px; color: #fff; letter-spacing: 1px; }
+.item-price { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: #ffd700; font-weight: bold; font-style: italic; }
 
-.item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 12px;
-}
+.item-desc { font-family: 'Montserrat', sans-serif; font-size: 12px; color: #bbb; line-height: 1.6; font-weight: 300; }
 
-.item-name {
-    font-family: 'Cinzel', serif;
-    font-size: 26px; /* Letra de plato más grande */
-    color: #fff;
-    letter-spacing: 1px;
-    font-weight: 700;
-}
-
-.item-price {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 28px; /* Precio más grande */
-    color: #d4af37;
-    font-weight: bold;
-    font-style: italic;
-}
-
-.item-desc {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 17px; /* Descripción más grande y legible */
-    color: #bbb;
-    line-height: 1.7;
-    font-weight: 300;
-}
-
-/* Etiquetas (S/G, VEG) */
 .badge {
-    font-size: 10px;
-    border: 1px solid #d4af37;
-    padding: 3px 8px;
-    border-radius: 4px;
-    margin-left: 10px;
-    color: #d4af37;
-    text-transform: uppercase;
-    vertical-align: middle;
+    font-size: 8px; border: 1px solid #444; padding: 2px 6px;
+    border-radius: 4px; margin-left: 8px; color: #aaa; text-transform: uppercase; vertical-align: middle;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }    
