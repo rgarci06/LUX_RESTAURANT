@@ -1,54 +1,109 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="ca">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/src/assets/logo-sinfondo.png" />
+    <link rel="stylesheet" href="../src/css/style.css">
     <link rel="stylesheet" href="../src/css/login.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <title>Acceso Seguro - Restaurante Élite</title>
+    <title>Acceso | LUX Restaurant</title>
 </head>
 <body>
-    <div class="container">
-        <div class="logo"><img src="../src/assets/logo-sinfondo.png" alt="Logo"></div>
-        <h1>Bienvenido de nuevo</h1>
-        <p class="subtitle">Ingresa tus credenciales</p>
 
-        <div class="tab-selector">
-            <a href="login.html" class="tab active">Acceder</a>
-            <a href="register.html" class="tab">Registro</a>
-        </div>
-
-        <form id="loginForm">
-            <div class="form-group">
-                <label>Email Corporativo</label>
-                <div class="input-wrapper">
-                    <input type="email" required placeholder="usuario@elite.com">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Contraseña</label>
-                <div class="input-wrapper">
-                    <input type="password" required placeholder="••••••••">
-                </div>
-            </div>
-            <button type="submit" class="submit-btn">Entrar</button>
-            <a href="#" class="footer-link">¿Problemas para acceder? Contactar soporte</a>
-        </form>
+    <div class="login-bg">
+        <img src="../src/assets/fondo.png" alt="Fondo">
+        <div class="login-overlay"></div>
     </div>
 
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const btn = this.querySelector('.submit-btn');
-            btn.innerText = "Verificando...";
-            btn.disabled = true;
+    <a href="../index.html" class="back-btn">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        VOLVER AL INICIO
+    </a>
 
-            // Simulamos una verificación de servidor de 1.5 segundos
-            setTimeout(() => {
-                alert("Acceso concedido.");
-                btn.innerText = "Entrar al Sistema";
-                btn.disabled = false;
-            }, 1500);
-        });
-    </script>
+    <main class="login-container">
+        <div class="glass-card">
+            
+            <img src="../src/assets/logo-sinfondo.png" class="login-logo" alt="Logo">
+            <p class="login-welcome">Bienvenido a Lux</p>
+            <h2 id="form-title" class="login-title">INICIAR SESIÓN</h2>
+
+            <form id="login-form" class="form-visible">
+                <div class="input-group">
+                    <label class="label-luxury">Email</label>
+                    <input type="email" class="input-luxury" placeholder="ejemplo@correo.com">
+                </div>
+                
+                <div class="input-group">
+                    <label class="label-luxury">Contraseña</label>
+                    <input type="password" class="input-luxury" placeholder="Tu contraseña">
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-box">
+                        <input type="checkbox"> 
+                        <span>Recordarme</span>
+                    </label>
+                    <a href="#" id="link-forgot" class="forgot-link">¿Olvidaste la clave?</a>
+                </div>
+
+                <button type="button" class="btn-login">ACCEDER</button>
+
+                <p class="form-footer">
+                    ¿No tienes cuenta? 
+                    <span id="btn-to-register" class="link-switch">REGÍSTRATE</span>
+                </p>
+            </form>
+
+            <form id="register-form" class="hidden">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="input-group">
+                        <label class="label-luxury">Nombre</label>
+                        <input type="text" class="input-luxury" placeholder="Juan">
+                    </div>
+                    <div class="input-group">
+                        <label class="label-luxury">Apellido</label>
+                        <input type="text" class="input-luxury" placeholder="Pérez">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="label-luxury">Email</label>
+                    <input type="email" class="input-luxury" placeholder="ejemplo@correo.com">
+                </div>
+                
+                <div class="input-group">
+                    <label class="label-luxury">Contraseña</label>
+                    <input type="password" class="input-luxury" placeholder="Crea una contraseña">
+                </div>
+
+                <button type="button" class="btn-login" style="margin-top: 10px;">CREAR CUENTA</button>
+
+                <p class="form-footer">
+                    ¿Ya eres cliente? 
+                    <span id="btn-to-login" class="link-switch">ACCEDER</span>
+                </p>
+            </form>
+
+            <form id="forgot-form" class="hidden">
+                <p class="forgot-description">
+                    Introduce tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
+                </p>
+
+                <div class="input-group">
+                    <label class="label-luxury">Email</label>
+                    <input type="email" class="input-luxury" placeholder="ejemplo@correo.com">
+                </div>
+
+                <button type="button" class="btn-login" style="margin-top: 10px;">ENVIAR ENLACE</button>
+
+                <p class="form-footer">
+                    <span id="btn-back-from-forgot" class="link-switch" style="margin:0;">VOLVER A INICIAR SESIÓN</span>
+                </p>
+            </form>
+
+        </div>
+    </main>
+
+    <script src="../src/js/login.js"></script>
 </body>
 </html>

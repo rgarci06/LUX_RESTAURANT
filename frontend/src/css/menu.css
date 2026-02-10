@@ -1,0 +1,154 @@
+/* ========================================= */
+/* src/css/menu.css - CARTA DIGITAL */
+/* ========================================= */
+
+/* 1. HERO DEL MENÚ (Más corto que la home) */
+.menu-hero {
+    position: relative;
+    height: 40vh; /* Menos altura que la home */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #000;
+    overflow: hidden;
+}
+
+.menu-hero img {
+    position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.5;
+}
+.hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.3), #000);
+}
+
+.menu-title-block {
+    position: relative; z-index: 10; text-align: center; margin-top: 40px;
+}
+
+/* 2. PESTAÑAS (TABS) DE CATEGORÍAS */
+.menu-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+    background: #000;
+    position: sticky;
+    top: 80px; /* Se queda pegado al bajar (debajo del header) */
+    z-index: 40;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #888;
+    padding: 10px 25px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-radius: 99px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+}
+
+.tab-btn:hover {
+    color: #fff;
+    border-color: #d4af37;
+}
+
+.tab-btn.active {
+    background: #d4af37;
+    color: #000;
+    border-color: #d4af37;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+}
+
+/* 3. CONTENIDO DE LA CARTA */
+.menu-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 20px 80px 20px;
+    min-height: 50vh;
+}
+
+/* Categoría (oculta por defecto) */
+.menu-category {
+    display: none;
+    animation: fadeIn 0.6s ease forwards;
+}
+.menu-category.active {
+    display: block; /* Grid de 2 columnas en PC */
+}
+
+/* Grid para los platos */
+.menu-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+}
+
+/* En PC (pantallas grandes), 2 columnas */
+@media (min-width: 768px) {
+    .menu-grid { grid-template-columns: 1fr 1fr; gap: 60px; }
+}
+
+/* 4. ÍTEM DEL MENÚ (PLATO) */
+.menu-item {
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: transform 0.3s;
+}
+
+.menu-item:hover {
+    transform: translateX(5px);
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+}
+
+.item-name {
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    color: #fff;
+    letter-spacing: 1px;
+}
+
+.item-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    color: #d4af37;
+    font-weight: bold;
+    font-style: italic;
+}
+
+.item-desc {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    color: #888;
+    line-height: 1.6;
+    font-weight: 300;
+}
+
+/* Etiquetas (Vegano, Picante, etc) */
+.badge {
+    font-size: 8px;
+    border: 1px solid #444;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    color: #aaa;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
