@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/src/assets/logo-sinfondo.png" />
+    
+    <link rel="stylesheet" href="../src/css/style.css">
+    <link rel="stylesheet" href="../src/css/ubicacion.css">
+    
+    <title>Ubicación | LUX Restaurant</title>
+</head>
+<body>
+
+    <header id="navbar" class="main-header">
+        <div class="header-container">
+            <a href="../index.html" class="logo-group">
+                <img src="../src/assets/logo-sinfondo.png" alt="Logo">
+                <div class="logo-text">
+                    <span class="brand-lux">LUX</span>
+                    <span class="brand-rest">Restaurant</span>
+                </div>
+            </a>
+            
+            <nav class="desktop-nav">
+                <a href="../index.html" class="nav-link">Inicio</a>
+                <a href="menu.html" class="nav-link">Menú</a>
+                <a href="#" class="nav-link active-link">Ubicación</a> </nav>
+
+            <div class="header-actions">
+                <a href="login.html" class="login-btn-header group">
+                    <span>ACCESO</span>
+                    <div class="icon-circle">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                    </div>
+                </a>
+                <button id="menu-btn" class="burger-btn">
+                    <svg id="icon-burger" class="icon-transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    <svg id="icon-close" class="icon-transition hidden-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div id="mobile-menu" class="mobile-menu-overlay">
+        <nav id="mobile-nav-content">
+            <img src="../src/assets/logo-sinfondo.png" class="mobile-logo" alt="Logo">
+            <a href="../index.html" class="mobile-link">INICIO</a>
+            <a href="menu.html" class="mobile-link">MENÚ</a>
+            <a href="#" class="mobile-link" style="color:#ffd700">UBICACIÓN</a>
+            <a href="login.html" class="btn-outline mobile-btn">ACCEDER</a>
+        </nav>
+    </div>
+
+    <section class="location-hero">
+        <img src="../src/assets/fondo.png" alt="Barcelona Luxury View">
+        <div class="location-overlay"></div>
+        <div class="location-title">
+            <h1>ENCUÉNTRANOS</h1>
+            <div class="title-separator"></div>
+        </div>
+    </section>
+
+    <main class="location-container">
+        
+        <div class="info-card">
+            
+            <div class="info-block">
+                <span class="info-label">DIRECCIÓN</span>
+                <p class="info-text">
+                    Passeig de Gràcia, 132<br>
+                    08008 Barcelona, España
+                </p>
+            </div>
+
+            <div class="info-block">
+                <span class="info-label">HORARIO</span>
+                <p class="info-text">
+                    <span>Mar - Sáb: 13:00 - 16:00</span>
+                    <span>Mar - Dom: 20:00 - 00:00</span>
+                    <span style="font-size: 16px; color: #888; font-style: italic;">Lunes Cerrado</span>
+                </p>
+            </div>
+
+            <div class="info-block">
+                <span class="info-label">CONTACTO</span>
+                <p class="info-text">
+                    <span>T. +34 93 123 45 67</span>
+                    <span>E. reservas@lux-bcn.com</span>
+                </p>
+            </div>
+
+            <div class="info-block" style="margin-top: 50px;">
+                <button class="btn-gold" style="width: 100%;">RESERVAR MESA</button>
+            </div>
+
+        </div>
+
+        <div class="map-wrapper">
+            <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2993.038596767512!2d2.158866315726887!3d41.39634797926322!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12a4a292f7639d67%3A0x892e21b846545738!2sPasseig%20de%20Gr%C3%A0cia%2C%20Barcelona!5e0!3m2!1ses!2ses!4v1645551234567!5m2!1ses!2ses" 
+                class="map-frame" 
+                allowfullscreen="" 
+                loading="lazy">
+            </iframe>
+            <div class="map-tag">BARCELONA • EIXAMPLE</div>
+        </div>
+
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <img src="../src/assets/logo-sinfondo.png" alt="Logo Footer">
+                <p>© 2024 LUX RESTAURANT.</p>
+            </div>
+            <div class="footer-links">
+                <a href="#">Aviso Legal</a>
+                <a href="#">Privacidad</a>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="../src/js/main.js"></script>
+</body>
+</html>
