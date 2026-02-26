@@ -1,9 +1,7 @@
-// ========================================
-// RESERVATION SYSTEM - LUX RESTAURANT
-// ========================================
+// sistema de reservas para el restaurante
 
 document.addEventListener('DOMContentLoaded', () => {
-    // State
+    // aqui guardo toda la info de la reserva
     const state = {
         people: 2,
         selectedDate: null,
@@ -12,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
         maxTables: 1
     };
 
-    // Elements
+    // cojo los elementos del html
     const peopleCount = document.getElementById('people-count');
     const peopleInfo = document.getElementById('people-info');
     const calendarGrid = document.getElementById('calendar-grid');
@@ -26,14 +24,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const stepTime = document.getElementById('step-time');
     const stepTables = document.getElementById('step-tables');
 
-    // ========================================
-    // STEP 1: PEOPLE SELECTOR
-    // ========================================
+    // paso 1: elegir cuanta gente va a venir
     function updatePeopleCount(delta) {
         state.people = Math.max(1, Math.min(20, state.people + delta));
         peopleCount.textContent = state.people;
         
-        // Calculate max tables
+        // calculo cuantas mesas necesitan segun la gente
         if (state.people <= 4) {
             state.maxTables = 1;
             peopleInfo.textContent = 'Reservarás 1 mesa';
@@ -47,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
             peopleInfo.textContent = 'Por favor, contacta con nosotros para grupos grandes';
         }
 
-        // Show/hide contact message for large groups
+        // si son mas de 8 personas muestro mensaje de contacto
         if (state.people > 8) {
             stepContact.classList.remove('hidden');
             stepDate.classList.add('hidden');
@@ -68,9 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.btn-increment').addEventListener('click', () => updatePeopleCount(1));
     document.querySelector('.btn-decrement').addEventListener('click', () => updatePeopleCount(-1));
 
-    // ========================================
-    // STEP 2: CALENDAR
-    // ========================================
+    // paso 2: calendario para elegir el dia
     function generateCalendar() {
         calendarGrid.innerHTML = '';
         const today = new Date();
@@ -82,8 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
             date.setDate(today.getDate() + i);
             
             const dayOfWeek = date.getDay();
-            // Check if restaurant is open (Tuesday-Sunday)
-            const isOpen = dayOfWeek !== 1; // closed on Monday
+            // los lunes esta cerrado
+            const isOpen = dayOfWeek !== 1;
 
             const card = document.createElement('div');
             card.classList.add('day-card');
@@ -114,16 +108,14 @@ document.addEventListener('DOMContentLoaded', () => {
         validateForm();
     }
 
-    // ========================================
-    // STEP 3: TIME SLOTS
-    // ========================================
+    // paso 3: elegir la hora de la reserva
     function generateTimeSlots(dayOfWeek) {
         middaySlots.innerHTML = '';
         eveningSlots.innerHTML = '';
 
-        // Midday slots: Tue-Sun (all days except Monday)
+        // horarios de mediodia (todos los dias menos lunes)
         const middayTimes = ['13:00', '14:00', '15:00'];
-        const middayAvailable = dayOfWeek !== 1; // Open Tue-Sun
+        const middayAvailable = dayOfWeek !== 1;
 
         middayTimes.forEach(time => {
             const slot = document.createElement('div');
@@ -139,9 +131,9 @@ document.addEventListener('DOMContentLoaded', () => {
             middaySlots.appendChild(slot);
         });
 
-        // Evening slots: Tue-Sun (all days except Monday)
+        // horarios de noche (tambien todos los dias menos lunes)
         const eveningTimes = ['20:00', '21:00', '22:00', '23:00'];
-        const eveningAvailable = dayOfWeek !== 1; // Open Tue-Sun
+        const eveningAvailable = dayOfWeek !== 1;
 
         eveningTimes.forEach(time => {
             const slot = document.createElement('div');
@@ -165,9 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
         validateForm();
     }
 
-    // ========================================
-    // STEP 4: TABLE MAP
-    // ========================================
+    // paso 4: escojer las mesas
     function generateTables() {
         tableMap.innerHTML = '';
         state.selectedTables = [];
@@ -194,11 +184,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const tableId = parseInt(table.dataset.id);
 
         if (table.classList.contains('selected')) {
-            // Deselect
+            // quitar la mesa si ya estaba seleccionada
             table.classList.remove('selected');
             state.selectedTables = state.selectedTables.filter(id => id !== tableId);
         } else {
-            // Select if not at max
+            // añadir mesa si no hemos llegado al maximo
             if (state.selectedTables.length < state.maxTables) {
                 table.classList.add('selected');
                 state.selectedTables.push(tableId);
@@ -209,6 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
         validateForm();
     }
 
+    // actualizo el texto que dice cuantas mesas faltan
     function updateTableInstruction() {
         const remaining = state.maxTables - state.selectedTables.length;
         if (state.maxTables === 1) {
@@ -222,9 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ========================================
-    // VALIDATION & CONFIRM
-    // ========================================
+    // compruebo si estan todos los pasos completos
     function validateForm() {
         const isValid = state.people <= 8 
             && state.selectedDate 
@@ -247,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Reservation:', reservation);
             alert(`¡Reserva confirmada!\n\nPersonas: ${state.people}\nFecha: ${state.selectedDate}\nHora: ${state.selectedTime}\nMesas: ${state.selectedTables.join(', ')}`);
             
-            // Reset form
+            // reseteo el formulario para otra reserva
             state.people = 2;
             state.selectedDate = null;
             state.selectedTime = null;
@@ -259,9 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ========================================
-    // INITIALIZE
-    // ========================================
+    // inicio todo al cargar la pagina
     updatePeopleCount(0);
     generateCalendar();
     generateTables();
