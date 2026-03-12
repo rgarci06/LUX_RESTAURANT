@@ -1,3 +1,12 @@
+"""
+CAPA 2: LÓGICA DE NEGOCIO (Backend / Servidor)
+Este código corre en tu ordenador (servidor), no en el navegador del cliente.
+
+QUÉ HACE: Recibe los datos del Frontend, los procesa y decide si son válidos.
+SEGURIDAD: Es la única capa que tiene las llaves (API Keys) para hablar con Supabase. 
+Nunca dejamos que el Frontend hable con la base de datos por seguridad.
+"""
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel

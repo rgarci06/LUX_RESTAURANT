@@ -57,14 +57,12 @@ body {
     background-image: none;
 }
 
+/* Asegúrate de que esta clase sea la que tu JS añade al hacer scroll */
 .main-header.scrolled {
-    /* 2. ESTADO SCROLL: NEGRO SÓLIDO */
-    background-color: #000000;
-    
-    padding: 15px 40px;
-    /* Borde dorado visible (0.15 de opacidad) */
-    border-bottom: 1px solid rgba(255, 215, 0, 0.15);
-    box-shadow: 0 5px 20px rgba(0,0,0,0.9);
+    background-color: #000000 !important; /* Negro puro */
+    padding: 10px 40px; /* Se hace un poco más estrecho al bajar */
+    border-bottom: 1px solid rgba(255, 215, 0, 0.2); /* Línea dorada sutil */
+    transition: background-color 0.3s ease, padding 0.3s ease;
 }
 
 .header-container { display: flex; justify-content: space-between; align-items: center; }
@@ -181,3 +179,34 @@ body {
 .footer-links { display: flex; gap: 30px; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #e5e7eb; }
 .footer-links a { text-decoration: none; color: inherit; transition: 0.3s; }
 .footer-links a:hover { color: #d4af37; }
+
+/* --- BOTÓ D'ACCÉS I USUARI (UNIFICAT) --- */
+.auth-nav-btn {
+    display: flex !important;
+    flex-direction: row  !important; /* Icona a dalt, text a baix */
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px;
+    text-decoration: none;
+    color: #e5e7eb; /* MATEIX color que els altres enllaços */
+    transition: 0.3s;
+}
+
+.auth-nav-btn:hover {
+    color: #d4af37; /* Es posa daurat en passar el ratolí */
+}
+
+/* El text ara serà EXACTAMENT igual que la resta del menú */
+.auth-nav-btn span {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px; /* IGUAL que .nav-link */
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.4em; /* IGUAL que .nav-link */
+}
+
+.auth-nav-btn svg {
+    width: 18px;
+    height: 18px;
+    opacity: 0.9;
+}

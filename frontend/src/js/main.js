@@ -7,12 +7,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- 1. EFECTO SCROLL (Fondo Negro al bajar) ---
     window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
-            // Si bajamos 50px, añade la clase 'scrolled' (Fondo Negro)
-            navbar.classList.add('scrolled');
+        const header = document.querySelector('.main-header');
+        // Mirem el scroll a dos llocs diferents per compatibilitat
+        const scrollPosition = window.scrollY || document.documentElement.scrollTop;
+
+        if (scrollPosition > 50) {
+            header.classList.add('scrolled');
         } else {
-            // Si estamos arriba, quita la clase (Transparente)
-            navbar.classList.remove('scrolled');
+            header.classList.remove('scrolled');
         }
     });
 
