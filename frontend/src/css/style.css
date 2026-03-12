@@ -106,7 +106,7 @@ body {
 
 /* --- MOBILE MENU --- */
 .mobile-menu-overlay { 
-    position: fixed; inset: 0; background-color: rgba(0,0,0,0.95); z-index: 40; 
+    position: fixed; inset: 0; background-color: rgba(0,0,0,0.95); z-index: 50; 
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     backdrop-filter: blur(10px); opacity: 0; pointer-events: none; transition: 0.5s;
 }
@@ -118,6 +118,9 @@ body {
 .mobile-link { font-family: 'Cinzel'; font-size: 24px; letter-spacing: 0.2em; color: #ccc; text-decoration: none; transition: 0.3s; }
 .mobile-link:hover { color: #d4af37; }
 .mobile-btn { margin-top: 20px; }
+.mobile-btn-logout { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px 20px; background: transparent; border: 1px solid rgba(212, 175, 55, 0.5); color: #d4af37; border-radius: 8px; font-size: 14px; font-weight: 700; }
+.mobile-btn-logout:hover { background: rgba(212, 175, 55, 0.1); }
+.mobile-btn-logout svg { width: 16px; height: 16px; flex-shrink: 0; }
 
 
 /* --- HERO SECTION --- */
@@ -211,4 +214,9 @@ body {
     width: 18px;
     height: 18px;
     opacity: 0.9;
+}
+
+/* Ocultar botón de arriba en móvil cuando está logeado */
+@media (max-width: 767px) {
+    .hide-on-mobile { display: none !important; }
 }

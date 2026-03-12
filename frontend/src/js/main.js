@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const menuBtn = document.getElementById('menu-btn');
     const mobileMenu = document.getElementById('mobile-menu');
     const mobileLinks = document.querySelectorAll('.mobile-link');
-    const reservaBtn = document.getElementById('btn-reserva');
+    const reserveCtas = document.querySelectorAll('#btn-reserva, .btn-reserve-full');
     
     // --- 1. EFECTO SCROLL (Fondo Negro al bajar) ---
     window.addEventListener('scroll', () => {
@@ -35,9 +35,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (menuBtn) menuBtn.addEventListener('click', toggleMenu);
 
-    // si el usuario no esta registrado, al clicar en el botón de reserva se le redirige a la página de login
-    if (reservaBtn) {
-        reservaBtn.addEventListener('click', () => {
+    // Si no hay sesión, cualquier CTA de reserva redirige al login.
+    if (reserveCtas.length > 0) {
+        reserveCtas.forEach((cta) => {
+            cta.addEventListener('click', (e) => {
+            e.preventDefault();
             const token = localStorage.getItem('lux_token') || sessionStorage.getItem('lux_token');
             const email = localStorage.getItem('lux_email') || sessionStorage.getItem('lux_email');
 
@@ -47,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             window.location.href = '/pages/reserva.html';
+        });
         });
     }
     
