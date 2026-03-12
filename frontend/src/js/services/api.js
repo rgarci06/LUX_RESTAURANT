@@ -6,7 +6,12 @@
  * pero aislamos la lógica de red del diseño visual.
  */
 
-const API_URL = "http://localhost:8000/api";
+// Detectamos si el navegador está en modo local o en internet
+const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+
+const API_URL = isLocal 
+    ? "http://localhost:8000/api" 
+    : "https://lux-restaurant.onrender.com/api";
 
 export const AuthService = {
     // Método para Iniciar Sesión
