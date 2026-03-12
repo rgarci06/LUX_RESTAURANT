@@ -13,75 +13,112 @@
             <div class="logo-group">
                 <img src="/src/assets/logo-sinfondo.png" alt="Logo">
                 <div class="logo-text">
-                    <span class="font-title" style="color:#d4af37">LUX</span>
-                    <span class="font-title">Restaurant</span>
+                    <span class="brand-lux">LUX</span>
+                    <span class="brand-rest">Restaurant</span>
                 </div>
             </div>
             
             <nav class="desktop-nav">
-                <a href="#">Inicio</a>
-                <a href="/pages/menu.html">Menú</a>
-                <a href="/pages/ubicacion.html">Ubicación</a>
+                <a href="#" class="nav-link active-link">Inicio</a>
+                <a href="/pages/menu.html" class="nav-link">Menú</a>
+                <a href="/pages/ubicacion.html" class="nav-link">Ubicación</a>
             </nav>
 
             <div class="header-actions">
-                <a href="/pages/login.html" class="login-btn">ACCESO</a>
-                <button id="menu-btn" class="burger-btn">☰</button>
+                <a href="/pages/login.html" id="auth-link" class="nav-link auth-btn">
+                    <span>ACCESO</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </a>
+            </div>
+            <button id="menu-btn" class="burger-btn">
+                <svg id="icon-burger" class="icon-transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                <svg id="icon-close" class="icon-transition hidden-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
             </div>
         </div>
     </header>
 
     <div id="mobile-menu" class="mobile-menu-overlay">
-        <a href="#" class="mobile-link">INICIO</a>
-        <a href="/pages/menu.html" class="mobile-link">MENÚ</a>
-        <a href="/pages/ubicacion.html" class="mobile-link">UBICACIÓN</a>
-        <a href="/pages/login.html" class="mobile-link" style="color:#d4af37">ACCEDER</a>
+        <nav id="mobile-nav-content">
+            <img src="/src/assets/logo-sinfondo.png" class="mobile-logo" alt="Logo">
+            <a href="#" class="mobile-link">INICIO</a>
+            <a href="/pages/menu.html" class="mobile-link">MENÚ</a>
+            <a href="/pages/ubicacion.html" class="mobile-link">UBICACIÓN</a>
+            <a href="/pages/login.html" class="btn-outline mobile-btn">ACCEDER</a>
+        </nav>
     </div>
 
     <main class="hero-section">
         <div class="hero-bg">
-            <img src="/src/assets/fondo.png" alt="Fondo">
+            <img src="/src/assets/fondo.png" alt="Fons">
+            <div class="overlay-gradient"></div>
         </div>
 
         <div class="hero-content">
-            <h1 class="font-title">LUX</h1>
-            <h2 class="font-title">RESTAURANT</h2>
-            <p>Experiencia gastronómica excepcional.</p>
+            <div class="hero-titles">
+               <h2 class="title-lux">LUX</h2>
+                <h1 class="title-sub">RESTAURANT</h1>
+            </div>
+
+            <p class="hero-text">
+                Experiencia gastronómica excepcional.
+            </p>
+
+            <div class="glow-separator"></div>
 
             <div class="hero-buttons">
-                <button class="btn btn-gold">Reserva Ahora</button>
-                <button class="btn btn-outline">Ver Menú</button>
+                <button class="btn-gold">Reserva Ahora</button>
+                <button class="btn-outline">Ver Menú</button>
             </div>
         </div>
     </main>
 
     <section class="features-section">
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">★</div> <h3 class="font-title">ALTA COCINA</h3>
-                <p>Fusión de tradición y vanguardia con ingredientes selectos.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🍷</div>
-                <h3 class="font-title">BODEGA</h3>
-                <p>Una cuidada selección de vinos nacionales e internacionales.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">✦</div>
-                <h3 class="font-title">EXPERIENCIA</h3>
-                <p>Ambiente íntimo y un servicio personalizado.</p>
+        <div class="features-container">
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 15.546c-.523 0-1.046.043-1.569.129-1.569.261-3.138.523-4.707.784-1.569.261-3.138.523-4.707.784-.523 0-1.046.043-1.569.129V17.5c0 1.381 1.119 2.5 2.5 2.5h.766c.523 0 1.046.043 1.569.129 1.569.261 3.138.523 4.707.784 1.569.261 3.138.523 4.707.784.523 0 1.046.043 1.569.129v-4.568zM12 17.5V3m0 14.5c0 1.381-1.119 2.5-2.5 2.5H9.5V3h2.5v14.5zM6.234 17.629c.523-.086 1.046-.129 1.569-.129H7.5V3H6.234c-1.569.261-3.138.523-4.707.784C1.004 3.87.481 3.913-.042 4V17.5c.523-.086 1.046-.129 1.569-.129 1.569-.261 3.138-.523 4.707-.784z"/></svg>
+                    </div>
+                    <h3>ALTA COCINA</h3>
+                    <p>Fusión de tradición y vanguardia con ingredientes selectos de temporada.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    </div>
+                    <h3>BODEGA PREMIUM</h3>
+                    <p>Una cuidada selección de vinos nacionales e internacionales.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                    </div>
+                    <h3>EXPERIENCIA ÚNICA</h3>
+                    <p>Ambiente íntimo y un servicio personalizado que cuida cada detalle.</p>
+                </div>
             </div>
         </div>
     </section>
 
     <footer class="main-footer">
-        <p>© 2024 LUX RESTAURANT.</p>
-        <div class="footer-links">
-            <a href="#">Aviso Legal</a>
-            <a href="#">Privacidad</a>
+        <div class="footer-container">
+            <div class="footer-brand">
+                <img src="/src/assets/logo-sinfondo.png" alt="Logo Footer">
+                <p>© 2026 LUX RESTAURANT.</p>
+            </div>
+            <div class="footer-links">
+                <a href="#">Aviso Legal</a>
+                <a href="#">Privacidad</a>
+                <a href="#">Cookies</a>
+            </div>
         </div>
     </footer>
 
-    <script type="module" src="/src/js/main.js"></script>
+    <script src="/src/js/session.js"></script>
+    <script src="/src/js/main.js"></script>
 </body>
 </html>

@@ -30,14 +30,14 @@
                     <label class="label-luxury">Contraseña</label>
                     <input type="password" class="input-luxury">
                 </div>
-
                 <div class="form-options">
-                    <label><input type="checkbox"> Recordarme</label>
-                    <a href="#" id="link-forgot" style="color:#888">¿Olvidaste la clave?</a>
+                    <label class="remember-box">
+                        <input type="checkbox"> <span>Recordarme</span>
+                    </label>
+                    <a href="#" id="link-forgot" class="forgot-link">¿Olvidaste la clave?</a>
                 </div>
-
-                <button type="button" class="btn-login">ACCEDER</button>
-                <p style="font-size: 11px; color: #888;">
+                <button type="submit" class="btn-login">ACCEDER</button>
+                <p class="form-footer">
                     ¿No tienes cuenta? <span id="btn-to-register" class="link-switch">REGÍSTRATE</span>
                 </p>
             </form>
@@ -55,28 +55,29 @@
                     <label class="label-luxury">Contraseña</label>
                     <input type="password" class="input-luxury">
                 </div>
-
-                <button type="button" class="btn-login">CREAR CUENTA</button>
-                <p style="font-size: 11px; color: #888;">
-                    ¿Ya tienes cuenta? <span id="btn-to-login" class="link-switch">ACCEDER</span>
+                <button type="submit" class="btn-login" style="margin-top: 10px;">CREAR CUENTA</button>
+                <p class="form-footer">
+                    ¿Ya eres cliente? <span id="btn-to-login" class="link-switch">ACCEDER</span>
                 </p>
             </form>
 
             <form id="forgot-form" class="hidden">
-                <p style="font-size:12px; color:#ccc; margin-bottom:15px;">Introduce tu email para recuperar la contraseña.</p>
+                <p class="forgot-description">
+                    Introduce tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
+                </p>
                 <div class="input-group">
                     <label class="label-luxury">Email</label>
                     <input type="email" class="input-luxury">
                 </div>
-                <button type="button" class="btn-login">ENVIAR</button>
-                <p style="font-size: 11px;">
-                    <span id="btn-back-from-forgot" class="link-switch">VOLVER</span>
+                <button type="button" class="btn-login" style="margin-top: 10px;">ENVIAR ENLACE</button>
+                <p class="form-footer">
+                    <span id="btn-back-from-forgot" class="link-switch" style="margin:0;">VOLVER A INICIAR SESIÓN</span>
                 </p>
             </form>
 
         </div>
     </div>
 
-    <script src="../src/js/login.js"></script>
+    <script type="module" src="/src/js/login.js"></script>
 </body>
 </html>
