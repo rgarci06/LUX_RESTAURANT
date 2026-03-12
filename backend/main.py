@@ -17,11 +17,7 @@ app = FastAPI()
 # --- BLOC 1: CORS ---
 app.add_middleware(
     CORSMiddleware,
-<<<<<<< HEAD
     allow_origins=["*"], # Permite que tanto Localhost como Vercel se conecten
-=======
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
->>>>>>> BACKEND
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
