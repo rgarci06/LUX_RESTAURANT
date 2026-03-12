@@ -25,6 +25,16 @@
 .input-luxury:focus { border-bottom: 1px solid #d4af37; }
 .input-luxury::placeholder { color: rgba(255,255,255,0.4); font-size: 14px; font-weight: 300; }
 
+/* quitar fondo blanco del autocompletado */
+.input-luxury:-webkit-autofill,
+.input-luxury:-webkit-autofill:hover,
+.input-luxury:-webkit-autofill:focus,
+.input-luxury:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px transparent inset !important;
+    -webkit-text-fill-color: #fff !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
 .form-options { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; margin-bottom: 35px; font-size: 12px; }
 .remember-box { display: flex; align-items: center; cursor: pointer; color: #ddd; transition: color 0.3s;}
 .remember-box:hover { color: white; }

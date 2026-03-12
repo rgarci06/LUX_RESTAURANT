@@ -121,6 +121,28 @@
 .address-text { font-size: 22px; color: #fff; font-style: normal; }
 .info-text span { display: block; }
 
+/* Estilo especial para días cerrados */
+.closed-day {
+    font-size: 16px;
+    color: #888;
+    font-style: italic;
+}
+
+/* Bloque de botón con margen superior */
+.info-block-button {
+    margin-top: 50px;
+}
+
+/* Botón de reserva a ancho completo */
+.btn-reserve-full {
+    width: 100%;
+}
+
+/* Mobile menu highlight for ubicacion page */
+.active-mobile {
+    color: #ffd700 !important;
+}
+
 
 /* 4. MAPA (COLOR NORMAL SIEMPRE) */
 .map-wrapper {
