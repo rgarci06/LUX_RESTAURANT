@@ -8,6 +8,28 @@
 import { AuthService } from './services/api.js';
     
 document.addEventListener('DOMContentLoaded', () => {
+
+    function showLuxAlert(message, type = 'info') {
+        let container = document.querySelector('.lux-toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'lux-toast-container';
+            document.body.appendChild(container);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `lux-toast lux-toast-${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+
+        // Trigger animation in next paint.
+        requestAnimationFrame(() => toast.classList.add('show'));
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 250);
+        }, 3200);
+    }
     
     // 1. REFERENCIAS AL DOM
     const loginForm = document.getElementById('login-form');
@@ -46,11 +68,27 @@ document.addEventListener('DOMContentLoaded', () => {
             const passwordInput = registerForm.querySelector('input[type="password"]');
 
             if (!emailInput || !passwordInput || !emailInput.value || !passwordInput.value) {
-                return alert("El correo y la contraseña son obligatorios.");
+                return showLuxAlert("El correo y la contraseña son obligatorios.", 'warning');
             }
 
             if(btnRegisterSubmit) btnRegisterSubmit.innerText = "REGISTRANDO...";
-            
+
+            // muestra el mensaje de "registrando..." mientras espera la respuesta del servidor
+            const respuesta = await AuthService.register(emailInput.value, passwordInput.value);
+
+            if (respuesta.ok) {
+                showLuxAlert("Cuenta creada correctamente. Ya puedes iniciar sesión.", 'success');
+                registerForm.reset();
+                switchForm(registerForm, loginForm, "INICIAR SESIÓN");
+            } else {
+                const detail = (respuesta.dades?.detail || '').toString().toLowerCase();
+                if (respuesta.status === 409 || detail.includes('registrado') || (detail.includes('already') && detail.includes('register'))) {
+                    showLuxAlert("Este correo ya está registrado.", 'warning');
+                } else {
+                    showLuxAlert("No se pudo crear la cuenta. Inténtalo de nuevo.", 'error');
+                }
+            }
+
             if(btnRegisterSubmit) btnRegisterSubmit.innerText = "CREAR CUENTA";
         });
     }
@@ -67,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const rememberCheck = loginForm.querySelector('input[type="checkbox"]');
 
             if (!emailInput || !passwordInput || !emailInput.value || !passwordInput.value) {
-                return alert("Introduzca las credenciales.");
+                return showLuxAlert("Introduzca las credenciales.", 'warning');
             }
 
             const isRemembered = rememberCheck ? rememberCheck.checked : false;
@@ -89,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (rol === "cambrer") window.location.href = "/pages/panel_cambrer.html";
                 else window.location.href = "/index.html"; 
             } else {
-                alert("Credenciales incorrectas o el usuario no existe.");
+                showLuxAlert("Credenciales incorrectas o el usuario no existe.", 'error');
             }
             
             if(btnLoginSubmit) btnLoginSubmit.innerText = "ACCEDER";
@@ -103,11 +141,11 @@ document.addEventListener('DOMContentLoaded', () => {
         forgotForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const emailInput = forgotForm.querySelector('input[type="email"]');
-            if (!emailInput || !emailInput.value) return alert("Introduzca su correo electrónico.");
+            if (!emailInput || !emailInput.value) return showLuxAlert("Introduzca su correo electrónico.", 'warning');
 
             if(btnForgotSubmit) btnForgotSubmit.innerText = "ENVIANDO...";
             setTimeout(() => {
-                alert(`Si el correo existe en el sistema, recibirá un enlace en:\n${emailInput.value}`);
+                showLuxAlert(`Si el correo existe, recibirá un enlace en ${emailInput.value}`, 'success');
                 forgotForm.reset();
                 if(btnForgotSubmit) btnForgotSubmit.innerText = "ENVIAR ENLACE";
                 if(btnBackFromForgot) btnBackFromForgot.click();
