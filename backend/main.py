@@ -41,7 +41,7 @@ class UsuariRegistre(BaseModel):
 # --- BLOC 4: RUTES ---
 @app.get("/")
 def inici():
-    return {"missatge": "Servidor LUX funcionant amb ROLS! 👑"}
+    return {"missatge": "Servidor LUX funcionant"}
 
 @app.post("/api/register")
 def registrar(user: UsuariRegistre):
