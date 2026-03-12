@@ -3,8 +3,9 @@
 /* ========================================= */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cormorant+Garamond:ital,wght@1,300;1,500&family=Montserrat:wght@300;400;500&display=swap');
 
-/* --- RESET BÁSICO --- */
-* { box-sizing: border-box; margin: 0; padding: 0; }
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* --- BASES --- */
 body {
