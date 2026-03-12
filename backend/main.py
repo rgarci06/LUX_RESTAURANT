@@ -56,9 +56,21 @@ def registrar(user: UsuariRegistre):
                 }
             }
         })
+
+        # si el correo ya esta registrado, muestra el error
+        user_resp = getattr(respuesta, "user", None)
+        identities = getattr(user_resp, "identities", None) if user_resp else None
+        if user_resp and isinstance(identities, list) and len(identities) == 0:
+            raise HTTPException(status_code=409, detail="El correo ya está registrado")
+
         return {"missatge": "Usuari creat correctament"}
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        error_text = str(e).lower()
+        if "already" in error_text and "register" in error_text:
+            raise HTTPException(status_code=409, detail="El correo ya está registrado")
+        raise HTTPException(status_code=400, detail="No se pudo completar el registro")
 
 @app.post("/api/login")
 def entrar(user: UsuariLogin):

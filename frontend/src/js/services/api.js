@@ -23,10 +23,10 @@ export const AuthService = {
                 body: JSON.stringify({ email, password })
             });
             const dades = await respuesta.json();
-            return { ok: respuesta.ok, dades: dades };
+            return { ok: respuesta.ok, status: respuesta.status, dades: dades };
         } catch (error) {
             console.error("Error de conexión:", error);
-            return { ok: false, dades: { detail: "El servidor Backend no responde." } };
+            return { ok: false, status: 0, dades: { detail: "El servidor Backend no responde." } };
         }
     },
 
@@ -39,10 +39,10 @@ export const AuthService = {
                 body: JSON.stringify({ email, password, rol: "client" })
             });
             const dades = await respuesta.json();
-            return { ok: respuesta.ok, dades: dades };
+            return { ok: respuesta.ok, status: respuesta.status, dades: dades };
         } catch (error) {
             console.error("Error de conexión:", error);
-            return { ok: false, dades: { detail: "El servidor Backend no responde." } };
+            return { ok: false, status: 0, dades: { detail: "El servidor Backend no responde." } };
         }
     }
 };
