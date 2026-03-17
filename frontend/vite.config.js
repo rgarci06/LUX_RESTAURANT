@@ -13,6 +13,7 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         menu: resolve(__dirname, 'pages/menu.html'),
         login: resolve(__dirname, 'pages/login.html'),
+        ubicacion: resolve(__dirname, 'pages/ubicacion.html'),
         // Si crees més pàgines, afegeix-les aquí sota
       },
     },
