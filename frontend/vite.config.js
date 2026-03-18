@@ -15,6 +15,7 @@ export default defineConfig({
         login: resolve(__dirname, 'pages/login.html'),
         ubicacion: resolve(__dirname, 'pages/ubicacion.html'),
         reservas: resolve(__dirname, 'pages/reserva.html'),
+        recovery: resolve(__dirname, 'pages/recovery.html'),
         // Si crees més pàgines, afegeix-les aquí sota
       },
     },

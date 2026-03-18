@@ -134,22 +134,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 5. RECUPERAR CLAVE
-    if (forgotForm) {
-        const btnForgotSubmit = forgotForm.querySelector('.btn-login');
-        
-        forgotForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const emailInput = forgotForm.querySelector('input[type="email"]');
-            if (!emailInput || !emailInput.value) return showLuxAlert("Introduzca su correo electrónico.", 'warning');
+    // 5. RECUPERAR CLAU
+        if (forgotForm) {
+            const btnForgotSubmit = forgotForm.querySelector('.btn-login');
+            
+            forgotForm.addEventListener('submit', async (e) => { // <-- Añadimos 'async' aquí
+                e.preventDefault();
+                const emailInput = forgotForm.querySelector('input[type="email"]');
+                if (!emailInput || !emailInput.value) return showLuxAlert("Introduzca su correo electrónico.", 'warning');
 
-            if(btnForgotSubmit) btnForgotSubmit.innerText = "ENVIANDO...";
-            setTimeout(() => {
-                showLuxAlert(`Si el correo existe, recibirá un enlace en ${emailInput.value}`, 'success');
-                forgotForm.reset();
+                if(btnForgotSubmit) btnForgotSubmit.innerText = "ENVIANDO...";
+                
+                try {
+                    // Cambia la URL de Render por la de tu localhost
+                    const response = await fetch("http://localhost:8000/api/recuperar-password", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email: emailInput.value })
+                    });
+
+                    if (response.ok) {
+                        showLuxAlert(`Si el correo existe, recibirá un enlace en ${emailInput.value}`, 'success');
+                        forgotForm.reset();
+                        if(btnBackFromForgot) btnBackFromForgot.click();
+                    } else {
+                        showLuxAlert("No se pudo enviar el correo. Inténtalo más tarde.", 'error');
+                    }
+                } catch (error) {
+                    console.error("Error al recuperar clave:", error);
+                    showLuxAlert("Error de conexión con el servidor.", 'error');
+                }
+
                 if(btnForgotSubmit) btnForgotSubmit.innerText = "ENVIAR ENLACE";
-                if(btnBackFromForgot) btnBackFromForgot.click();
-            }, 1500);
-        });
-    }
+            });
+        }
 });

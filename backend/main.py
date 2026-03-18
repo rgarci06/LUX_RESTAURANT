@@ -38,6 +38,14 @@ class UsuariRegistre(BaseModel):
     password: str
     rol: str = "client" # Per defecte, tothom que es registra és "client"
 
+class RecuperarPassword(BaseModel):
+    email: str
+
+class ActualizarPassword(BaseModel):
+    token: str
+    refresh: str
+    password: str
+
 # --- BLOC 4: RUTES ---
 @app.get("/")
 def inici():
@@ -90,3 +98,35 @@ def entrar(user: UsuariLogin):
         }
     except Exception as e:
         raise HTTPException(status_code=401, detail="Correu o contrasenya incorrectes")
+    
+@app.post("/api/recuperar-password")
+def pedir_recuperacion(datos: RecuperarPassword):
+    try:
+        # URL TEMPORAL PARA LOCALHOST (Asegúrate de que el puerto sea el de tu Vite, ej: 5173)
+        url_destino = "http://localhost:5173/pages/recovery.html"
+        
+        supabase.auth.reset_password_email(
+            datos.email, 
+            options={"redirect_to": url_destino}
+        )
+        return {"mensaje": "Correo de recuperación enviado."}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Error al enviar el correo: " + str(e))
+
+@app.post("/api/actualizar-password")
+def cambiar_password(datos: ActualizarPassword):
+    try:
+        # A) Iniciamos una sesión temporal usando las dos llaves del correo
+        supabase.auth.set_session(datos.token, datos.refresh)
+        
+        # B) Ahora que Supabase sabe que somos nosotros, actualizamos la clave
+        supabase.auth.update_user({"password": datos.password})
+        
+        # C) Por seguridad, cerramos la sesión justo después
+        supabase.auth.sign_out()
+        
+        return {"mensaje": "Contraseña cambiada con éxito!"}
+    except Exception as e:
+        # Este print te mostrará el error exacto en la terminal negra de VS Code si falla
+        print(f"Error de Supabase: {str(e)}") 
+        raise HTTPException(status_code=400, detail="Error al cambiar clave: " + str(e))
