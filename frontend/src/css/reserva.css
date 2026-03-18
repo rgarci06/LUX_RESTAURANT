@@ -223,19 +223,27 @@
 }
 
 .table-map {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 20px;
-    justify-items: center;
-    max-width: 700px;
+    position: relative;
+    width: min(840px, 100%);
+    aspect-ratio: 16 / 9;
+    min-height: 0;
+    background:
+        radial-gradient(circle at top left, rgba(212, 175, 55, 0.18), transparent 30%),
+        linear-gradient(180deg, #f6f1e7 0%, #ece2cf 100%);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 22px;
+    overflow: hidden;
     margin: 0 auto;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7), 0 18px 40px rgba(0, 0, 0, 0.24);
 }
 
 .table-slot {
-    width: 100px;
-    height: 100px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    position: absolute;
+    width: 68px;
+    height: 68px;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, rgba(34, 34, 34, 0.98), rgba(63, 63, 63, 0.96));
+    border: 1px solid rgba(255, 255, 255, 0.35);
     border-radius: 12px;
     cursor: pointer;
     transition: 0.3s;
@@ -243,14 +251,24 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    position: relative;
     user-select: none;
+    color: #fff;
+    z-index: 2;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+.table-slot::before {
+    content: '';
+    position: absolute;
+    inset: 7px;
+    border-radius: 9px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    pointer-events: none;
 }
 
 .table-slot:hover {
-    background: rgba(212, 175, 55, 0.15);
-    border-color: #d4af37;
-    transform: scale(1.05);
+    transform: translate(-50%, -50%) scale(1.08);
+    filter: brightness(1.08);
 }
 
 .table-slot.selected {
@@ -268,18 +286,180 @@
 
 .table-number {
     font-family: 'Cinzel', serif;
-    font-size: 16px;
-    margin-bottom: 5px;
+    font-size: 14px;
+    line-height: 1;
+    margin-bottom: 0;
+    letter-spacing: 0.08em;
+    position: relative;
+    z-index: 1;
 }
 
 .table-capacity {
-    font-size: 11px;
-    opacity: 0.7;
+    font-size: 10px;
+    opacity: 0.82;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    position: relative;
+    z-index: 1;
 }
 
 .table-slot.selected .table-capacity {
     opacity: 1;
     color: #000;
+}
+
+.table-map.real-map {
+    background-image:
+        linear-gradient(transparent 31px, rgba(0, 0, 0, 0.035) 32px),
+        linear-gradient(90deg, transparent 31px, rgba(0, 0, 0, 0.035) 32px);
+    background-size: 32px 32px;
+}
+
+.room-block {
+    position: absolute;
+    border: 1px solid rgba(35, 31, 24, 0.35);
+    background: rgba(255, 251, 244, 0.82);
+    backdrop-filter: blur(6px);
+    z-index: 1;
+    border-radius: 18px;
+}
+
+.room-main-aisle {
+    left: 18%;
+    top: 49%;
+    width: 68%;
+    height: 14%;
+    background: linear-gradient(90deg, rgba(60, 50, 30, 0.06), rgba(212, 175, 55, 0.18), rgba(60, 50, 30, 0.06));
+    border: 1px dashed rgba(75, 60, 30, 0.35);
+}
+
+.room-bar-left {
+    left: 0;
+    top: 10%;
+    width: 12%;
+    height: 78%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cinzel', serif;
+    color: #2f2419;
+    font-size: 24px;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    background: linear-gradient(180deg, rgba(212, 175, 55, 0.4), rgba(255, 248, 228, 0.7));
+    border-right: none;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.room-door-label {
+    right: 3%;
+    top: 54%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: rgba(75, 58, 39, 0.6);
+    z-index: 1;
+}
+
+.zone-black {
+    background: #111;
+    border-color: #000;
+}
+
+.zone-cyan {
+    background: #17a7c3;
+    border-color: #0f6f81;
+}
+
+.zone-yellow {
+    background: #e0d241;
+    border-color: #a49623;
+    color: #111;
+}
+
+.zone-red {
+    background: #cf2525;
+    border-color: #8a1616;
+}
+
+.zone-green {
+    background: #1ea85b;
+    border-color: #146a3a;
+}
+
+.zone-emerald {
+    background: linear-gradient(135deg, #0c4c3d, #1a7a63);
+    border-color: #125949;
+}
+
+.zone-gold {
+    background: linear-gradient(135deg, #a7802b, #d6b45b);
+    border-color: #8c6b24;
+    color: #111;
+}
+
+@media (max-width: 900px) {
+    .table-map {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+    }
+
+    .table-slot {
+        width: 56px;
+        height: 56px;
+    }
+
+    .table-number {
+        font-size: 11px;
+    }
+
+    .table-capacity {
+        font-size: 8px;
+    }
+
+    .room-bar-left {
+        font-size: 20px;
+    }
+
+    .room-door-label {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 640px) {
+    .reservation-step {
+        padding: 24px 16px;
+    }
+
+    .table-map {
+        aspect-ratio: 4 / 5;
+        border-radius: 18px;
+    }
+
+    .table-slot {
+        width: 48px;
+        height: 48px;
+    }
+
+    .table-capacity {
+        display: none;
+    }
+
+    .room-bar-left {
+        width: 13%;
+        font-size: 16px;
+    }
+
+    .room-door-label {
+        font-size: 10px;
+    }
 }
 
 /* --- CONTACT MESSAGE --- */
@@ -343,4 +523,59 @@
 /* mobile menu highlight for reserva page */
 #mobile-menu .mobile-link[href$="/reserva.html"] {
     color: #d4af37;
+}
+
+/* --- TOAST --- */
+.lux-toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 120;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.lux-toast {
+    min-width: 280px;
+    max-width: 380px;
+    background: rgba(8, 8, 8, 0.94);
+    color: #f3f4f6;
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    border-left-width: 4px;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(8px);
+    transform: translateY(-8px);
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.lux-toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.lux-toast-success { border-left-color: #38b86a; }
+.lux-toast-warning { border-left-color: #d4af37; }
+.lux-toast-error { border-left-color: #f97373; }
+.lux-toast-info { border-left-color: #60a5fa; }
+
+@media (max-width: 640px) {
+    .lux-toast-container {
+        left: 12px;
+        right: 12px;
+        top: 12px;
+    }
+
+    .lux-toast {
+        min-width: 0;
+        max-width: none;
+        width: 100%;
+        font-size: 11px;
+    }
 }

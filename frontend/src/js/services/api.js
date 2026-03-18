@@ -23,10 +23,10 @@ export const AuthService = {
                 body: JSON.stringify({ email, password })
             });
             const dades = await respuesta.json();
-            return { ok: respuesta.ok, dades: dades };
+            return { ok: respuesta.ok, status: respuesta.status, dades: dades };
         } catch (error) {
             console.error("Error de conexión:", error);
-            return { ok: false, dades: { detail: "El servidor Backend no responde." } };
+            return { ok: false, status: 0, dades: { detail: "El servidor Backend no responde." } };
         }
     },
 
@@ -39,10 +39,34 @@ export const AuthService = {
                 body: JSON.stringify({ email, password, rol: "client" })
             });
             const dades = await respuesta.json();
-            return { ok: respuesta.ok, dades: dades };
+            return { ok: respuesta.ok, status: respuesta.status, dades: dades };
         } catch (error) {
             console.error("Error de conexión:", error);
-            return { ok: false, dades: { detail: "El servidor Backend no responde." } };
+            return { ok: false, status: 0, dades: { detail: "El servidor Backend no responde." } };
+        }
+    }
+};
+
+export const ReservationService = {
+    createReservation: async (reservation, token) => {
+        try {
+            const headers = { 'Content-Type': 'application/json' };
+
+            if (token) {
+                headers.Authorization = `Bearer ${token}`;
+            }
+
+            const respuesta = await fetch(`${API_URL}/reservas`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(reservation)
+            });
+
+            const dades = await respuesta.json();
+            return { ok: respuesta.ok, status: respuesta.status, dades };
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
         }
     }
 };

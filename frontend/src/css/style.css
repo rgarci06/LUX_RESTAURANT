@@ -216,7 +216,8 @@ body {
     opacity: 0.9;
 }
 
-/* Ocultar botón de arriba en móvil cuando está logeado */
+/* En móvil, el acceso se muestra solo dentro del menú hamburguesa */
 @media (max-width: 767px) {
+    #auth-link { display: none !important; }
     .hide-on-mobile { display: none !important; }
 }
