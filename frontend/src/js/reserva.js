@@ -1,4 +1,4 @@
-import { ReservationService } from './services/api.js';
+import { ReservationService, MesasService } from './services/api.js';
 
 // sistema de reservas para el restaurante
 
@@ -47,7 +47,8 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedDate: null,
         selectedTime: null,
         selectedTables: [],
-        maxTables: 1
+        maxTables: 1,
+        occupiedTables: [] // Mesas que ya están reservadas en esta fecha/hora
     };
 
     // cojo los elementos del html
@@ -213,7 +214,54 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
         slot.classList.add('selected');
         state.selectedTime = slot.dataset.time;
+        // Cargamos las mesas ocupadas para esta fecha y hora
+        loadOccupiedTables();
         validateForm();
+    }
+
+    // Función para cargar las mesas que ya están ocupadas en la fecha/hora seleccionada
+    async function loadOccupiedTables() {
+        if (!state.selectedDate || !state.selectedTime) {
+            state.occupiedTables = [];
+            return;
+        }
+
+        try {
+            console.log(`Cargando mesas ocupadas para ${state.selectedDate} a las ${state.selectedTime}`);
+            
+            const result = await MesasService.getOcupadas(state.selectedDate, state.selectedTime);
+            
+            console.log('Resultado completo:', result);
+            
+            if (result.ok && result.dades) {
+                state.occupiedTables = result.dades.ocupadas || [];
+                console.log('Mesas marcadas como ocupadas:', state.occupiedTables);
+                updateTableVisuals();
+            } else {
+                console.error('Error en respuesta:', result.dades?.detail || 'Error desconocido');
+                state.occupiedTables = [];
+            }
+        } catch (error) {
+            console.error('Error al cargar mesas ocupadas:', error);
+            state.occupiedTables = [];
+        }
+    }
+
+    // Actualiza los estilos visuales de las mesas (rojo para ocupadas)
+    function updateTableVisuals() {
+        document.querySelectorAll('.table-slot').forEach(table => {
+            const tableId = parseInt(table.dataset.id);
+            if (state.occupiedTables.includes(tableId)) {
+                table.classList.add('occupied');
+                table.classList.add('disabled');
+            } else {
+                table.classList.remove('occupied');
+                // Solo removemos 'disabled' si no estaba pre-deshabilitada
+                if (!table.classList.contains('was-disabled')) {
+                    table.classList.remove('disabled');
+                }
+            }
+        });
     }
 
     // paso 4: escojer las mesas
@@ -259,6 +307,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function selectTable(table) {
         const tableId = parseInt(table.dataset.id);
+
+        // Impedir seleccionar mesas ocupadas
+        if (state.occupiedTables.includes(tableId)) {
+            showLuxToast('Esta mesa ya está ocupada en esa fecha y hora', 'error');
+            return;
+        }
 
         if (table.classList.contains('selected')) {
             // quitar la mesa si ya estaba seleccionada
@@ -318,6 +372,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!email) {
                 alert('Necesitas tener sesión iniciada para guardar la reserva.');
                 window.location.href = '/pages/login.html';
+                return;
+            }
+
+            // Validar que ninguna de las mesas seleccionadas esté ocupada (por seguridad)
+            const mesasOcupadas = state.selectedTables.filter(id => state.occupiedTables.includes(id));
+            if (mesasOcupadas.length > 0) {
+                showLuxToast(`Las mesas ${mesasOcupadas.join(', ')} ya no están disponibles. Selecciona otras.`, 'error');
+                resetReservationForm();
+                generateCalendar();
+                generateTables();
                 return;
             }
 

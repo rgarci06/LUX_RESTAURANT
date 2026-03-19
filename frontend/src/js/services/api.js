@@ -188,3 +188,22 @@ export const AdminService = {
         }
     }
 };
+
+// Servicio para obtener mesas disponibles
+export const MesasService = {
+    getOcupadas: async (fecha, hora) => {
+        try {
+            const url = `${API_URL}/mesas/disponibles?fecha=${fecha}&hora=${hora}`;
+            console.log('Consultando mesas disponibles:', url);
+            
+            const respuesta = await fetch(url);
+            const dades = await respuesta.json();
+            
+            console.log('Respuesta de mesas:', dades);
+            return { ok: respuesta.ok, status: respuesta.status, dades };
+        } catch (error) {
+            console.error('Error al obtener mesas:', error);
+            return { ok: false, status: 0, dades: { detail: error.message, ocupadas: [] } };
+        }
+    }
+};

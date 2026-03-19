@@ -324,6 +324,61 @@ def crear_reserva(reserva: ReservaPayload, authorization: str | None = Header(de
         raise HTTPException(status_code=400, detail=f"No se pudo guardar la reserva: {error_text}")
 
 
+@app.get("/api/mesas/disponibles")
+def get_mesas_disponibles(fecha: str, hora: str):
+    """
+    Endpoint para obtener qué mesas están ocupadas en una fecha y hora específica.
+    La fecha debe estar en formato YYYY-MM-DD y la hora en formato HH:mm.
+    Devuelve una lista de table IDs que YA ESTÁN OCUPADAS.
+    """
+    try:
+        # Validamos que los parámetros no sean vacíos
+        if not fecha or not hora:
+            return {"ok": False, "error": "Falta fecha o hora", "ocupadas": []}
+        
+        # Combinamos fecha y hora para crear el datetime de búsqueda: YYYY-MM-DDTHH:mm:00
+        reservation_datetime = f"{fecha}T{hora}:00"
+        
+        # Parseamos la fecha de entrada
+        dt_busqueda = _parse_iso_datetime(reservation_datetime)
+        if not dt_busqueda:
+            return {"ok": False, "error": "Formato de fecha/hora inválido", "ocupadas": []}
+
+        # Obtenemos TODAS las reservas de esa fecha y hora
+        respuesta = (
+            supabase
+            .table(SUPABASE_RESERVATIONS_TABLE)
+            .select(f"tables, {SUPABASE_RESERVATION_DATETIME_COLUMN}")
+            .execute()
+        )
+
+        rows = respuesta.data if isinstance(respuesta.data, list) else []
+
+        # Filtramos en Python para que coincidan EXACTAMENTE en fecha Y hora
+        ocupadas = []
+        for row in rows:
+            dt_fila = _parse_iso_datetime(row.get(SUPABASE_RESERVATION_DATETIME_COLUMN))
+            
+            # Comparamos año, mes, día, hora Y minuto exactamente
+            if (dt_fila and 
+                dt_fila.year == dt_busqueda.year and 
+                dt_fila.month == dt_busqueda.month and 
+                dt_fila.day == dt_busqueda.day and 
+                dt_fila.hour == dt_busqueda.hour and
+                dt_fila.minute == dt_busqueda.minute):
+                
+                # La mesa está ocupada en esa fecha/hora
+                table_id = row.get("tables")
+                if table_id is not None and table_id not in ocupadas:
+                    ocupadas.append(table_id)
+
+        return {"ok": True, "ocupadas": ocupadas}
+    
+    except Exception as e:
+        print(f"Error en /api/mesas/disponibles: {str(e)}")
+        return {"ok": False, "error": str(e), "ocupadas": []}
+
+
 @app.get("/api/admin/reservas")
 def admin_listar_reservas(authorization: str | None = Header(default=None)):
     try:
