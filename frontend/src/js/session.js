@@ -6,8 +6,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     const authLink = document.getElementById('auth-link');
     const mobileAuthLink = document.querySelector('.mobile-menu-overlay .mobile-btn');
-    const token = localStorage.getItem('lux_token') || sessionStorage.getItem('lux_token');
-    const email = localStorage.getItem('lux_email') || sessionStorage.getItem('lux_email');
+    const localToken = localStorage.getItem('lux_token');
+    const localEmail = localStorage.getItem('lux_email');
+    const sessionToken = sessionStorage.getItem('lux_token');
+    const sessionEmail = sessionStorage.getItem('lux_email');
+
+    // Forma simple: usar primero una sesión completa (token + email) del mismo storage.
+    const token = (localToken && localEmail) ? localToken : (sessionToken || localToken);
+    const email = (localToken && localEmail) ? localEmail : (sessionEmail || localEmail);
     const currentPath = window.location.pathname;
     const protectedRoutes = ['/pages/reserva.html'];
     const isProtectedRoute = protectedRoutes.some(route => currentPath.endsWith(route));
