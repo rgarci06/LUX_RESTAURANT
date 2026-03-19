@@ -70,3 +70,121 @@ export const ReservationService = {
         }
     }
 };
+
+export const AdminService = {
+    // Trae las reservas activas para el panel admin.
+    listReservations: async (token) => {
+        try {
+            const respuesta = await fetch(`${API_URL}/admin/reservas`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            const dades = await respuesta.json();
+            return { ok: respuesta.ok, status: respuesta.status, dades };
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
+        }
+    },
+
+    // Edita una reserva concreta por su id.
+    updateReservation: async (reservationId, payload, token) => {
+        try {
+            const respuesta = await fetch(`${API_URL}/admin/reservas/${reservationId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const dades = await respuesta.json();
+            return { ok: respuesta.ok, status: respuesta.status, dades };
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
+        }
+    },
+
+    // Elimina una reserva concreta por su id.
+    deleteReservation: async (reservationId, token) => {
+        try {
+            const respuesta = await fetch(`${API_URL}/admin/reservas/${reservationId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            const dades = await respuesta.json();
+            return { ok: respuesta.ok, status: respuesta.status, dades };
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
+        }
+    },
+
+    // Lista usuarios creados (para poder gestionarlos en admin).
+    listUsers: async (token) => {
+        try {
+            const respuesta = await fetch(`${API_URL}/admin/users`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            const dades = await respuesta.json();
+            return { ok: respuesta.ok, status: respuesta.status, dades };
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
+        }
+    },
+
+    // Cambia datos del usuario (por ejemplo el rol).
+    updateUser: async (userId, payload, token) => {
+        try {
+            const respuesta = await fetch(`${API_URL}/admin/users/${userId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const dades = await respuesta.json();
+            return { ok: respuesta.ok, status: respuesta.status, dades };
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
+        }
+    },
+
+    // Borra un usuario por id.
+    deleteUser: async (userId, token) => {
+        try {
+            const respuesta = await fetch(`${API_URL}/admin/users/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            const dades = await respuesta.json();
+            return { ok: respuesta.ok, status: respuesta.status, dades };
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
+        }
+    }
+};

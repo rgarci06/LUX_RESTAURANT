@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 storage.setItem("lux_email", emailInput.value);
                 
                 const rol = respuesta.dades.rol;
-                if (rol === "admin") window.location.href = "/pages/panel_admin.html";
+                if (rol === "admin") window.location.href = "/pages/admin.html";
                 else if (rol === "gestor") window.location.href = "/pages/panel_gestor.html";
                 else if (rol === "cambrer") window.location.href = "/pages/panel_cambrer.html";
                 else window.location.href = "/index.html"; 

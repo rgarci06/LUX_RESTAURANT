@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/src/assets/logo-sinfondo.png" />
+    <link rel="stylesheet" href="../src/css/style.css">
+    <link rel="stylesheet" href="../src/css/admin.css">
+    <title>Admin | LUX Restaurant</title>
+</head>
+<body>
+    <header id="navbar" class="main-header">
+        <div class="header-container">
+            <a href="../index.html" class="logo-group">
+                <img src="../src/assets/logo-sinfondo.png" alt="Logo">
+                <div class="logo-text">
+                    <span class="brand-lux">LUX</span>
+                    <span class="brand-rest">Restaurant</span>
+                </div>
+            </a>
+
+            <nav class="desktop-nav">
+                <a href="../index.html" class="nav-link">Inicio</a>
+                <a href="menu.html" class="nav-link">Menú</a>
+                <a href="ubicacion.html" class="nav-link">Ubicación</a>
+                <a href="#" class="nav-link active-link">Admin</a>
+            </nav>
+
+            <div class="header-actions">
+                <a href="login.html" id="auth-link" class="login-btn-header group">
+                    <span>ACCESO</span>
+                    <div class="icon-circle">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                    </div>
+                </a>
+                <button id="menu-btn" class="burger-btn">
+                    <svg id="icon-burger" class="icon-transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    <svg id="icon-close" class="icon-transition hidden-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div id="mobile-menu" class="mobile-menu-overlay">
+        <nav id="mobile-nav-content">
+            <img src="../src/assets/logo-sinfondo.png" class="mobile-logo" alt="Logo">
+            <a href="../index.html" class="mobile-link">INICIO</a>
+            <a href="menu.html" class="mobile-link">MENÚ</a>
+            <a href="ubicacion.html" class="mobile-link">UBICACIÓN</a>
+            <a href="#" class="mobile-link" style="color: #ffd700;">ADMIN</a>
+            <a href="login.html" class="btn-outline mobile-btn">ACCEDER</a>
+        </nav>
+    </div>
+
+    <!-- Panel principal del admin -->
+    <main class="admin-container">
+        <!-- Cabecera con título y buscador -->
+        <section class="admin-topbar">
+            <h1 class="font-luxury-title admin-title">Panel de Administración</h1>
+            <p class="font-luxury-serif admin-subtitle">Gestión rápida de reservas y usuarios</p>
+            <div class="admin-search-wrap">
+                <input id="admin-search" class="admin-search" type="text" placeholder="Buscar por email, fecha, id...">
+            </div>
+        </section>
+
+        <!-- Tarjeta de reservas -->
+        <section class="admin-card" id="card-reservas">
+            <div class="admin-card-header">
+                <h2 class="font-luxury-serif">Reservas activas (hoy y futuras)</h2>
+                <div class="admin-header-actions">
+                    <button id="btn-toggle-reservas" class="btn-outline btn-admin-small">Ocultar</button>
+                    <button id="btn-refresh-reservas" class="btn-outline btn-admin-small">Actualizar</button>
+                </div>
+            </div>
+            <div id="admin-reservas-info" class="admin-info"></div>
+            <div class="admin-table-wrap">
+                <table class="admin-table" id="admin-reservas-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha y hora</th>
+                            <th>Email</th>
+                            <th>Personas</th>
+                            <th>Mesa</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-reservas-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Tarjeta de usuarios -->
+        <section class="admin-card" id="card-users">
+            <div class="admin-card-header">
+                <h2 class="font-luxury-serif">Usuarios creados</h2>
+                <div class="admin-header-actions">
+                    <button id="btn-toggle-users" class="btn-outline btn-admin-small">Ocultar</button>
+                    <button id="btn-refresh-users" class="btn-outline btn-admin-small">Actualizar</button>
+                </div>
+            </div>
+            <div id="admin-users-info" class="admin-info"></div>
+            <div class="admin-table-wrap">
+                <table class="admin-table" id="admin-users-table">
+                    <thead>
+                        <tr>
+                            <th>Creado</th>
+                            <th>Email</th>
+                            <th>ID</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-users-body"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="../src/js/session.js"></script>
+    <script type="module" src="../src/js/main.js"></script>
+    <script type="module" src="../src/js/admin.js"></script>
+</body>
+</html>

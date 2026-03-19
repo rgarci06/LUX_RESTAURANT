@@ -4,24 +4,94 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Correo admin principal (fallback por si el rol no viene bien guardado)
+    const ADMIN_EMAIL = 'ddelpe@insdanielblanxart.cat';
+
     const authLink = document.getElementById('auth-link');
     const mobileAuthLink = document.querySelector('.mobile-menu-overlay .mobile-btn');
+    const desktopNav = document.querySelector('.desktop-nav');
+    const mobileNav = document.getElementById('mobile-nav-content');
     const localToken = localStorage.getItem('lux_token');
     const localEmail = localStorage.getItem('lux_email');
+    const localRol = localStorage.getItem('lux_rol');
     const sessionToken = sessionStorage.getItem('lux_token');
     const sessionEmail = sessionStorage.getItem('lux_email');
+    const sessionRol = sessionStorage.getItem('lux_rol');
 
     // Forma simple: usar primero una sesión completa (token + email) del mismo storage.
     const token = (localToken && localEmail) ? localToken : (sessionToken || localToken);
     const email = (localToken && localEmail) ? localEmail : (sessionEmail || localEmail);
+    const rol = (localToken && localEmail) ? (localRol || 'client') : (sessionRol || localRol || 'client');
     const currentPath = window.location.pathname;
-    const protectedRoutes = ['/pages/reserva.html'];
+    const protectedRoutes = ['/pages/reserva.html', '/pages/admin.html'];
     const isProtectedRoute = protectedRoutes.some(route => currentPath.endsWith(route));
+    const isAdminRoute = currentPath.endsWith('/pages/admin.html');
     const isAuthenticated = Boolean(token && email);
+    const isAdmin = rol === 'admin' || (email || '').toLowerCase() === ADMIN_EMAIL;
 
     if (isProtectedRoute && !isAuthenticated) {
         window.location.replace('/pages/login.html');
         return;
+    }
+
+    if (isAdminRoute && !isAdmin) {
+        window.location.replace('/index.html');
+        return;
+    }
+
+    function injectAdminLinks() {
+        if (!isAdmin) return;
+
+        const hasAdminTextLink = (container) => {
+            if (!container) return false;
+            return Array.from(container.querySelectorAll('a')).some((a) => {
+                const label = (a.textContent || '').trim().toLowerCase();
+                return label === 'admin';
+            });
+        };
+
+        const hasDesktopAdmin = desktopNav && (
+            desktopNav.querySelector('.admin-nav-link')
+            || Array.from(desktopNav.querySelectorAll('a')).some((a) => (a.getAttribute('href') || '').includes('/pages/admin.html'))
+            || hasAdminTextLink(desktopNav)
+        );
+
+        if (desktopNav && !hasDesktopAdmin) {
+            const adminLink = document.createElement('a');
+            adminLink.href = '/pages/admin.html';
+            adminLink.className = 'nav-link admin-nav-link';
+            adminLink.textContent = 'Admin';
+
+            if (currentPath.endsWith('/pages/admin.html')) {
+                adminLink.classList.add('active-link');
+            }
+
+            desktopNav.appendChild(adminLink);
+        }
+
+        const hasMobileAdmin = mobileNav && (
+            mobileNav.querySelector('.mobile-admin-link')
+            || Array.from(mobileNav.querySelectorAll('a')).some((a) => (a.getAttribute('href') || '').includes('/pages/admin.html'))
+            || hasAdminTextLink(mobileNav)
+        );
+
+        if (mobileNav && !hasMobileAdmin) {
+            const adminMobileLink = document.createElement('a');
+            adminMobileLink.href = '/pages/admin.html';
+            adminMobileLink.className = 'mobile-link mobile-admin-link';
+            adminMobileLink.textContent = 'ADMIN';
+
+            if (currentPath.endsWith('/pages/admin.html')) {
+                adminMobileLink.style.color = '#ffd700';
+            }
+
+            const insertBefore = mobileNav.querySelector('.mobile-btn');
+            if (insertBefore) {
+                mobileNav.insertBefore(adminMobileLink, insertBefore);
+            } else {
+                mobileNav.appendChild(adminMobileLink);
+            }
+        }
     }
 
     function logoutUser() {
@@ -37,6 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (authLink) {
+        injectAdminLinks();
+
         if (isAuthenticated) {
             // L'usuari TÉ sessió
             const nomUsuari = email.split('@')[0].toUpperCase();
