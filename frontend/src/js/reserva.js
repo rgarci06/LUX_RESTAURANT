@@ -1,6 +1,46 @@
+import { ReservationService } from './services/api.js';
+
 // sistema de reservas para el restaurante
 
 document.addEventListener('DOMContentLoaded', () => {
+    function showLuxToast(message, type = 'info', duration = 6000) {
+        let container = document.querySelector('.lux-toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'lux-toast-container';
+            document.body.appendChild(container);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `lux-toast lux-toast-${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+
+        requestAnimationFrame(() => toast.classList.add('show'));
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 250);
+        }, duration);
+    }
+
+    // Mapa base del salon: x e y son porcentajes dentro del contenedor .table-map.
+    // Ejemplo: x:25, y:20 coloca la mesa al 25% del ancho y 20% del alto.
+    const TABLE_LAYOUT = [
+        { id: 1, x: 25, y: 20, zone: 'gold' },
+        { id: 2, x: 43, y: 20, zone: 'gold' },
+        { id: 3, x: 61, y: 20, zone: 'gold' },
+        { id: 4, x: 79, y: 20, zone: 'gold' },
+        { id: 5, x: 25, y: 40, zone: 'gold' },
+        { id: 6, x: 43, y: 40, zone: 'gold' },
+        { id: 7, x: 61, y: 40, zone: 'gold' },
+        { id: 8, x: 79, y: 40, zone: 'gold' },
+        { id: 9, x: 25, y: 74, zone: 'gold' },
+        { id: 10, x: 43, y: 74, zone: 'gold' },
+        { id: 11, x: 61, y: 74, zone: 'gold' },
+        { id: 12, x: 79, y: 74, zone: 'gold' }
+    ];
+
     // aqui guardo toda la info de la reserva
     const state = {
         people: 2,
@@ -24,10 +64,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const stepTime = document.getElementById('step-time');
     const stepTables = document.getElementById('step-tables');
 
+    function getSessionEmail() {
+        return localStorage.getItem('lux_email') || sessionStorage.getItem('lux_email') || '';
+    }
+
+    function getSessionToken() {
+        return localStorage.getItem('lux_token') || sessionStorage.getItem('lux_token') || '';
+    }
+
+    // Convierte una fecha local a formato YYYY-MM-DD (sin desfases por zona horaria).
+    function formatDateLocal(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
     // paso 1: elegir cuanta gente va a venir
     function updatePeopleCount(delta) {
         state.people = Math.max(1, Math.min(20, state.people + delta));
         peopleCount.textContent = state.people;
+        state.selectedDate = null;
+        state.selectedTime = null;
         
         // calculo cuantas mesas necesitan segun la gente
         if (state.people <= 4) {
@@ -52,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             stepContact.classList.add('hidden');
             stepDate.classList.remove('hidden');
-            stepTime.classList.remove('hidden');
+            stepTime.classList.add('hidden');
             stepTables.classList.remove('hidden');
             generateCalendar();
             generateTables();
@@ -82,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.classList.add('day-card');
             if (!isOpen) card.classList.add('disabled');
-            card.dataset.date = date.toISOString().split('T')[0];
+            card.dataset.date = formatDateLocal(date);
             card.dataset.dayOfWeek = dayOfWeek;
 
             card.innerHTML = `
@@ -104,6 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.classList.add('selected');
         state.selectedDate = card.dataset.date;
         state.selectedTime = null;
+        stepTime.classList.remove('hidden');
         generateTimeSlots(dayOfWeek);
         validateForm();
     }
@@ -160,22 +219,40 @@ document.addEventListener('DOMContentLoaded', () => {
     // paso 4: escojer las mesas
     function generateTables() {
         tableMap.innerHTML = '';
+        tableMap.classList.add('real-map');
         state.selectedTables = [];
 
-        const totalTables = 12;
-        for (let i = 1; i <= totalTables; i++) {
+        // Elementos de distribución del salón.
+        const roomElements = [
+            { className: 'room-block room-main-aisle' },
+            { className: 'room-block room-bar-left', text: 'Barra' },
+            { className: 'room-door-label', text: 'Puerta' }
+        ];
+
+        roomElements.forEach(el => {
+            const block = document.createElement('div');
+            block.className = el.className;
+            if (el.text) {
+                block.textContent = el.text;
+            }
+            tableMap.appendChild(block);
+        });
+
+        TABLE_LAYOUT.forEach(item => {
             const table = document.createElement('div');
             table.classList.add('table-slot');
-            table.dataset.id = i;
+            table.classList.add(`zone-${item.zone}`);
+            table.dataset.id = item.id;
+            table.style.left = `${item.x}%`;
+            table.style.top = `${item.y}%`;
 
             table.innerHTML = `
-                <div class="table-number">Mesa ${i}</div>
-                <div class="table-capacity">4 personas</div>
+                <div class="table-number">${String(item.id).padStart(2, '0')}</div>
             `;
 
             table.addEventListener('click', () => selectTable(table));
             tableMap.appendChild(table);
-        }
+        });
 
         updateTableInstruction();
     }
@@ -223,28 +300,59 @@ document.addEventListener('DOMContentLoaded', () => {
         btnConfirm.disabled = !isValid;
     }
 
-    btnConfirm.addEventListener('click', () => {
+    function resetReservationForm() {
+        state.people = 2;
+        state.selectedDate = null;
+        state.selectedTime = null;
+        state.selectedTables = [];
+        state.maxTables = 1;
+        peopleCount.textContent = '2';
+        updatePeopleCount(0);
+    }
+
+    btnConfirm.addEventListener('click', async () => {
         if (!btnConfirm.disabled) {
+            const email = getSessionEmail();
+            const token = getSessionToken();
+
+            if (!email) {
+                alert('Necesitas tener sesión iniciada para guardar la reserva.');
+                window.location.href = '/pages/login.html';
+                return;
+            }
+
+            const reservationDateTime = `${state.selectedDate}T${state.selectedTime}:00`;
+
             // enviar a la base de datos
             const reservation = {
                 people: state.people,
-                date: state.selectedDate,
-                time: state.selectedTime,
-                tables: state.selectedTables
+                tables: state.selectedTables,
+                user_email: email,
+                reservationDatetime: reservationDateTime
             };
 
+            btnConfirm.disabled = true;
+            const previousButtonText = btnConfirm.textContent;
+            btnConfirm.textContent = 'Guardando...';
+
+            const result = await ReservationService.createReservation(reservation, token);
+
+            btnConfirm.textContent = previousButtonText;
+
             console.log('Reservation:', reservation);
-            alert(`¡Reserva confirmada!\n\nPersonas: ${state.people}\nFecha: ${state.selectedDate}\nHora: ${state.selectedTime}\nMesas: ${state.selectedTables.join(', ')}`);
-            
-            // reseteo el formulario para otra reserva
-            state.people = 2;
-            state.selectedDate = null;
-            state.selectedTime = null;
-            state.selectedTables = [];
-            state.maxTables = 1;
-            
-            peopleCount.textContent = '2';
-            updatePeopleCount(0);
+
+            if (result.ok) {
+                showLuxToast(
+                    `Reserva confirmada para ${state.selectedDate} a las ${state.selectedTime}. Mesas: ${state.selectedTables.join(', ')}`,
+                    'success',
+                    6000
+                );
+                resetReservationForm();
+                return;
+            }
+
+            alert(`No se pudo guardar la reserva: ${result.dades?.detail || 'Error desconocido'}`);
+            validateForm();
         }
     });
 

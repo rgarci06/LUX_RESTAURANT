@@ -8,9 +8,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileAuthLink = document.querySelector('.mobile-menu-overlay .mobile-btn');
     const token = localStorage.getItem('lux_token') || sessionStorage.getItem('lux_token');
     const email = localStorage.getItem('lux_email') || sessionStorage.getItem('lux_email');
+    const currentPath = window.location.pathname;
+    const protectedRoutes = ['/pages/reserva.html'];
+    const isProtectedRoute = protectedRoutes.some(route => currentPath.endsWith(route));
+    const isAuthenticated = Boolean(token && email);
+
+    if (isProtectedRoute && !isAuthenticated) {
+        window.location.replace('/pages/login.html');
+        return;
+    }
+
+    function logoutUser() {
+        localStorage.clear();
+        sessionStorage.clear();
+
+        if (isProtectedRoute) {
+            window.location.href = '/index.html';
+            return;
+        }
+
+        window.location.reload();
+    }
 
     if (authLink) {
-        if (token && email) {
+        if (isAuthenticated) {
             // L'usuari TÉ sessió
             const nomUsuari = email.split('@')[0].toUpperCase();
             
@@ -25,9 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
             authLink.href = "#";
             authLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.reload();
+                logoutUser();
             });
             
             // Ocultar el botón de acceso en móvil
@@ -45,9 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 mobileAuthLink.className = 'mobile-btn mobile-btn-logout';
                 mobileAuthLink.addEventListener('click', (e) => {
                     e.preventDefault();
-                    localStorage.clear();
-                    sessionStorage.clear();
-                    window.location.reload();
+                    logoutUser();
                 });
             }
         } else {
