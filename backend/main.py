@@ -17,7 +17,7 @@ app = FastAPI()
 # --- BLOC 1: CORS ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Permite que tanto Localhost como Vercel se conecten
+    allow_origins=["*"], # Ens podem connectar tant des de localhost com des de vercel
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -36,7 +36,7 @@ class UsuariLogin(BaseModel):
 class UsuariRegistre(BaseModel):
     email: str
     password: str
-    rol: str = "client" # Per defecte, tothom que es registra és "client"
+    rol: str = "client" # Per defecte, tothom que es registra és client
 
 class RecuperarPassword(BaseModel):
     email: str
@@ -54,7 +54,7 @@ def inici():
 @app.post("/api/register")
 def registrar(user: UsuariRegistre):
     try:
-        # PROFE, MIRA: Guardem el rol a les "metadata" de l'usuari
+        # Guardem el rol a les "metadata" de l'usuari
         respuesta = supabase.auth.sign_up({
             "email": user.email,
             "password": user.password,
