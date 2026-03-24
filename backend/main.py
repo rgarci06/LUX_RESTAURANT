@@ -200,6 +200,14 @@ class AdminReservaUpdate(BaseModel):
 class AdminUserUpdate(BaseModel):
     rol: str
 
+class RecuperarPassword(BaseModel):
+    email: str
+
+class ActualizarPassword(BaseModel):
+    token: str
+    refresh: str
+    password: str
+
 # --- BLOC 4: RUTES ---
 @app.get("/")
 def inici():
@@ -568,3 +576,35 @@ def admin_eliminar_usuario(user_id: str, authorization: str | None = Header(defa
         raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"No se pudo eliminar el usuario: {e}")
+    
+@app.post("/api/recuperar-password")
+def pedir_recuperacion(datos: RecuperarPassword):
+    try:
+        # URL TEMPORAL PARA LOCALHOST (Asegúrate de que el puerto sea el de tu Vite, ej: 5173)
+        url_destino = "http://localhost:5173/pages/recovery.html"
+        
+        supabase.auth.reset_password_email(
+            datos.email, 
+            options={"redirect_to": url_destino}
+        )
+        return {"mensaje": "Correo de recuperación enviado."}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Error al enviar el correo: " + str(e))
+
+@app.post("/api/actualizar-password")
+def cambiar_password(datos: ActualizarPassword):
+    try:
+        # A) Iniciamos una sesión temporal usando las dos llaves del correo
+        supabase.auth.set_session(datos.token, datos.refresh)
+        
+        # B) Ahora que Supabase sabe que somos nosotros, actualizamos la clave
+        supabase.auth.update_user({"password": datos.password})
+        
+        # C) Por seguridad, cerramos la sesión justo después
+        supabase.auth.sign_out()
+        
+        return {"mensaje": "Contraseña cambiada con éxito!"}
+    except Exception as e:
+        # Este print te mostrará el error exacto en la terminal negra de VS Code si falla
+        print(f"Error de Supabase: {str(e)}") 
+        raise HTTPException(status_code=400, detail="Error al cambiar clave: " + str(e))
