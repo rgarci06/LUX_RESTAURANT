@@ -130,16 +130,33 @@ document.addEventListener('DOMContentLoaded', () => {
         return user?.email || userId;
     }
 
-    // Filtra por texto libre (email, fecha, id, etc.)
-    function matchesSearch(item) {
+    // Filtra reservas por campos útiles, incluyendo email resuelto por user_id.
+    function matchesReservaSearch(reservation) {
         if (!state.search) return true;
-        const text = JSON.stringify(item).toLowerCase();
-        return text.includes(state.search);
+
+        const email = String(getReservationEmail(reservation) || '').toLowerCase();
+        const people = String(reservation.people || '').toLowerCase();
+        const table = String(reservation.tables || '').toLowerCase();
+        const datePretty = formatReservationDateHour(reservation.reservation_datetime || reservation.reservationDatetime).toLowerCase();
+
+        const searchable = [email, people, table, datePretty].join(' ');
+        return searchable.includes(state.search);
+    }
+
+    // Filtra usuarios por los campos visibles del listado.
+    function matchesUserSearch(user) {
+        if (!state.search) return true;
+
+        const email = String(user.email || '').toLowerCase();
+        const createdPretty = formatDate(user.created_at).toLowerCase();
+
+        const searchable = [email, createdPretty].join(' ');
+        return searchable.includes(state.search);
     }
 
     // Pinta la tabla de reservas.
     function renderReservas() {
-        const rows = state.reservas.filter(matchesSearch);
+        const rows = state.reservas.filter(matchesReservaSearch);
         reservasBody.innerHTML = rows.map((r) => `
             <tr>
                 <td>
@@ -179,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Pinta la tabla de usuarios.
     function renderUsers() {
-        const rows = state.users.filter(matchesSearch);
+        const rows = state.users.filter(matchesUserSearch);
         usersBody.innerHTML = rows.map((u) => {
             const email = u.email || '-';
             const created = formatDate(u.created_at);
@@ -187,7 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <tr>
                     <td>${escapeHtml(created)}</td>
                     <td>${escapeHtml(email)}</td>
-                    <td>${escapeHtml(u.id || '-')}</td>
                     <td>
                         <div class="admin-actions">
                             <button class="btn-table btn-table-danger" data-action="delete-user" data-id="${escapeHtml(u.id)}">Eliminar</button>
@@ -316,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Delegación de eventos para acciones de usuarios (rol / eliminar).
+    // Delegación de eventos para eliminar usuarios.
     usersBody?.addEventListener('click', async (e) => {
         const btn = e.target.closest('button');
         if (!btn) return;

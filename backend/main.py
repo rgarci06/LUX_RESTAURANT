@@ -173,7 +173,7 @@ def _admin_rest_request(method: str, path: str, body: dict | None = None) -> dic
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error en llamada admin auth: {e}")
 
-# --- BLOC 3: MODELS ---
+# Estructura dels models
 class UsuariLogin(BaseModel):
     email: str
     password: str
@@ -405,8 +405,6 @@ def admin_listar_reservas(authorization: str | None = Header(default=None)):
         )
 
         rows = respuesta.data if isinstance(respuesta.data, list) else []
-
-        # Filtramos en Python para evitar problemas de formato/zonas horarias en el gte.
         active_rows = []
         old_ids = []
 
