@@ -1,0 +1,159 @@
+/* ========================================= */
+/* MASTER LEGAL STYLES - LUXURY         */
+/* ========================================= */
+
+:root {
+    --gold-primary: #d4af37;
+    --gold-light: #fef08a;
+    --gold-dark: #a16207;
+    --bg-dark: #0a0a0a;
+    --bg-card: rgba(26, 26, 26, 0.85);
+    --text-main: #cccccc;
+    --text-bright: #ffffff;
+    --font-serif: 'Cinzel', serif;
+    --font-accent: 'Cormorant Garamond', serif;
+}
+
+/* 1. ESTRUCTURA Y CONTENEDOR PRINCIPAL */
+.legal-container { 
+    padding: 140px 20px 80px; 
+    max-width: 950px; 
+    margin: 0 auto; 
+    animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 2. TIPOGRAFÍA Y TÍTULOS */
+.legal-title { 
+    text-align: center;
+    margin-bottom: 15px; 
+    font-size: clamp(32px, 5vw, 48px);
+    font-family: var(--font-serif);
+    background: linear-gradient(to bottom, var(--gold-light), var(--gold-primary), var(--gold-dark));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+
+.legal-subtitle {
+    text-align: center;
+    font-size: 18px;
+    color: var(--gold-primary);
+    font-style: italic;
+    margin-bottom: 60px;
+    font-family: var(--font-accent);
+    opacity: 0.8;
+}
+
+/* 3. DISEÑO DE TARJETAS (SECCIONES) */
+.legal-card {
+    margin-bottom: 40px;
+    padding: 45px;
+    background: var(--bg-card);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.legal-card:hover {
+    border-color: rgba(212, 175, 55, 0.4);
+    transform: translateY(-5px);
+}
+
+/* 4. ENCABEZADOS DE SECCIÓN */
+.legal-section-title {
+    font-size: 22px;
+    color: var(--gold-primary);
+    margin-bottom: 25px;
+    letter-spacing: 0.15em;
+    font-family: var(--font-serif);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.legal-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(212, 175, 55, 0.3), transparent);
+}
+
+.legal-card h3 {
+    font-size: 18px;
+    color: var(--text-bright);
+    margin-top: 30px;
+    margin-bottom: 15px;
+    font-family: var(--font-serif);
+    letter-spacing: 1px;
+}
+
+/* 5. CUERPO DE TEXTO Y LISTAS */
+.legal-card p {
+    color: var(--text-main);
+    line-height: 1.8;
+    margin-bottom: 20px;
+    font-size: 16px;
+    text-align: justify;
+}
+
+.legal-card ul {
+    margin: 25px 0;
+    padding-left: 5px;
+    list-style: none;
+}
+
+.legal-card li {
+    color: #bbbbbb;
+    margin-bottom: 12px;
+    position: relative;
+    padding-left: 30px;
+    font-size: 15px;
+}
+
+.legal-card li::before {
+    content: '◈';
+    color: var(--gold-primary);
+    position: absolute;
+    left: 0;
+    font-size: 14px;
+}
+
+/* 6. ENLACES DENTRO DEL TEXTO */
+.legal-card a {
+    color: var(--gold-primary);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: 0.3s;
+}
+
+.legal-card a:hover {
+    border-bottom-color: var(--gold-primary);
+    text-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
+}
+
+/* 7. PIE DE PÁGINA LEGAL */
+.legal-footer-date {
+    text-align: center;
+    font-size: 12px;
+    color: #555555;
+    margin-top: 60px;
+    font-family: var(--font-serif);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+/* 8. RESPONSIVIDAD */
+@media (max-width: 768px) {
+    .legal-container { padding-top: 100px; }
+    .legal-card { padding: 30px 20px; }
+    .legal-section-title { font-size: 18px; }
+}
