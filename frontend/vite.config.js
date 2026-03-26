@@ -17,6 +17,9 @@ export default defineConfig({
         reservas: resolve(__dirname, 'pages/reserva.html'),
         admin: resolve(__dirname, 'pages/admin.html'),
         recovery: resolve(__dirname, 'pages/recovery.html'),
+        cookies: resolve(__dirname, 'pages/politica-cookies.html'),
+        privacidad: resolve(__dirname, 'pages/politica-privacidad.html'),
+        aviso: resolve(__dirname, 'pages/aviso-legal.html'),
         // Si crees més pàgines, afegeix-les aquí sota
       },
     },
