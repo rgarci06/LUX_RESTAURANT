@@ -141,6 +141,11 @@
     max-width: 90px;
 }
 
+.admin-role-select {
+    min-width: 130px;
+    text-transform: lowercase;
+}
+
 .admin-inline-input:focus {
     outline: none;
     border-color: #d4af37;

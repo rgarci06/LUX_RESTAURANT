@@ -114,6 +114,24 @@ def _require_admin(authorization: str | None) -> tuple[str, dict]:
     return token, payload
 
 
+def _require_reservas_manager(authorization: str | None) -> tuple[str, dict]:
+    # Permite gestionar reservas a admin y camarero.
+    token = _extract_bearer_token(authorization)
+    if not token:
+        raise HTTPException(status_code=401, detail="Necesitas iniciar sesion")
+
+    payload = _decode_jwt_payload(token)
+    email = str(payload.get("email", "")).strip().lower()
+    user_metadata = payload.get("user_metadata") or {}
+    app_metadata = payload.get("app_metadata") or {}
+    rol = str(user_metadata.get("rol") or app_metadata.get("rol") or "").strip().lower()
+
+    if email == ADMIN_EMAIL or rol in {"admin", "camarero", "cambrer"}:
+        return token, payload
+
+    raise HTTPException(status_code=403, detail="No tienes permisos para gestionar reservas")
+
+
 def _parse_iso_datetime(value: str | None) -> datetime | None:
     if not value:
         return None
@@ -401,8 +419,8 @@ def get_mesas_disponibles(fecha: str, hora: str):
 @app.get("/api/admin/reservas")
 def admin_listar_reservas(authorization: str | None = Header(default=None)):
     try:
-        # Solo admin puede ver esta información.
-        _require_admin(authorization)
+        # Admin y camarero pueden ver/gestionar reservas.
+        _require_reservas_manager(authorization)
         now_utc = datetime.now(timezone.utc)
         today_start_utc = now_utc.replace(hour=0, minute=0, second=0, microsecond=0)
 
@@ -442,6 +460,40 @@ def admin_listar_reservas(authorization: str | None = Header(default=None)):
             reverse=False
         )
 
+        # Para mostrar el email también a camarero sin exponer la tabla de usuarios,
+        # resolvemos user_id -> email en backend y lo añadimos al payload de reservas.
+        user_ids = {
+            str(row.get(SUPABASE_USER_ID_COLUMN)).strip()
+            for row in active_rows
+            if row.get(SUPABASE_USER_ID_COLUMN)
+            and not row.get("user_email")
+            and not row.get("userEmail")
+        }
+
+        if user_ids:
+            try:
+                users_response = _admin_rest_request("GET", "/admin/users?page=1&per_page=1000")
+                users = users_response.get("users", []) if isinstance(users_response, dict) else []
+                email_by_id = {}
+
+                for user in users:
+                    if not isinstance(user, dict):
+                        continue
+                    user_id = str(user.get("id") or "").strip()
+                    user_email = str(user.get("email") or "").strip()
+                    if user_id and user_email:
+                        email_by_id[user_id] = user_email
+
+                for row in active_rows:
+                    if row.get("user_email") or row.get("userEmail"):
+                        continue
+                    uid = str(row.get(SUPABASE_USER_ID_COLUMN) or "").strip()
+                    if uid and uid in email_by_id:
+                        row["user_email"] = email_by_id[uid]
+            except Exception:
+                # Si falla la resolución de emails, no rompemos el listado de reservas.
+                pass
+
         return {"ok": True, "data": active_rows}
     except HTTPException:
         raise
@@ -452,8 +504,8 @@ def admin_listar_reservas(authorization: str | None = Header(default=None)):
 @app.patch("/api/admin/reservas/{reservation_id}")
 def admin_editar_reserva(reservation_id: str, payload: AdminReservaUpdate, authorization: str | None = Header(default=None)):
     try:
-        # Validación de admin antes de editar.
-        _require_admin(authorization)
+        # Admin y camarero pueden editar reservas.
+        _require_reservas_manager(authorization)
 
         # Solo actualizamos campos que realmente llegan en la petición.
         update_data = {}
@@ -487,8 +539,8 @@ def admin_editar_reserva(reservation_id: str, payload: AdminReservaUpdate, autho
 @app.delete("/api/admin/reservas/{reservation_id}")
 def admin_eliminar_reserva(reservation_id: str, authorization: str | None = Header(default=None)):
     try:
-        # Validación de admin antes de borrar.
-        _require_admin(authorization)
+        # Admin y camarero pueden eliminar reservas.
+        _require_reservas_manager(authorization)
         respuesta = (
             supabase
             .table(SUPABASE_RESERVATIONS_TABLE)
@@ -506,7 +558,7 @@ def admin_eliminar_reserva(reservation_id: str, authorization: str | None = Head
 @app.patch("/api/admin/reservas/grupo/update")
 def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, authorization: str | None = Header(default=None)):
     try:
-        _require_admin(authorization)
+        _require_reservas_manager(authorization)
 
         reservation_ids = [str(rid).strip() for rid in payload.ids if str(rid).strip()]
         if not reservation_ids:
@@ -631,7 +683,7 @@ def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, authorization: 
 @app.post("/api/admin/reservas/grupo/delete")
 def admin_eliminar_reserva_grupo(payload: AdminReservaGroupDelete, authorization: str | None = Header(default=None)):
     try:
-        _require_admin(authorization)
+        _require_reservas_manager(authorization)
 
         reservation_ids = [str(rid).strip() for rid in payload.ids if str(rid).strip()]
         if not reservation_ids:
@@ -703,7 +755,10 @@ def admin_editar_usuario(user_id: str, payload: AdminUserUpdate, authorization: 
         # Validación de admin antes de editar usuario.
         _require_admin(authorization)
         rol = payload.rol.strip().lower()
-        if rol not in {"admin", "client", "gestor", "cambrer"}:
+        if rol == "cambrer":
+            rol = "camarero"
+
+        if rol not in {"admin", "client", "camarero"}:
             raise HTTPException(status_code=400, detail="Rol no valido")
 
         respuesta = _admin_rest_request(

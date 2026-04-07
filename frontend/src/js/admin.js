@@ -1,9 +1,6 @@
 import { AdminService } from './services/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Este es el correo admin "fijo" por si el rol no llega bien en el storage.
-    const ADMIN_EMAIL = 'ddelpe@insdanielblanxart.cat';
-
     // Cogemos referencias del HTML para no repetir document.getElementById todo el rato.
     const searchInput = document.getElementById('admin-search');
     const reservasBody = document.getElementById('admin-reservas-body');
@@ -28,14 +25,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Elegimos primero una sesión completa del mismo sitio (token + email).
     const hasFullLocal = Boolean(localToken && localEmail);
     const token = hasFullLocal ? localToken : (sessionToken || localToken);
-    const email = hasFullLocal ? localEmail : (sessionEmail || localEmail);
-    const rol = hasFullLocal ? localRol : (sessionRol || localRol || '');
-    const isAdmin = rol === 'admin' || email.toLowerCase() === ADMIN_EMAIL;
+    const rol = (hasFullLocal ? localRol : (sessionRol || localRol || '')).toLowerCase();
+    const isAdmin = rol === 'admin';
+    const isCamarero = rol === 'camarero' || rol === 'cambrer';
+    const canManageReservas = isAdmin || isCamarero;
 
-    // Si no tiene token o no es admin, no puede entrar al panel.
-    if (!token || !isAdmin) {
+    // Si no tiene token o no tiene permisos de reservas, no puede entrar al panel.
+    if (!token || !canManageReservas) {
         window.location.href = '/pages/login.html';
         return;
+    }
+
+    if (!isAdmin && cardUsers) {
+        cardUsers.style.display = 'none';
     }
 
     // Estado simple para guardar datos cargados y el texto del buscador.
@@ -214,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!userId) return '-';
 
         const user = state.users.find((u) => String(u.id) === String(userId));
-        return user?.email || userId;
+        return user?.email || '-';
     }
 
     // Filtra reservas por campos útiles, incluyendo email resuelto por user_id.
@@ -236,9 +238,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const email = String(user.email || '').toLowerCase();
         const createdPretty = formatDate(user.created_at).toLowerCase();
+        const role = String(user.rol || '').toLowerCase();
 
-        const searchable = [email, createdPretty].join(' ');
+        const searchable = [email, createdPretty, role].join(' ');
         return searchable.includes(state.search);
+    }
+
+    function normalizeRole(role) {
+        const normalized = String(role || '').trim().toLowerCase();
+        if (normalized === 'cambrer') return 'camarero';
+        return normalized || 'client';
     }
 
     // Pinta la tabla de reservas.
@@ -285,16 +294,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Pinta la tabla de usuarios.
     function renderUsers() {
+        if (!isAdmin) {
+            usersBody.innerHTML = '';
+            if (usersInfo) usersInfo.textContent = '';
+            return;
+        }
+
         const rows = state.users.filter(matchesUserSearch);
         usersBody.innerHTML = rows.map((u) => {
             const email = u.email || '-';
             const created = formatDate(u.created_at);
+            const role = normalizeRole(u.rol);
+
             return `
                 <tr>
                     <td>${escapeHtml(created)}</td>
                     <td>${escapeHtml(email)}</td>
                     <td>
+                        <select class="admin-inline-input admin-role-select" data-field="user-role" data-id="${escapeHtml(u.id)}">
+                            <option value="client" ${role === 'client' ? 'selected' : ''}>client</option>
+                            <option value="camarero" ${role === 'camarero' ? 'selected' : ''}>camarero</option>
+                            <option value="admin" ${role === 'admin' ? 'selected' : ''}>admin</option>
+                        </select>
+                    </td>
+                    <td>
                         <div class="admin-actions">
+                            <button class="btn-table" data-action="save-user-role" data-id="${escapeHtml(u.id)}">Guardar rol</button>
                             <button class="btn-table btn-table-danger" data-action="delete-user" data-id="${escapeHtml(u.id)}">Eliminar</button>
                         </div>
                     </td>
@@ -321,6 +346,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Carga usuarios desde el backend.
     async function loadUsers() {
+        if (!isAdmin) return;
+
         const result = await AdminService.listUsers(token);
         if (!result.ok) {
             if (usersInfo) {
@@ -345,7 +372,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Botones para recargar datos.
     btnRefreshReservas?.addEventListener('click', loadReservas);
-    btnRefreshUsers?.addEventListener('click', loadUsers);
+    btnRefreshUsers?.addEventListener('click', () => {
+        if (!isAdmin) return;
+        loadUsers();
+    });
 
     btnToggleReservas?.addEventListener('click', () => {
         state.collapsedReservas = !state.collapsedReservas;
@@ -456,8 +486,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const btn = e.target.closest('button');
         if (!btn) return;
 
+        if (!isAdmin) return;
+
         const userId = btn.dataset.id;
         const action = btn.dataset.action;
+
+        if (action === 'save-user-role') {
+            const roleInput = usersBody.querySelector(`select[data-field="user-role"][data-id="${userId}"]`);
+            const selectedRole = normalizeRole(roleInput?.value || 'client');
+
+            const result = await AdminService.updateUser(userId, { rol: selectedRole }, token);
+            if (!result.ok) {
+                alert(result.dades?.detail || 'No se pudo actualizar el rol del usuario.');
+                return;
+            }
+
+            await loadUsers();
+            return;
+        }
 
         if (action === 'delete-user') {
             if (!confirm('¿Seguro que quieres eliminar este usuario?')) return;
@@ -470,6 +516,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Carga inicial del panel.
     loadReservas();
-    loadUsers();
+    if (isAdmin) {
+        loadUsers();
+    }
     syncCollapseUi();
 });

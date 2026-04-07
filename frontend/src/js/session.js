@@ -27,20 +27,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const isProtectedRoute = protectedRoutes.some(route => currentPath.endsWith(route));
     const isAdminRoute = currentPath.endsWith('/pages/admin.html');
     const isAuthenticated = Boolean(token && email);
-    const isAdmin = rol === 'admin' || (email || '').toLowerCase() === ADMIN_EMAIL;
+    const normalizedRole = String(rol || '').toLowerCase();
+    const isAdmin = normalizedRole === 'admin' || (email || '').toLowerCase() === ADMIN_EMAIL;
+    const isCamarero = normalizedRole === 'camarero' || normalizedRole === 'cambrer';
+    const canManageReservas = isAdmin || isCamarero;
 
     if (isProtectedRoute && !isAuthenticated) {
         window.location.replace('/pages/login.html');
         return;
     }
 
-    if (isAdminRoute && !isAdmin) {
+    if (isAdminRoute && !canManageReservas) {
         window.location.replace('/index.html');
         return;
     }
 
     function injectAdminLinks() {
-        if (!isAdmin) return;
+        if (!canManageReservas) return;
 
         const hasAdminTextLink = (container) => {
             if (!container) return false;
