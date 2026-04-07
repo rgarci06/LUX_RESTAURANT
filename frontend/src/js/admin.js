@@ -43,10 +43,97 @@ document.addEventListener('DOMContentLoaded', () => {
         reservas: [],
         users: [],
         search: '',
-        editingReservaId: null,
+        editingReservaGroupKey: null,
         collapsedReservas: false,
         collapsedUsers: false
     };
+
+    function getReservationId(reservation) {
+        return String(
+            reservation?.id
+            ?? reservation?.reservation_id
+            ?? reservation?.reservationId
+            ?? ''
+        );
+    }
+
+    function getReservationDateRaw(reservation) {
+        return reservation?.reservation_datetime || reservation?.reservationDatetime || '';
+    }
+
+    function getReservationUserRef(reservation) {
+        return String(reservation?.user_id || reservation?.userId || getReservationEmail(reservation) || '-');
+    }
+
+    function buildReservationGroupKey(reservation) {
+        const userRef = getReservationUserRef(reservation);
+        const dateRaw = getReservationDateRaw(reservation);
+        const people = String(reservation?.people ?? '');
+        return `${userRef}__${dateRaw}__${people}`;
+    }
+
+    // Agrupa filas de reservas que pertenecen a la misma reserva lógica (multi-mesa).
+    function groupReservations(rows) {
+        const groups = new Map();
+
+        rows.forEach((row) => {
+            const groupKey = buildReservationGroupKey(row);
+            const rowId = getReservationId(row);
+            const tableValue = row.tables;
+
+            if (!groups.has(groupKey)) {
+                groups.set(groupKey, {
+                    groupKey,
+                    ids: [],
+                    tables: [],
+                    rows: [],
+                    people: row.people,
+                    reservationDatetime: getReservationDateRaw(row),
+                    userEmail: getReservationEmail(row)
+                });
+            }
+
+            const group = groups.get(groupKey);
+            if (rowId) {
+                group.ids.push(rowId);
+            }
+
+            if (tableValue !== null && tableValue !== undefined && tableValue !== '') {
+                group.tables.push(tableValue);
+            }
+
+            group.rows.push(row);
+        });
+
+        return Array.from(groups.values()).map((group) => {
+            const uniqueTables = [...new Set(group.tables.map((t) => String(t)))];
+            return {
+                ...group,
+                tableCount: uniqueTables.length,
+                tablesText: uniqueTables.join(', ')
+            };
+        });
+    }
+
+    function parseTablesInput(value) {
+        const raw = String(value || '').trim();
+        if (!raw) return [];
+
+        const tokens = raw.split(/[\s,;]+/).filter(Boolean);
+        const unique = [];
+        const seen = new Set();
+
+        tokens.forEach((token) => {
+            const parsed = Number(token);
+            if (!Number.isInteger(parsed) || parsed < 1 || seen.has(parsed)) {
+                return;
+            }
+            seen.add(parsed);
+            unique.push(parsed);
+        });
+
+        return unique;
+    }
 
     // Actualiza visualmente si un bloque está abierto o cerrado.
     function syncCollapseUi() {
@@ -131,15 +218,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Filtra reservas por campos útiles, incluyendo email resuelto por user_id.
-    function matchesReservaSearch(reservation) {
+    function matchesReservaSearch(group) {
         if (!state.search) return true;
 
-        const email = String(getReservationEmail(reservation) || '').toLowerCase();
-        const people = String(reservation.people || '').toLowerCase();
-        const table = String(reservation.tables || '').toLowerCase();
-        const datePretty = formatReservationDateHour(reservation.reservation_datetime || reservation.reservationDatetime).toLowerCase();
+        const email = String(group.userEmail || '').toLowerCase();
+        const people = String(group.people || '').toLowerCase();
+        const tables = String(group.tablesText || '').toLowerCase();
+        const datePretty = formatReservationDateHour(group.reservationDatetime).toLowerCase();
 
-        const searchable = [email, people, table, datePretty].join(' ');
+        const searchable = [email, people, tables, datePretty].join(' ');
         return searchable.includes(state.search);
     }
 
@@ -156,42 +243,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Pinta la tabla de reservas.
     function renderReservas() {
-        const rows = state.reservas.filter(matchesReservaSearch);
-        reservasBody.innerHTML = rows.map((r) => `
+        const groupedRows = groupReservations(state.reservas).filter(matchesReservaSearch);
+
+        reservasBody.innerHTML = groupedRows.map((group) => `
             <tr>
                 <td>
-                    ${state.editingReservaId === String(r.id)
-                        ? `<input class="admin-inline-input" type="datetime-local" data-field="reservationDatetime" data-id="${escapeHtml(r.id)}" value="${escapeHtml(toDateTimeLocalValue(r.reservation_datetime || r.reservationDatetime))}">`
-                        : escapeHtml(formatReservationDateHour(r.reservation_datetime || r.reservationDatetime))}
+                    ${state.editingReservaGroupKey === group.groupKey
+                        ? `<input class="admin-inline-input" type="datetime-local" data-field="reservationDatetime" data-group="${escapeHtml(group.groupKey)}" value="${escapeHtml(toDateTimeLocalValue(group.reservationDatetime))}">`
+                        : escapeHtml(formatReservationDateHour(group.reservationDatetime))}
                 </td>
-                <td>${escapeHtml(getReservationEmail(r))}</td>
+                <td>${escapeHtml(group.userEmail)}</td>
                 <td>
-                    ${state.editingReservaId === String(r.id)
-                        ? `<input class="admin-inline-input admin-inline-input-small" type="number" min="1" max="20" data-field="people" data-id="${escapeHtml(r.id)}" value="${escapeHtml(r.people)}">`
-                        : escapeHtml(r.people)}
+                    ${state.editingReservaGroupKey === group.groupKey
+                        ? `<input class="admin-inline-input admin-inline-input-small" type="number" min="1" max="20" data-field="people" data-group="${escapeHtml(group.groupKey)}" value="${escapeHtml(group.people)}">`
+                        : escapeHtml(group.people)}
                 </td>
                 <td>
-                    ${state.editingReservaId === String(r.id)
-                        ? `<input class="admin-inline-input admin-inline-input-small" type="number" min="1" max="30" data-field="tables" data-id="${escapeHtml(r.id)}" value="${escapeHtml(r.tables)}">`
-                        : escapeHtml(r.tables)}
+                    ${state.editingReservaGroupKey === group.groupKey
+                        ? `<input class="admin-inline-input" type="text" data-field="tables" data-group="${escapeHtml(group.groupKey)}" value="${escapeHtml(group.tablesText || '')}" placeholder="Ej: 1,2,3">`
+                        : escapeHtml(group.tablesText || '-')}
                 </td>
                 <td>
                     <div class="admin-actions">
-                        ${state.editingReservaId === String(r.id)
+                        ${state.editingReservaGroupKey === group.groupKey
                             ? `
-                                <button class="btn-table" data-action="save-edit-reserva" data-id="${escapeHtml(r.id)}">Guardar</button>
-                                <button class="btn-table" data-action="cancel-edit-reserva" data-id="${escapeHtml(r.id)}">Cancelar</button>
+                                <button class="btn-table" data-action="save-edit-reserva" data-group="${escapeHtml(group.groupKey)}">Guardar</button>
+                                <button class="btn-table" data-action="cancel-edit-reserva" data-group="${escapeHtml(group.groupKey)}">Cancelar</button>
                               `
                             : `
-                                <button class="btn-table" data-action="edit-reserva" data-id="${escapeHtml(r.id)}">Editar</button>
-                                <button class="btn-table btn-table-danger" data-action="delete-reserva" data-id="${escapeHtml(r.id)}">Eliminar</button>
+                                <button class="btn-table" data-action="edit-reserva" data-group="${escapeHtml(group.groupKey)}">Editar</button>
+                                <button class="btn-table btn-table-danger" data-action="delete-reserva" data-group="${escapeHtml(group.groupKey)}">Eliminar</button>
                               `}
                     </div>
                 </td>
             </tr>
         `).join('');
 
-        reservasInfo.textContent = `${rows.length} reservas visibles`;
+        const totalTables = groupedRows.reduce((acc, row) => acc + row.tableCount, 0);
+        reservasInfo.textContent = `${groupedRows.length} reservas visibles (${totalTables} mesas)`;
     }
 
     // Pinta la tabla de usuarios.
@@ -226,6 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         state.reservas = Array.isArray(result.dades?.data) ? result.dades.data : [];
+        state.editingReservaGroupKey = null;
         renderReservas();
     }
 
@@ -272,44 +362,55 @@ document.addEventListener('DOMContentLoaded', () => {
         const btn = e.target.closest('button');
         if (!btn) return;
 
-        const id = btn.dataset.id;
+        const groupKey = btn.dataset.group;
         const action = btn.dataset.action;
+        const grouped = groupReservations(state.reservas);
+        const targetGroup = grouped.find((g) => g.groupKey === groupKey);
+
+        if (!targetGroup) return;
 
         if (action === 'delete-reserva') {
             if (!confirm('¿Seguro que quieres eliminar esta reserva?')) return;
-            await AdminService.deleteReservation(id, token);
+
+            const idsToDelete = targetGroup.ids;
+            if (!idsToDelete.length) {
+                alert('No se pudo identificar la reserva para eliminarla.');
+                return;
+            }
+
+            const result = await AdminService.deleteReservationGroup(idsToDelete, token);
+            if (!result.ok) {
+                alert(result.dades?.detail || 'No se pudo eliminar la reserva.');
+                return;
+            }
+
             await loadReservas();
             return;
         }
 
         if (action === 'edit-reserva') {
-            state.editingReservaId = String(id);
+            state.editingReservaGroupKey = targetGroup.groupKey;
             renderReservas();
             return;
         }
 
         if (action === 'cancel-edit-reserva') {
-            state.editingReservaId = null;
+            state.editingReservaGroupKey = null;
             renderReservas();
             return;
         }
 
         if (action === 'save-edit-reserva') {
-            const peopleInput = reservasBody.querySelector(`input[data-field="people"][data-id="${id}"]`);
-            const tableInput = reservasBody.querySelector(`input[data-field="tables"][data-id="${id}"]`);
-            const datetimeInput = reservasBody.querySelector(`input[data-field="reservationDatetime"][data-id="${id}"]`);
+            const peopleInput = reservasBody.querySelector(`input[data-field="people"][data-group="${groupKey}"]`);
+            const datetimeInput = reservasBody.querySelector(`input[data-field="reservationDatetime"][data-group="${groupKey}"]`);
+            const tablesInput = reservasBody.querySelector(`input[data-field="tables"][data-group="${groupKey}"]`);
 
             const peopleValue = Number(peopleInput?.value || 0);
-            const tableValue = Number(tableInput?.value || 0);
             const dateRaw = datetimeInput?.value || '';
+            const tablesValue = parseTablesInput(tablesInput?.value || '');
 
             if (!peopleValue || peopleValue < 1) {
                 alert('Personas no válidas.');
-                return;
-            }
-
-            if (!tableValue || tableValue < 1) {
-                alert('Mesa no válida.');
                 return;
             }
 
@@ -318,16 +419,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            if (!tablesValue.length) {
+                alert('Mesas no válidas. Usa números separados por coma.');
+                return;
+            }
+
             // Convertimos a ISO para que backend/supabase lo guarde bien con zona horaria.
             const isoDate = new Date(dateRaw).toISOString();
+            const idsToUpdate = targetGroup.ids;
 
-            await AdminService.updateReservation(id, {
+            if (!idsToUpdate.length) {
+                alert('No se pudo identificar la reserva para editarla.');
+                return;
+            }
+
+            const payload = {
+                ids: idsToUpdate,
                 people: peopleValue,
-                tables: tableValue,
-                reservationDatetime: isoDate
-            }, token);
+                reservationDatetime: isoDate,
+                tables: tablesValue
+            };
 
-            state.editingReservaId = null;
+            const result = await AdminService.updateReservationGroup(payload, token);
+            if (!result.ok) {
+                alert(result.dades?.detail || 'No se pudo actualizar la reserva.');
+                return;
+            }
+
+            state.editingReservaGroupKey = null;
             await loadReservas();
         }
     });

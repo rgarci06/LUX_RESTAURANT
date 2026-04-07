@@ -197,6 +197,17 @@ class AdminReservaUpdate(BaseModel):
     user_email: str | None = None
 
 
+class AdminReservaGroupUpdate(BaseModel):
+    ids: list[str]
+    people: int | None = None
+    reservationDatetime: str | None = None
+    tables: list[int] | None = None
+
+
+class AdminReservaGroupDelete(BaseModel):
+    ids: list[str]
+
+
 class AdminUserUpdate(BaseModel):
     rol: str
 
@@ -490,6 +501,155 @@ def admin_eliminar_reserva(reservation_id: str, authorization: str | None = Head
         raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"No se pudo eliminar la reserva: {e}")
+
+
+@app.patch("/api/admin/reservas/grupo/update")
+def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, authorization: str | None = Header(default=None)):
+    try:
+        _require_admin(authorization)
+
+        reservation_ids = [str(rid).strip() for rid in payload.ids if str(rid).strip()]
+        if not reservation_ids:
+            raise HTTPException(status_code=400, detail="Debes enviar al menos un id de reserva")
+
+        update_data = {}
+        if payload.people is not None:
+            update_data["people"] = payload.people
+        if payload.reservationDatetime:
+            update_data[SUPABASE_RESERVATION_DATETIME_COLUMN] = payload.reservationDatetime
+
+        rows_response = (
+            supabase
+            .table(SUPABASE_RESERVATIONS_TABLE)
+            .select("*")
+            .in_(SUPABASE_RESERVATION_ID_COLUMN, reservation_ids)
+            .execute()
+        )
+        rows = rows_response.data if isinstance(rows_response.data, list) else []
+
+        if not rows:
+            raise HTTPException(status_code=404, detail="No se encontraron reservas para editar")
+
+        # Conservamos el orden original de ids para que mesas se reasignen de forma estable.
+        by_id = {str(row.get(SUPABASE_RESERVATION_ID_COLUMN)): row for row in rows}
+        ordered_rows = [by_id[rid] for rid in reservation_ids if rid in by_id]
+        if not ordered_rows:
+            ordered_rows = rows
+
+        if payload.tables is None:
+            if not update_data:
+                raise HTTPException(status_code=400, detail="No hay campos para actualizar")
+
+            respuesta = (
+                supabase
+                .table(SUPABASE_RESERVATIONS_TABLE)
+                .update(update_data)
+                .in_(SUPABASE_RESERVATION_ID_COLUMN, reservation_ids)
+                .execute()
+            )
+            return {"ok": True, "data": respuesta.data}
+
+        normalized_tables = []
+        seen = set()
+        for table_id in payload.tables:
+            if table_id is None:
+                continue
+            table_int = int(table_id)
+            if table_int < 1 or table_int in seen:
+                continue
+            seen.add(table_int)
+            normalized_tables.append(table_int)
+
+        if not normalized_tables:
+            raise HTTPException(status_code=400, detail="Debes indicar al menos una mesa valida")
+
+        # Reasignamos/actualizamos filas existentes.
+        for idx, table_id in enumerate(normalized_tables[:len(ordered_rows)]):
+            row = ordered_rows[idx]
+            row_id = row.get(SUPABASE_RESERVATION_ID_COLUMN)
+            if row_id is None:
+                continue
+
+            patch_data = {**update_data, "tables": table_id}
+            (
+                supabase
+                .table(SUPABASE_RESERVATIONS_TABLE)
+                .update(patch_data)
+                .eq(SUPABASE_RESERVATION_ID_COLUMN, row_id)
+                .execute()
+            )
+
+        seed = ordered_rows[0]
+
+        # Si hay más mesas nuevas que filas existentes, insertamos las filas que faltan.
+        if len(normalized_tables) > len(ordered_rows):
+            for table_id in normalized_tables[len(ordered_rows):]:
+                insert_data = {
+                    "tables": table_id,
+                    "people": update_data.get("people", seed.get("people")),
+                    SUPABASE_RESERVATION_DATETIME_COLUMN: update_data.get(
+                        SUPABASE_RESERVATION_DATETIME_COLUMN,
+                        seed.get(SUPABASE_RESERVATION_DATETIME_COLUMN)
+                    ),
+                    SUPABASE_USER_ID_COLUMN: seed.get(SUPABASE_USER_ID_COLUMN),
+                }
+
+                if SUPABASE_USER_EMAIL_COLUMN:
+                    insert_data[SUPABASE_USER_EMAIL_COLUMN] = seed.get(SUPABASE_USER_EMAIL_COLUMN)
+
+                (
+                    supabase
+                    .table(SUPABASE_RESERVATIONS_TABLE)
+                    .insert(insert_data)
+                    .execute()
+                )
+
+        # Si hay menos mesas nuevas que filas existentes, borramos sobrantes.
+        if len(normalized_tables) < len(ordered_rows):
+            extra_ids = [
+                row.get(SUPABASE_RESERVATION_ID_COLUMN)
+                for row in ordered_rows[len(normalized_tables):]
+                if row.get(SUPABASE_RESERVATION_ID_COLUMN) is not None
+            ]
+
+            if extra_ids:
+                (
+                    supabase
+                    .table(SUPABASE_RESERVATIONS_TABLE)
+                    .delete()
+                    .in_(SUPABASE_RESERVATION_ID_COLUMN, extra_ids)
+                    .execute()
+                )
+
+        return {"ok": True, "data": {"updated_ids": reservation_ids, "tables": normalized_tables}}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"No se pudo editar la reserva en grupo: {e}")
+
+
+@app.post("/api/admin/reservas/grupo/delete")
+def admin_eliminar_reserva_grupo(payload: AdminReservaGroupDelete, authorization: str | None = Header(default=None)):
+    try:
+        _require_admin(authorization)
+
+        reservation_ids = [str(rid).strip() for rid in payload.ids if str(rid).strip()]
+        if not reservation_ids:
+            raise HTTPException(status_code=400, detail="Debes enviar al menos un id de reserva")
+
+        respuesta = (
+            supabase
+            .table(SUPABASE_RESERVATIONS_TABLE)
+            .delete()
+            .in_(SUPABASE_RESERVATION_ID_COLUMN, reservation_ids)
+            .execute()
+        )
+
+        return {"ok": True, "data": respuesta.data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"No se pudo eliminar la reserva en grupo: {e}")
 
 
 @app.get("/api/admin/users")

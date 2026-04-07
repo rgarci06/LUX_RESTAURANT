@@ -111,6 +111,26 @@ export const AdminService = {
         }
     },
 
+    // Edita una reserva lógica (grupo de filas) en una sola operación.
+    updateReservationGroup: async (payload, token) => {
+        try {
+            const respuesta = await fetch(`${API_URL}/admin/reservas/grupo/update`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const dades = await respuesta.json();
+            return { ok: respuesta.ok, status: respuesta.status, dades };
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
+        }
+    },
+
     // Elimina una reserva concreta por su id.
     deleteReservation: async (reservationId, token) => {
         try {
@@ -120,6 +140,26 @@ export const AdminService = {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
                 }
+            });
+
+            const dades = await respuesta.json();
+            return { ok: respuesta.ok, status: respuesta.status, dades };
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
+        }
+    },
+
+    // Elimina una reserva lógica (grupo de filas) en una sola operación.
+    deleteReservationGroup: async (ids, token) => {
+        try {
+            const respuesta = await fetch(`${API_URL}/admin/reservas/grupo/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ ids })
             });
 
             const dades = await respuesta.json();
