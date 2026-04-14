@@ -196,8 +196,8 @@ def _admin_rest_request(method: str, path: str, body: dict | None = None) -> dic
 
 def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reserva):
     # PON AQUÍ TU GMAIL Y LA CLAVE DE APLICACIÓN DE 16 LETRAS
-    remitente = "tu_correo@gmail.com" 
-    password = "tu_clave_de_16_letras"
+    remitente = "garciamagroraul5@gmail.com" 
+    password = "zqkc ftfn qbjw knab"
 
     msg = MIMEMultipart()
     msg['From'] = f"LUX Restaurant <{remitente}>"
