@@ -7,21 +7,38 @@ document.addEventListener('DOMContentLoaded', () => {
     // Correo admin principal (fallback por si el rol no viene bien guardado)
     const ADMIN_EMAIL = 'ddelpe@insdanielblanxart.cat';
 
+    function readSession(storage) {
+        return {
+            token: storage.getItem('lux_token') || '',
+            email: storage.getItem('lux_email') || '',
+            rol: storage.getItem('lux_rol') || ''
+        };
+    }
+
+    function resolveCurrentSession() {
+        const sessionData = readSession(sessionStorage);
+        if (sessionData.token && sessionData.email) {
+            return sessionData;
+        }
+
+        const localData = readSession(localStorage);
+        if (localData.token && localData.email) {
+            return localData;
+        }
+
+        return sessionData.token || sessionData.email || sessionData.rol
+            ? sessionData
+            : localData;
+    }
+
     const authLink = document.getElementById('auth-link');
     const mobileAuthLink = document.querySelector('.mobile-menu-overlay .mobile-btn');
     const desktopNav = document.querySelector('.desktop-nav');
     const mobileNav = document.getElementById('mobile-nav-content');
-    const localToken = localStorage.getItem('lux_token');
-    const localEmail = localStorage.getItem('lux_email');
-    const localRol = localStorage.getItem('lux_rol');
-    const sessionToken = sessionStorage.getItem('lux_token');
-    const sessionEmail = sessionStorage.getItem('lux_email');
-    const sessionRol = sessionStorage.getItem('lux_rol');
-
-    // Forma simple: usar primero una sesión completa (token + email) del mismo storage.
-    const token = (localToken && localEmail) ? localToken : (sessionToken || localToken);
-    const email = (localToken && localEmail) ? localEmail : (sessionEmail || localEmail);
-    const rol = (localToken && localEmail) ? (localRol || 'client') : (sessionRol || localRol || 'client');
+    const currentSession = resolveCurrentSession();
+    const token = currentSession.token;
+    const email = currentSession.email;
+    const rol = currentSession.rol || 'client';
     const currentPath = window.location.pathname;
     const protectedRoutes = ['/pages/reserva.html', '/pages/admin.html'];
     const isProtectedRoute = protectedRoutes.some(route => currentPath.endsWith(route));

@@ -421,11 +421,14 @@ def admin_listar_reservas(authorization: str | None = Header(default=None)):
     try:
         # Admin y camarero pueden ver/gestionar reservas.
         _require_reservas_manager(authorization)
+        # Usamos un cliente nuevo para evitar que el estado de auth compartido del proceso
+        # afecte al listado según quién se haya logueado antes.
+        read_supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
         now_utc = datetime.now(timezone.utc)
         today_start_utc = now_utc.replace(hour=0, minute=0, second=0, microsecond=0)
 
         respuesta = (
-            supabase
+            read_supabase
             .table(SUPABASE_RESERVATIONS_TABLE)
             .select("*")
             .order(SUPABASE_RESERVATION_DATETIME_COLUMN, desc=True)
