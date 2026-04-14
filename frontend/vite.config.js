@@ -21,6 +21,7 @@ export default defineConfig({
         privacidad: resolve(__dirname, 'pages/politica-privacidad.html'),
         aviso: resolve(__dirname, 'pages/aviso-legal.html'),
         confirmacion: resolve(__dirname, 'pages/confirmacion.html'),
+        
       },
     },
   },
