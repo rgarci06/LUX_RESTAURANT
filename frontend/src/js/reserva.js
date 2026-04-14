@@ -24,8 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, duration);
     }
 
-    // Mapa base del salon: x e y son porcentajes dentro del contenedor .table-map.
-    // Ejemplo: x:25, y:20 coloca la mesa al 25% del ancho y 20% del alto.
+    // Mapa base del salon
     const TABLE_LAYOUT = [
         { id: 1, x: 25, y: 20, zone: 'gold' },
         { id: 2, x: 43, y: 20, zone: 'gold' },
@@ -48,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedTime: null,
         selectedTables: [],
         maxTables: 1,
-        occupiedTables: [] // Mesas que ya están reservadas en esta fecha/hora
+        occupiedTables: []
     };
 
     // cojo los elementos del html
@@ -65,6 +64,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const stepTime = document.getElementById('step-time');
     const stepTables = document.getElementById('step-tables');
 
+    // NUEVOS: Elementos del Popup (Modal)
+    const modal = document.getElementById('reservation-modal');
+    const btnModalCancel = document.getElementById('btn-modal-cancel');
+    const btnModalConfirm = document.getElementById('btn-modal-confirm');
+    const modalDate = document.getElementById('modal-date');
+    const modalTime = document.getElementById('modal-time');
+    const modalPeople = document.getElementById('modal-people');
+    const modalTable = document.getElementById('modal-table');
+
     function getSessionEmail() {
         return localStorage.getItem('lux_email') || sessionStorage.getItem('lux_email') || '';
     }
@@ -73,7 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return localStorage.getItem('lux_token') || sessionStorage.getItem('lux_token') || '';
     }
 
-    // Convierte una fecha local a formato YYYY-MM-DD (sin desfases por zona horaria).
     function formatDateLocal(date) {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -84,35 +91,33 @@ document.addEventListener('DOMContentLoaded', () => {
     // paso 1: elegir cuanta gente va a venir
     function updatePeopleCount(delta) {
         state.people = Math.max(1, Math.min(20, state.people + delta));
-        peopleCount.textContent = state.people;
+        if (peopleCount) peopleCount.textContent = state.people;
         state.selectedDate = null;
         state.selectedTime = null;
         
-        // calculo cuantas mesas necesitan segun la gente
         if (state.people <= 4) {
             state.maxTables = 1;
-            peopleInfo.textContent = 'Reservarás 1 mesa';
+            if (peopleInfo) peopleInfo.textContent = 'Reservarás 1 mesa';
         } else if (state.people <= 6) {
             state.maxTables = 2;
-            peopleInfo.textContent = 'Reservarás 2 mesas';
+            if (peopleInfo) peopleInfo.textContent = 'Reservarás 2 mesas';
         } else if (state.people <= 8) {
             state.maxTables = 3;
-            peopleInfo.textContent = 'Reservarás 3 mesas';
+            if (peopleInfo) peopleInfo.textContent = 'Reservarás 3 mesas';
         } else {
-            peopleInfo.textContent = 'Por favor, contacta con nosotros para grupos grandes';
+            if (peopleInfo) peopleInfo.textContent = 'Por favor, contacta con nosotros para grupos grandes';
         }
 
-        // si son mas de 8 personas muestro mensaje de contacto
         if (state.people > 8) {
-            stepContact.classList.remove('hidden');
-            stepDate.classList.add('hidden');
-            stepTime.classList.add('hidden');
-            stepTables.classList.add('hidden');
+            if (stepContact) stepContact.classList.remove('hidden');
+            if (stepDate) stepDate.classList.add('hidden');
+            if (stepTime) stepTime.classList.add('hidden');
+            if (stepTables) stepTables.classList.add('hidden');
         } else {
-            stepContact.classList.add('hidden');
-            stepDate.classList.remove('hidden');
-            stepTime.classList.add('hidden');
-            stepTables.classList.remove('hidden');
+            if (stepContact) stepContact.classList.add('hidden');
+            if (stepDate) stepDate.classList.remove('hidden');
+            if (stepTime) stepTime.classList.add('hidden');
+            if (stepTables) stepTables.classList.remove('hidden');
             generateCalendar();
             generateTables();
         }
@@ -120,22 +125,24 @@ document.addEventListener('DOMContentLoaded', () => {
         validateForm();
     }
 
-    document.querySelector('.btn-increment').addEventListener('click', () => updatePeopleCount(1));
-    document.querySelector('.btn-decrement').addEventListener('click', () => updatePeopleCount(-1));
+    const btnInc = document.querySelector('.btn-increment');
+    const btnDec = document.querySelector('.btn-decrement');
+    if (btnInc) btnInc.addEventListener('click', () => updatePeopleCount(1));
+    if (btnDec) btnDec.addEventListener('click', () => updatePeopleCount(-1));
 
     // paso 2: calendario para elegir el dia
     function generateCalendar() {
+        if (!calendarGrid) return;
         calendarGrid.innerHTML = '';
         const today = new Date();
         const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
         const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
-        for (let i = 0; i < 7; i++) {
+        for (let i = 0; i < 14; i++) {
             const date = new Date(today);
             date.setDate(today.getDate() + i);
             
             const dayOfWeek = date.getDay();
-            // los lunes esta cerrado
             const isOpen = dayOfWeek !== 1;
 
             const card = document.createElement('div');
@@ -163,18 +170,18 @@ document.addEventListener('DOMContentLoaded', () => {
         card.classList.add('selected');
         state.selectedDate = card.dataset.date;
         state.selectedTime = null;
-        stepTime.classList.remove('hidden');
+        if (stepTime) stepTime.classList.remove('hidden');
         generateTimeSlots(dayOfWeek);
         validateForm();
     }
 
     // paso 3: elegir la hora de la reserva
     function generateTimeSlots(dayOfWeek) {
+        if (!middaySlots || !eveningSlots) return;
         middaySlots.innerHTML = '';
         eveningSlots.innerHTML = '';
 
-        // horarios de mediodia (todos los dias menos lunes)
-        const middayTimes = ['13:00', '14:00', '15:00'];
+        const middayTimes = ['13:00', '13:30', '14:00', '14:30', '15:00'];
         const middayAvailable = dayOfWeek !== 1;
 
         middayTimes.forEach(time => {
@@ -187,12 +194,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (middayAvailable) {
                 slot.addEventListener('click', () => selectTime(slot));
             }
-
             middaySlots.appendChild(slot);
         });
 
-        // horarios de noche (tambien todos los dias menos lunes)
-        const eveningTimes = ['20:00', '21:00', '22:00', '23:00'];
+        const eveningTimes = ['20:00', '20:30', '21:00', '21:30', '22:00', '22:30'];
         const eveningAvailable = dayOfWeek !== 1;
 
         eveningTimes.forEach(time => {
@@ -205,7 +210,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (eveningAvailable) {
                 slot.addEventListener('click', () => selectTime(slot));
             }
-
             eveningSlots.appendChild(slot);
         });
     }
@@ -214,12 +218,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
         slot.classList.add('selected');
         state.selectedTime = slot.dataset.time;
-        // Cargamos las mesas ocupadas para esta fecha y hora
         loadOccupiedTables();
         validateForm();
     }
 
-    // Función para cargar las mesas que ya están ocupadas en la fecha/hora seleccionada
     async function loadOccupiedTables() {
         if (!state.selectedDate || !state.selectedTime) {
             state.occupiedTables = [];
@@ -227,77 +229,64 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            console.log(`Cargando mesas ocupadas para ${state.selectedDate} a las ${state.selectedTime}`);
-            
             const result = await MesasService.getOcupadas(state.selectedDate, state.selectedTime);
-            
-            console.log('Resultado completo:', result);
-            
             if (result.ok && result.dades) {
                 state.occupiedTables = result.dades.ocupadas || [];
-                console.log('Mesas marcadas como ocupadas:', state.occupiedTables);
                 updateTableVisuals();
             } else {
-                console.error('Error en respuesta:', result.dades?.detail || 'Error desconocido');
                 state.occupiedTables = [];
             }
         } catch (error) {
-            console.error('Error al cargar mesas ocupadas:', error);
             state.occupiedTables = [];
         }
     }
 
-    // Actualiza los estilos visuales de las mesas (rojo para ocupadas)
     function updateTableVisuals() {
         document.querySelectorAll('.table-slot').forEach(table => {
             const tableId = parseInt(table.dataset.id);
             if (state.occupiedTables.includes(tableId)) {
-                table.classList.add('occupied');
-                table.classList.add('disabled');
+                table.classList.add('occupied', 'disabled');
+                table.classList.remove('selected');
+                state.selectedTables = state.selectedTables.filter(id => id !== tableId);
             } else {
                 table.classList.remove('occupied');
-                // Solo removemos 'disabled' si no estaba pre-deshabilitada
                 if (!table.classList.contains('was-disabled')) {
                     table.classList.remove('disabled');
                 }
             }
         });
+        updateTableInstruction();
+        validateForm();
     }
 
     // paso 4: escojer las mesas
     function generateTables() {
+        if (!tableMap) return;
         tableMap.innerHTML = '';
         tableMap.classList.add('real-map');
         state.selectedTables = [];
 
-        // Elementos de distribución del salón.
         const roomElements = [
             { className: 'room-block room-main-aisle' },
-            { className: 'room-block room-bar-left', text: 'Barra' },
-            { className: 'room-door-label', text: 'Puerta' }
+            { className: 'room-block room-bar-left', text: 'BARRA' },
+            { className: 'room-door-label', text: 'ENTRADA' }
         ];
 
         roomElements.forEach(el => {
             const block = document.createElement('div');
             block.className = el.className;
-            if (el.text) {
-                block.textContent = el.text;
-            }
+            if (el.text) block.textContent = el.text;
             tableMap.appendChild(block);
         });
 
         TABLE_LAYOUT.forEach(item => {
             const table = document.createElement('div');
-            table.classList.add('table-slot');
-            table.classList.add(`zone-${item.zone}`);
+            table.className = `table-slot zone-${item.zone}`;
             table.dataset.id = item.id;
             table.style.left = `${item.x}%`;
             table.style.top = `${item.y}%`;
 
-            table.innerHTML = `
-                <div class="table-number">${String(item.id).padStart(2, '0')}</div>
-            `;
-
+            table.innerHTML = `<div class="table-number">T${item.id}</div>`;
             table.addEventListener('click', () => selectTable(table));
             tableMap.appendChild(table);
         });
@@ -308,18 +297,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function selectTable(table) {
         const tableId = parseInt(table.dataset.id);
 
-        // Impedir seleccionar mesas ocupadas
         if (state.occupiedTables.includes(tableId)) {
-            showLuxToast('Esta mesa ya está ocupada en esa fecha y hora', 'error');
+            showLuxToast('Esta mesa ya está ocupada en esa fecha y hora', 'warning');
             return;
         }
 
         if (table.classList.contains('selected')) {
-            // quitar la mesa si ya estaba seleccionada
             table.classList.remove('selected');
             state.selectedTables = state.selectedTables.filter(id => id !== tableId);
         } else {
-            // añadir mesa si no hemos llegado al maximo
             if (state.selectedTables.length < state.maxTables) {
                 table.classList.add('selected');
                 state.selectedTables.push(tableId);
@@ -330,27 +316,22 @@ document.addEventListener('DOMContentLoaded', () => {
         validateForm();
     }
 
-    // actualizo el texto que dice cuantas mesas faltan
     function updateTableInstruction() {
+        if (!tableInstruction) return;
         const remaining = state.maxTables - state.selectedTables.length;
         if (state.maxTables === 1) {
-            tableInstruction.textContent = state.selectedTables.length === 0 
-                ? 'Selecciona 1 mesa' 
-                : 'Mesa seleccionada';
+            tableInstruction.textContent = state.selectedTables.length === 0 ? 'Selecciona 1 mesa' : 'Mesa seleccionada';
         } else {
-            tableInstruction.textContent = remaining > 0 
-                ? `Selecciona ${state.maxTables} mesas (faltan ${remaining})` 
-                : `Has seleccionado ${state.maxTables} mesas`;
+            tableInstruction.textContent = remaining > 0 ? `Selecciona ${state.maxTables} mesas (faltan ${remaining})` : `Has seleccionado ${state.maxTables} mesas`;
         }
     }
 
-    // compruebo si estan todos los pasos completos
     function validateForm() {
+        if (!btnConfirm) return;
         const isValid = state.people <= 8 
             && state.selectedDate 
             && state.selectedTime 
             && state.selectedTables.length === state.maxTables;
-
         btnConfirm.disabled = !isValid;
     }
 
@@ -360,34 +341,69 @@ document.addEventListener('DOMContentLoaded', () => {
         state.selectedTime = null;
         state.selectedTables = [];
         state.maxTables = 1;
-        peopleCount.textContent = '2';
+        if (peopleCount) peopleCount.textContent = '2';
         updatePeopleCount(0);
+        document.querySelectorAll('.day-card, .time-slot, .table-slot').forEach(el => el.classList.remove('selected'));
+        if (stepTime) stepTime.classList.add('hidden');
     }
 
-    btnConfirm.addEventListener('click', async () => {
-        if (!btnConfirm.disabled) {
+    // ==========================================
+    // LÓGICA DEL POPUP Y ENVÍO A BASE DE DATOS
+    // ==========================================
+
+    // 1. Mostrar el Popup al hacer click en el primer botón de confirmar
+    if (btnConfirm) {
+        btnConfirm.addEventListener('click', () => {
+            if (!btnConfirm.disabled && modal) {
+                
+                // Formatear la fecha para que quede bonita (Ej: "Jueves, 14 de Abril de 2026")
+                const [year, month, day] = state.selectedDate.split('-');
+                const dateObj = new Date(year, month - 1, day);
+                const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                
+                if (modalDate) modalDate.textContent = dateObj.toLocaleDateString('es-ES', opcionesFecha);
+                if (modalTime) modalTime.textContent = state.selectedTime + "H";
+                if (modalPeople) modalPeople.textContent = state.people + (state.people > 1 ? " Personas" : " Persona");
+                if (modalTable) modalTable.textContent = "Mesa(s): " + state.selectedTables.join(', ');
+
+                // Mostrar modal con animación
+                modal.classList.remove('hidden');
+                setTimeout(() => modal.classList.add('active'), 10);
+            }
+        });
+    }
+
+    // 2. Cerrar el Popup al hacer click en Cancelar
+    if (btnModalCancel) {
+        btnModalCancel.addEventListener('click', () => {
+            modal.classList.remove('active');
+            setTimeout(() => modal.classList.add('hidden'), 350);
+        });
+    }
+
+    // 3. Ejecutar la llamada a la Base de Datos al darle a "Sí, Reservar"
+    if (btnModalConfirm) {
+        btnModalConfirm.addEventListener('click', async () => {
             const email = getSessionEmail();
             const token = getSessionToken();
 
             if (!email) {
-                alert('Necesitas tener sesión iniciada para guardar la reserva.');
-                window.location.href = '/pages/login.html';
+                showLuxToast('Necesitas iniciar sesión para guardar la reserva.', 'warning');
+                setTimeout(() => window.location.href = '../pages/login.html', 2000);
                 return;
             }
 
-            // Validar que ninguna de las mesas seleccionadas esté ocupada (por seguridad)
+            // Doble comprobación de mesas ocupadas por seguridad
             const mesasOcupadas = state.selectedTables.filter(id => state.occupiedTables.includes(id));
             if (mesasOcupadas.length > 0) {
-                showLuxToast(`Las mesas ${mesasOcupadas.join(', ')} ya no están disponibles. Selecciona otras.`, 'error');
+                showLuxToast(`Las mesas ${mesasOcupadas.join(', ')} acaban de ser ocupadas.`, 'error');
+                modal.classList.remove('active');
+                setTimeout(() => modal.classList.add('hidden'), 350);
                 resetReservationForm();
-                generateCalendar();
-                generateTables();
                 return;
             }
 
             const reservationDateTime = `${state.selectedDate}T${state.selectedTime}:00`;
-
-            // enviar a la base de datos
             const reservation = {
                 people: state.people,
                 tables: state.selectedTables,
@@ -395,33 +411,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 reservationDatetime: reservationDateTime
             };
 
-            btnConfirm.disabled = true;
-            const previousButtonText = btnConfirm.textContent;
-            btnConfirm.textContent = 'Guardando...';
+            // Bloquear botones mientras carga
+            btnModalConfirm.disabled = true;
+            btnModalCancel.disabled = true;
+            const previousText = btnModalConfirm.textContent;
+            btnModalConfirm.textContent = 'PROCESANDO...';
 
-            const result = await ReservationService.createReservation(reservation, token);
+            try {
+                const result = await ReservationService.createReservation(reservation, token);
 
-            btnConfirm.textContent = previousButtonText;
-
-            console.log('Reservation:', reservation);
-
-            if (result.ok) {
-                showLuxToast(
-                    `Reserva confirmada para ${state.selectedDate} a las ${state.selectedTime}. Mesas: ${state.selectedTables.join(', ')}`,
-                    'success',
-                    6000
-                );
-                resetReservationForm();
-                return;
+                if (result.ok) {
+                    showLuxToast('¡Reserva confirmada con éxito!', 'success');
+                    modal.classList.remove('active');
+                    setTimeout(() => modal.classList.add('hidden'), 350);
+                    resetReservationForm();
+                    
+                    // Opcional: Redirigir al inicio después de 3 segundos
+                    setTimeout(() => {
+                        window.location.href = '../index.html';
+                    }, 3000);
+                } else {
+                    showLuxToast(`Error: ${result.dades?.detail || 'No se pudo guardar la reserva'}`, 'error');
+                }
+            } catch (error) {
+                showLuxToast('Ocurrió un error de conexión.', 'error');
+            } finally {
+                // Restaurar botones si falla
+                btnModalConfirm.disabled = false;
+                btnModalCancel.disabled = false;
+                btnModalConfirm.textContent = previousText;
             }
-
-            alert(`No se pudo guardar la reserva: ${result.dades?.detail || 'Error desconocido'}`);
-            validateForm();
-        }
-    });
+        });
+    }
 
     // inicio todo al cargar la pagina
     updatePeopleCount(0);
-    generateCalendar();
-    generateTables();
 });

@@ -120,6 +120,23 @@
         </div>
     </main>
 
+    <div id="reservation-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 class="modal-title">Confirma tu Reserva</h2>
+            <div class="modal-details">
+                <p><span class="detail-label">Fecha:</span> <span id="modal-date" class="detail-value">--</span></p>
+                <p><span class="detail-label">Hora:</span> <span id="modal-time" class="detail-value">--</span></p>
+                <p><span class="detail-label">Comensales:</span> <span id="modal-people" class="detail-value">--</span></p>
+                <p><span class="detail-label">Mesa:</span> <span id="modal-table" class="detail-value">--</span></p>
+            </div>
+            <p class="modal-warning">Revisa que los datos sean correctos antes de confirmar.</p>
+            <div class="modal-actions">
+                <button id="btn-modal-cancel" class="btn-outline">CANCELAR</button>
+                <button id="btn-modal-confirm" class="btn-login">SÍ, RESERVAR MESA</button>
+            </div>
+        </div>
+    </div>
+
     <footer class="main-footer">
         <div class="footer-container">
             <div class="footer-brand">
