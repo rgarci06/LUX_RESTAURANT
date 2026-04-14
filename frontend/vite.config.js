@@ -20,7 +20,7 @@ export default defineConfig({
         cookies: resolve(__dirname, 'pages/politica-cookies.html'),
         privacidad: resolve(__dirname, 'pages/politica-privacidad.html'),
         aviso: resolve(__dirname, 'pages/aviso-legal.html'),
-        // Si crees més pàgines, afegeix-les aquí sota
+        confirmacion: resolve(__dirname, 'pages/confirmacion.html'),
       },
     },
   },

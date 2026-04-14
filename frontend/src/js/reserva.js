@@ -421,15 +421,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await ReservationService.createReservation(reservation, token);
 
                 if (result.ok) {
-                    showLuxToast('¡Reserva confirmada con éxito!', 'success');
-                    modal.classList.remove('active');
-                    setTimeout(() => modal.classList.add('hidden'), 350);
-                    resetReservationForm();
-                    
-                    // Opcional: Redirigir al inicio después de 3 segundos
-                    setTimeout(() => {
-                        window.location.href = '../index.html';
-                    }, 3000);
+                    // Ya no mostramos el toast ni esperamos 3 segundos.
+                    // Simplemente redirigimos directamente a la página de éxito.
+                    window.location.href = 'confirmacion.html';
                 } else {
                     showLuxToast(`Error: ${result.dades?.detail || 'No se pudo guardar la reserva'}`, 'error');
                 }

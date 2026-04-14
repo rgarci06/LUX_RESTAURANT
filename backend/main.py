@@ -10,15 +10,18 @@ Nunca dejamos que el Frontend hable con la base de datos por seguridad.
 import os
 import json
 import base64
+import smtplib
 from datetime import datetime, timezone
 from urllib import request as urlrequest
 from urllib import error as urlerror
-
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from supabase import create_client, Client
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from fastapi.responses import HTMLResponse
 
 load_dotenv()
 
@@ -191,6 +194,52 @@ def _admin_rest_request(method: str, path: str, body: dict | None = None) -> dic
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error en llamada admin auth: {e}")
 
+def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reserva):
+    # PON AQUÍ TU GMAIL Y LA CLAVE DE APLICACIÓN DE 16 LETRAS
+    remitente = "tu_correo@gmail.com" 
+    password = "tu_clave_de_16_letras"
+
+    msg = MIMEMultipart()
+    msg['From'] = f"LUX Restaurant <{remitente}>"
+    msg['To'] = email_cliente
+    msg['Subject'] = "Tu reserva en LUX está confirmada"
+
+    # Enlace para cancelar
+    url_cancelar = f"http://localhost:8000/api/cancelar-reserva?ids={ids_reserva}"
+
+    html = f"""
+    <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #111111; color: #ffffff; padding: 50px 30px; text-align: center; border: 1px solid #d4af37; border-radius: 8px;">
+        <h1 style="color: #d4af37; letter-spacing: 6px; font-weight: 300; margin-bottom: 5px; text-transform: uppercase;">Lux</h1>
+        <h3 style="color: #aaaaaa; letter-spacing: 4px; font-weight: 300; margin-top: 0; margin-bottom: 40px; font-size: 12px; text-transform: uppercase;">Restaurant</h3>
+        
+        <h2 style="font-weight: 400; margin-bottom: 20px; color: #ffffff;">¡Reserva Confirmada!</h2>
+        
+        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.2); padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 30px;">
+            <p style="color: #ccc; margin-bottom: 10px;"><strong>Fecha:</strong> {fecha}</p>
+            <p style="color: #ccc; margin-bottom: 10px;"><strong>Hora:</strong> {hora}</p>
+            <p style="color: #ccc; margin-bottom: 10px;"><strong>Comensales:</strong> {personas}</p>
+            <p style="color: #ccc; margin-bottom: 0;"><strong>Mesa(s):</strong> {mesas}</p>
+        </div>
+        
+        <p style="color: #cccccc; font-size: 14px; margin-bottom: 30px;">Si surge algún imprevisto, puedes cancelar tu reserva haciendo clic en el botón inferior con hasta 24 horas de antelación.</p>
+        
+        <a href="{url_cancelar}" style="display: inline-block; background-color: transparent; color: #ff4444; border: 1px solid #ff4444; padding: 12px 25px; text-decoration: none; font-weight: bold; font-size: 12px; border-radius: 4px; letter-spacing: 1px;">
+            CANCELAR RESERVA
+        </a>
+    </div>
+    """
+    msg.attach(MIMEText(html, 'html'))
+
+    try:
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(remitente, password)
+        server.send_message(msg)
+        server.quit()
+        print("Correo de confirmación enviado a:", email_cliente)
+    except Exception as e:
+        print("Error al enviar el correo:", e)
+
 # Estructura dels models
 class UsuariLogin(BaseModel):
     email: str
@@ -326,6 +375,31 @@ def crear_reserva(reserva: ReservaPayload, authorization: str | None = Header(de
             .execute()
         )
 
+        # ==========================================
+        # INYECCIÓN DEL CORREO (Sin afectar al return)
+        # ==========================================
+        try:
+            # Extraemos los IDs recién creados ("14,15")
+            ids_insertados = [str(fila['id']) for fila in respuesta.data]
+            ids_string = ",".join(ids_insertados)
+            
+            # Formateamos los datos para el correo
+            fecha_reserva, hora_reserva = reserva.reservationDatetime.split("T")
+            mesas_string = ", ".join([f"T{mesa}" for mesa in reserva.tables])
+            
+            # Enviamos el correo (si falla el correo, el print avisa pero el return "ok" se ejecuta igual)
+            enviar_correo_reserva(
+                email_cliente=reserva.user_email,
+                fecha=fecha_reserva,
+                hora=hora_reserva,
+                personas=reserva.people,
+                mesas=mesas_string,
+                ids_reserva=ids_string
+            )
+        except Exception as e_correo:
+            print(f"Error procesando datos para el correo: {e_correo}")
+        # ==========================================
+
         return {
             "ok": True,
             "data": respuesta.data,
@@ -359,6 +433,33 @@ def crear_reserva(reserva: ReservaPayload, authorization: str | None = Header(de
             )
 
         raise HTTPException(status_code=400, detail=f"No se pudo guardar la reserva: {error_text}")
+    
+
+@app.get("/api/cancelar-reserva")
+def cancelar_reserva(ids: str):
+    try:
+        lista_ids = [int(id_mesa.strip()) for id_mesa in ids.split(",")]
+        
+        # Usamos el cliente global de supabase para borrar
+        request_supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        request_supabase.table(SUPABASE_RESERVATIONS_TABLE).delete().in_("id", lista_ids).execute()
+        
+        html_content = """
+        <html>
+            <body style="background:#0a0a0a; color:#fff; text-align:center; padding-top:100px; font-family:'Helvetica Neue', Arial, sans-serif;">
+                <h1 style="color:#d4af37; letter-spacing: 4px;">LUX RESTAURANT</h1>
+                <div style="border: 1px solid #333; padding: 40px; max-width: 500px; margin: 0 auto; border-radius: 8px; background: #111;">
+                    <h2 style="margin-bottom: 20px;">Reserva Cancelada</h2>
+                    <p style="color: #ccc; line-height: 1.6;">Tu reserva ha sido anulada correctamente. Las mesas vuelven a estar disponibles.</p>
+                    <p style="color: #ccc;">Esperamos poder atenderte en otra ocasión.</p>
+                    <a href="http://localhost:5173" style="display: inline-block; margin-top: 30px; color: #d4af37; text-decoration: none; border-bottom: 1px solid #d4af37;">Volver al inicio</a>
+                </div>
+            </body>
+        </html>
+        """
+        return HTMLResponse(content=html_content, status_code=200)
+    except Exception as e:
+        return HTMLResponse(content=f"<h1 style='color:red; text-align:center;'>Error al cancelar: {e}</h1>", status_code=400)
 
 
 @app.get("/api/mesas/disponibles")
