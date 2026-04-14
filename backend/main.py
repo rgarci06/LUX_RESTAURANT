@@ -11,6 +11,7 @@ import os
 import json
 import base64
 import smtplib
+import threading
 from datetime import datetime, timezone
 from urllib import request as urlrequest
 from urllib import error as urlerror
@@ -231,7 +232,7 @@ def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reser
     msg.attach(MIMEText(html, 'html'))
 
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server = smtplib.SMTP('smtp.gmail.com', 587, timeout=15)
         server.starttls()
         server.login(remitente, password)
         server.send_message(msg)
@@ -239,6 +240,15 @@ def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reser
         print("Correo de confirmación enviado a:", email_cliente)
     except Exception as e:
         print("Error al enviar el correo:", e)
+
+
+def enviar_correo_reserva_async(email_cliente, fecha, hora, personas, mesas, ids_reserva):
+    hilo = threading.Thread(
+        target=enviar_correo_reserva,
+        args=(email_cliente, fecha, hora, personas, mesas, ids_reserva),
+        daemon=True
+    )
+    hilo.start()
 
 # Estructura dels models
 class UsuariLogin(BaseModel):
@@ -387,8 +397,8 @@ def crear_reserva(reserva: ReservaPayload, authorization: str | None = Header(de
             fecha_reserva, hora_reserva = reserva.reservationDatetime.split("T")
             mesas_string = ", ".join([f"T{mesa}" for mesa in reserva.tables])
             
-            # Enviamos el correo (si falla el correo, el print avisa pero el return "ok" se ejecuta igual)
-            enviar_correo_reserva(
+            # Lanzamos el correo en segundo plano para no bloquear la respuesta de Vercel.
+            enviar_correo_reserva_async(
                 email_cliente=reserva.user_email,
                 fecha=fecha_reserva,
                 hora=hora_reserva,
