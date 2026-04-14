@@ -14,18 +14,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const cardReservas = document.getElementById('card-reservas');
     const cardUsers = document.getElementById('card-users');
 
-    // Leemos datos de sesión de local y session.
-    const localToken = localStorage.getItem('lux_token') || '';
-    const localEmail = localStorage.getItem('lux_email') || '';
-    const localRol = localStorage.getItem('lux_rol') || '';
-    const sessionToken = sessionStorage.getItem('lux_token') || '';
-    const sessionEmail = sessionStorage.getItem('lux_email') || '';
-    const sessionRol = sessionStorage.getItem('lux_rol') || '';
+    function readSession(storage) {
+        return {
+            token: storage.getItem('lux_token') || '',
+            email: storage.getItem('lux_email') || '',
+            rol: storage.getItem('lux_rol') || ''
+        };
+    }
 
-    // Elegimos primero una sesión completa del mismo sitio (token + email).
-    const hasFullLocal = Boolean(localToken && localEmail);
-    const token = hasFullLocal ? localToken : (sessionToken || localToken);
-    const rol = (hasFullLocal ? localRol : (sessionRol || localRol || '')).toLowerCase();
+    function resolveCurrentSession() {
+        const sessionData = readSession(sessionStorage);
+        if (sessionData.token && sessionData.email) {
+            return sessionData;
+        }
+
+        const localData = readSession(localStorage);
+        if (localData.token && localData.email) {
+            return localData;
+        }
+
+        return sessionData.token || sessionData.email || sessionData.rol
+            ? sessionData
+            : localData;
+    }
+
+    const currentSession = resolveCurrentSession();
+    const token = currentSession.token || '';
+    const rol = String(currentSession.rol || '').toLowerCase();
     const isAdmin = rol === 'admin';
     const isCamarero = rol === 'camarero' || rol === 'cambrer';
     const canManageReservas = isAdmin || isCamarero;
@@ -178,31 +193,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Formato simple para reservas: fecha + hora limpia (HH:mm).
     function formatReservationDateHour(value) {
         if (!value) return '-';
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return value;
+        const text = String(value).trim();
+        const match = text.match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})/);
+        if (!match) return value;
 
-        const datePart = d.toLocaleDateString('es-ES', {
-            day: '2-digit', month: '2-digit', year: 'numeric'
-        });
-
-        const hourPart = d.toLocaleTimeString('es-ES', {
-            hour: '2-digit', minute: '2-digit', hour12: false
-        });
-
-        return `${datePart} - ${hourPart}`;
+        const [, year, month, day, hour, minute] = match;
+        return `${day}/${month}/${year} - ${hour}:${minute}`;
     }
 
     // Pasa una fecha ISO a formato para input datetime-local.
     function toDateTimeLocalValue(value) {
         if (!value) return '';
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return '';
+        const text = String(value).trim();
+        const match = text.match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})/);
+        if (!match) return '';
 
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        const hour = String(d.getHours()).padStart(2, '0');
-        const minute = String(d.getMinutes()).padStart(2, '0');
+        const [, year, month, day, hour, minute] = match;
         return `${year}-${month}-${day}T${hour}:${minute}`;
     }
 
@@ -454,8 +460,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Convertimos a ISO para que backend/supabase lo guarde bien con zona horaria.
-            const isoDate = new Date(dateRaw).toISOString();
+            // Mantener hora local del input datetime-local y añadir segundos sin convertir a UTC.
+            const reservationDatetime = dateRaw.length === 16 ? `${dateRaw}:00` : dateRaw;
             const idsToUpdate = targetGroup.ids;
 
             if (!idsToUpdate.length) {
@@ -466,7 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const payload = {
                 ids: idsToUpdate,
                 people: peopleValue,
-                reservationDatetime: isoDate,
+                reservationDatetime,
                 tables: tablesValue
             };
 
