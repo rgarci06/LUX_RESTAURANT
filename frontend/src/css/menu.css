@@ -62,7 +62,11 @@
     justify-content: space-between;
     gap: 16px;
     flex-wrap: wrap;
-    margin: -10px 0 28px;
+    margin: 0 0 28px;
+    padding: 16px 18px;
+    border: 1px solid rgba(255, 215, 0, 0.12);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255, 215, 0, 0.06), rgba(255, 255, 255, 0.02));
 }
 
 .menu-admin-note {
@@ -87,6 +91,10 @@
     text-transform: uppercase;
     cursor: pointer;
     transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.menu-admin-btn-add {
+    box-shadow: 0 10px 24px rgba(255, 215, 0, 0.12);
 }
 
 .menu-admin-btn:hover {
@@ -197,6 +205,14 @@
     position: relative;
 }
 
+.menu-item-admin {
+    cursor: pointer;
+}
+
+.menu-item-admin:hover {
+    border-color: rgba(255, 215, 0, 0.22);
+}
+
 .menu-item-actions {
     display: flex;
     gap: 10px;
@@ -243,6 +259,129 @@
 .badge {
     font-size: 8px; border: 1px solid #444; padding: 2px 6px;
     border-radius: 4px; margin-left: 8px; color: #aaa; text-transform: uppercase; vertical-align: middle;
+}
+
+/* 5. MODAL DE ADMIN */
+.menu-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(10px);
+    z-index: 120;
+}
+
+.menu-modal-backdrop.is-open {
+    display: flex;
+}
+
+.menu-modal {
+    width: min(720px, 100%);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 215, 0, 0.18);
+    background: linear-gradient(180deg, rgba(13, 13, 13, 0.98), rgba(24, 24, 24, 0.98));
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+    padding: 22px;
+    color: #fff;
+}
+
+.menu-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.menu-modal-kicker {
+    margin: 0 0 6px;
+    color: #c9c9c9;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.menu-modal-header h3 {
+    margin: 0;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.08em;
+    font-size: 24px;
+}
+
+.menu-modal-close {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    cursor: pointer;
+    font-size: 24px;
+    line-height: 1;
+}
+
+.menu-modal-form {
+    margin: 0;
+}
+
+.menu-modal-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+}
+
+@media (min-width: 768px) {
+    .menu-modal-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .menu-modal-field-full {
+        grid-column: 1 / -1;
+    }
+}
+
+.menu-modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-family: 'Montserrat', sans-serif;
+    color: #d7d7d7;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.menu-modal-field input,
+.menu-modal-field textarea,
+.menu-modal-field select {
+    width: 100%;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(0, 0, 0, 0.34);
+    color: #fff;
+    padding: 12px 14px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    outline: none;
+}
+
+.menu-modal-field input:focus,
+.menu-modal-field textarea:focus,
+.menu-modal-field select:focus {
+    border-color: rgba(255, 215, 0, 0.65);
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.08);
+}
+
+.menu-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 18px;
 }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }    

@@ -71,6 +71,85 @@ export const ReservationService = {
     }
 };
 
+export const MenuService = {
+    // Trae toda la carta agrupada por categoria.
+    listMenu: async () => {
+        try {
+            const respuesta = await fetch(`${API_URL}/menu`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const dades = await respuesta.json();
+            return { ok: respuesta.ok, status: respuesta.status, dades };
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
+        }
+    },
+
+    // Crea un plato nuevo (solo admin).
+    createMenuItem: async (payload, token) => {
+        try {
+            const respuesta = await fetch(`${API_URL}/admin/menu`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const dades = await respuesta.json();
+            return { ok: respuesta.ok, status: respuesta.status, dades };
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
+        }
+    },
+
+    // Edita un plato por id (solo admin).
+    updateMenuItem: async (itemId, payload, token) => {
+        try {
+            const respuesta = await fetch(`${API_URL}/admin/menu/${itemId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const dades = await respuesta.json();
+            return { ok: respuesta.ok, status: respuesta.status, dades };
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
+        }
+    },
+
+    // Borra un plato por id (solo admin).
+    deleteMenuItem: async (itemId, token) => {
+        try {
+            const respuesta = await fetch(`${API_URL}/admin/menu/${itemId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            const dades = await respuesta.json();
+            return { ok: respuesta.ok, status: respuesta.status, dades };
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
+        }
+    }
+};
+
 export const AdminService = {
     // Trae las reservas activas para el panel admin.
     listReservations: async (token) => {
