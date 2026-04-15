@@ -73,28 +73,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalPeople = document.getElementById('modal-people');
     const modalTable = document.getElementById('modal-table');
 
-    function readSession(storage) {
-        return {
-            token: storage.getItem('lux_token') || '',
-            email: storage.getItem('lux_email') || '',
-            rol: storage.getItem('lux_rol') || ''
-        };
+    function getSessionEmail() {
+        return localStorage.getItem('lux_email') || sessionStorage.getItem('lux_email') || '';
     }
 
-    function resolveCurrentSession() {
-        const sessionData = readSession(sessionStorage);
-        if (sessionData.token && sessionData.email) {
-            return sessionData;
-        }
-
-        const localData = readSession(localStorage);
-        if (localData.token && localData.email) {
-            return localData;
-        }
-
-        return sessionData.token || sessionData.email || sessionData.rol
-            ? sessionData
-            : localData;
+    function getSessionToken() {
+        return localStorage.getItem('lux_token') || sessionStorage.getItem('lux_token') || '';
     }
 
     function formatDateLocal(date) {
@@ -400,9 +384,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. Ejecutar la llamada a la Base de Datos al darle a "Sí, Reservar"
     if (btnModalConfirm) {
         btnModalConfirm.addEventListener('click', async () => {
-            const currentSession = resolveCurrentSession();
-            const email = currentSession.email || '';
-            const token = currentSession.token || '';
+            const email = getSessionEmail();
+            const token = getSessionToken();
 
             if (!email) {
                 showLuxToast('Necesitas iniciar sesión para guardar la reserva.', 'warning');
@@ -442,14 +425,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Simplemente redirigimos directamente a la página de éxito.
                     window.location.href = 'confirmacion.html';
                 } else {
-                    if (result.status === 401) {
-                        showLuxToast('Tu sesión ha caducado. Vuelve a iniciar sesión.', 'warning');
-                        setTimeout(() => {
-                            window.location.href = '../pages/login.html';
-                        }, 1600);
-                        return;
-                    }
-
                     showLuxToast(`Error: ${result.dades?.detail || 'No se pudo guardar la reserva'}`, 'error');
                 }
             } catch (error) {
