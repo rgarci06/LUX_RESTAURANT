@@ -230,11 +230,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!state.search) return true;
 
         const email = String(group.userEmail || '').toLowerCase();
-        const people = String(group.people || '').toLowerCase();
-        const tables = String(group.tablesText || '').toLowerCase();
         const datePretty = formatReservationDateHour(group.reservationDatetime).toLowerCase();
 
-        const searchable = [email, people, tables, datePretty].join(' ');
+        const searchable = [email, datePretty].join(' ');
         return searchable.includes(state.search);
     }
 
