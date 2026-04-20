@@ -6,10 +6,7 @@ Archivo principal y utilidades compartidas para routers.
 import base64
 import json
 import os
-import smtplib
 from datetime import datetime, timezone
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from urllib import error as urlerror
 from urllib import request as urlrequest
 
@@ -37,6 +34,7 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
+# Extrae el token Bearer del header Authorization.
 def extract_bearer_token(authorization: str | None) -> str | None:
     if not authorization:
         return None
@@ -48,6 +46,7 @@ def extract_bearer_token(authorization: str | None) -> str | None:
     return token.strip()
 
 
+# Extrae el user_id (claim sub) del JWT.
 def extract_user_id_from_jwt(token: str) -> str | None:
     """Extrae el claim `sub` (UUID del usuario) desde el payload del JWT."""
     try:
@@ -67,6 +66,7 @@ def extract_user_id_from_jwt(token: str) -> str | None:
         return None
 
 
+# Decodifica el payload del JWT en formato diccionario.
 def decode_jwt_payload(token: str) -> dict:
     try:
         parts = token.split(".")
@@ -82,6 +82,7 @@ def decode_jwt_payload(token: str) -> dict:
         return {}
 
 
+# Valida que el usuario autenticado tenga permisos de administrador.
 def require_admin(authorization: str | None) -> tuple[str, dict]:
     token = extract_bearer_token(authorization)
     if not token:
@@ -99,6 +100,7 @@ def require_admin(authorization: str | None) -> tuple[str, dict]:
     return token, payload
 
 
+# Valida que el usuario tenga permisos para gestionar reservas (admin o camarero).
 def require_reservas_manager(authorization: str | None) -> tuple[str, dict]:
     token = extract_bearer_token(authorization)
     if not token:
@@ -116,6 +118,7 @@ def require_reservas_manager(authorization: str | None) -> tuple[str, dict]:
     raise HTTPException(status_code=403, detail="No tienes permisos para gestionar reservas")
 
 
+# Convierte un texto ISO a datetime en UTC.
 def parse_iso_datetime(value: str | None) -> datetime | None:
     if not value:
         return None
@@ -130,6 +133,7 @@ def parse_iso_datetime(value: str | None) -> datetime | None:
         return None
 
 
+# Llama a la API Admin de Supabase Auth con la service role key.
 def admin_rest_request(method: str, path: str, body: dict | None = None) -> dict:
     admin_key = SUPABASE_SERVICE_ROLE_KEY or SUPABASE_KEY
 
@@ -178,6 +182,7 @@ def admin_rest_request(method: str, path: str, body: dict | None = None) -> dict
         raise HTTPException(status_code=400, detail=f"Error en llamada admin auth: {e}")
 
 
+# Normaliza una fila del menu para devolver un formato estable.
 def normalize_menu_item(row: dict) -> dict:
     return {
         "id": row.get("id"),
@@ -190,57 +195,13 @@ def normalize_menu_item(row: dict) -> dict:
     }
 
 
+# Crea un cliente de Supabase para operaciones de la carta.
 def menu_supabase_client() -> Client:
     menu_key = SUPABASE_SERVICE_ROLE_KEY or SUPABASE_KEY
     if not menu_key:
         raise HTTPException(status_code=500, detail="Falta la clave de Supabase para leer la carta")
 
     return create_client(SUPABASE_URL, menu_key)
-
-
-def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reserva):
-    remitente = "garciamagroraul5@gmail.com"
-    password = "zqkc ftfn qbjw knab"
-
-    msg = MIMEMultipart()
-    msg["From"] = f"LUX Restaurant <{remitente}>"
-    msg["To"] = email_cliente
-    msg["Subject"] = "Tu reserva en LUX está confirmada"
-
-    url_cancelar = f"http://localhost:8000/api/cancelar-reserva?ids={ids_reserva}"
-
-    html = f"""
-    <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #111111; color: #ffffff; padding: 50px 30px; text-align: center; border: 1px solid #d4af37; border-radius: 8px;">
-        <h1 style="color: #d4af37; letter-spacing: 6px; font-weight: 300; margin-bottom: 5px; text-transform: uppercase;">Lux</h1>
-        <h3 style="color: #aaaaaa; letter-spacing: 4px; font-weight: 300; margin-top: 0; margin-bottom: 40px; font-size: 12px; text-transform: uppercase;">Restaurant</h3>
-
-        <h2 style="font-weight: 400; margin-bottom: 20px; color: #ffffff;">Reserva Confirmada!</h2>
-
-        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.2); padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 30px;">
-            <p style="color: #ccc; margin-bottom: 10px;"><strong>Fecha:</strong> {fecha}</p>
-            <p style="color: #ccc; margin-bottom: 10px;"><strong>Hora:</strong> {hora}</p>
-            <p style="color: #ccc; margin-bottom: 10px;"><strong>Comensales:</strong> {personas}</p>
-            <p style="color: #ccc; margin-bottom: 0;"><strong>Mesa(s):</strong> {mesas}</p>
-        </div>
-
-        <p style="color: #cccccc; font-size: 14px; margin-bottom: 30px;">Si surge algun imprevisto, puedes cancelar tu reserva haciendo clic en el boton inferior con hasta 24 horas de antelacion.</p>
-
-        <a href="{url_cancelar}" style="display: inline-block; background-color: transparent; color: #ff4444; border: 1px solid #ff4444; padding: 12px 25px; text-decoration: none; font-weight: bold; font-size: 12px; border-radius: 4px; letter-spacing: 1px;">
-            CANCELAR RESERVA
-        </a>
-    </div>
-    """
-    msg.attach(MIMEText(html, "html"))
-
-    try:
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(remitente, password)
-        server.send_message(msg)
-        server.quit()
-        print("Correo de confirmacion enviado a:", email_cliente)
-    except Exception as e:
-        print("Error al enviar el correo:", e)
 
 
 app = FastAPI()
