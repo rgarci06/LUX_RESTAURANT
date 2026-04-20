@@ -1,8 +1,3 @@
-"""
-CAPA 2: LOGICA DE NEGOCIO (Backend / Servidor)
-Archivo principal y utilidades compartidas para routers.
-"""
-
 import base64
 import json
 import os
