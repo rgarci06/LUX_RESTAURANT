@@ -257,8 +257,22 @@
 .item-desc { font-family: 'Montserrat', sans-serif; font-size: 12px; color: #bbb; line-height: 1.6; font-weight: 300; }
 
 .badge {
-    font-size: 8px; border: 1px solid #444; padding: 2px 6px;
-    border-radius: 4px; margin-left: 8px; color: #aaa; text-transform: uppercase; vertical-align: middle;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    border: 1px solid rgba(255, 215, 0, 0.45);
+    background: rgba(255, 215, 0, 0.12);
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-left: 10px;
+    color: #ffe58a;
+    text-transform: uppercase;
+    vertical-align: middle;
 }
 
 /* 5. MODAL DE ADMIN */
