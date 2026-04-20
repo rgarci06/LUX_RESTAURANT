@@ -75,7 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
             name: String(item?.name || '').trim(),
             description: String(item?.description || '-').trim() || '-',
             price: String(item?.price || '-').trim() || '-',
-            badge: String(item?.badge || '').trim()
+            badge: String(item?.badge || '').trim(),
+            sort_order: Number.isInteger(item?.sort_order) ? item.sort_order : null
         };
     }
 
@@ -166,6 +167,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span>Precio</span>
                             <input type="text" name="price" placeholder="28€" required>
                         </label>
+                        <label class="menu-modal-field">
+                            <span>Orden</span>
+                            <input type="number" name="sort_order" min="0" step="1" placeholder="0">
+                        </label>
                     </div>
                     <div class="menu-modal-actions">
                         <button type="button" class="menu-admin-btn" data-menu-modal-close>Cancelar</button>
@@ -190,8 +195,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const descriptionInput = form?.querySelector('textarea[name="description"]');
         const priceInput = form?.querySelector('input[name="price"]');
         const badgeInput = form?.querySelector('input[name="badge"]');
+        const sortOrderInput = form?.querySelector('input[name="sort_order"]');
 
-        if (!modal || !form || !categoryInput || !nameInput || !descriptionInput || !priceInput || !badgeInput) return;
+        if (!modal || !form || !categoryInput || !nameInput || !descriptionInput || !priceInput || !badgeInput || !sortOrderInput) return;
 
         state.modalOpen = true;
         state.modalMode = mode;
@@ -205,6 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         descriptionInput.value = item?.description || '';
         priceInput.value = item?.price || '';
         badgeInput.value = item?.badge || '';
+        sortOrderInput.value = Number.isInteger(item?.sort_order) ? String(item.sort_order) : '';
 
         modal.classList.add('is-open');
         setTimeout(() => nameInput.focus(), 50);
@@ -236,10 +243,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const description = String(formData.get('description') || '').trim();
         const price = String(formData.get('price') || '').trim();
         const badge = String(formData.get('badge') || '').trim();
+        const sortOrderRaw = String(formData.get('sort_order') || '').trim();
+        const sortOrderParsed = sortOrderRaw === '' ? null : Number(sortOrderRaw);
 
         if (!category || !name || !description || !price) return null;
+        if (sortOrderParsed !== null && (!Number.isInteger(sortOrderParsed) || sortOrderParsed < 0)) return null;
 
-        return { category, name, description, price, badge };
+        return { category, name, description, price, badge, sort_order: sortOrderParsed };
     }
 
     // Guardo un plato desde el modal.
@@ -248,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const data = readMenuModalData();
         if (!data) {
-            alert('Rellena categoria, nombre, descripcion y precio.');
+            alert('Rellena categoria, nombre, descripcion y precio. El orden debe ser un entero mayor o igual a 0.');
             return;
         }
 
