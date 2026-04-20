@@ -28,7 +28,6 @@
                 <a href="../index.html" class="nav-link">Inicio</a>
                 <a href="menu.html" class="nav-link">Menú</a>
                 <a href="ubicacion.html" class="nav-link">Ubicación</a>
-                <a href="reserva.html" class="nav-link">Reservas</a>
             </nav>
 
             <div class="header-actions">
@@ -40,10 +39,21 @@
                 </a>
                 <button id="menu-btn" class="burger-btn">
                     <svg id="icon-burger" class="icon-transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    <svg id="icon-close" class="icon-transition hidden-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
         </div>
     </header>
+
+    <div id="mobile-menu" class="mobile-menu-overlay">
+        <nav id="mobile-nav-content">
+            <img src="../src/assets/logo-sinfondo.png" class="mobile-logo" alt="Logo">
+            <a href="../index.html" class="mobile-link">INICIO</a>
+            <a href="menu.html" class="mobile-link">MENÚ</a>
+            <a href="ubicacion.html" class="mobile-link">UBICACIÓN</a>
+            <a href="login.html" class="btn-outline mobile-btn">ACCEDER</a>
+        </nav>
+    </div>
 
     <main class="legal-container">
         <h1 class="legal-title">POLÍTICA DE COOKIES</h1>
@@ -87,6 +97,7 @@
         </div>
     </footer>
 
+    <script type="module" src="../src/js/session.js"></script>
     <script type="module" src="../src/js/main.js"></script>
 </body>
 </html>

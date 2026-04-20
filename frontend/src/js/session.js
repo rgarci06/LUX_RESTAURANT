@@ -7,6 +7,32 @@ document.addEventListener('DOMContentLoaded', () => {
     // Correo admin principal (fallback por si el rol no viene bien guardado)
     const ADMIN_EMAIL = 'ddelpe@insdanielblanxart.cat';
 
+    function decodeJwtPayload(token) {
+        try {
+            const parts = String(token || '').split('.');
+            if (parts.length !== 3) return {};
+
+            const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+            const padding = '='.repeat((4 - (payload.length % 4)) % 4);
+            const decoded = atob(payload + padding);
+            const parsed = JSON.parse(decoded);
+            return parsed && typeof parsed === 'object' ? parsed : {};
+        } catch (_) {
+            return {};
+        }
+    }
+
+    function resolveEmail(currentSession) {
+        const directEmail = String(currentSession?.email || '').trim();
+        if (directEmail) return directEmail;
+
+        const payload = decodeJwtPayload(currentSession?.token);
+        const payloadEmail = String(payload?.email || '').trim();
+        if (payloadEmail) return payloadEmail;
+
+        return '';
+    }
+
     function readSession(storage) {
         return {
             token: storage.getItem('lux_token') || '',
@@ -37,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileNav = document.getElementById('mobile-nav-content');
     const currentSession = resolveCurrentSession();
     const token = currentSession.token;
-    const email = currentSession.email;
+    const email = resolveEmail(currentSession);
     const rol = currentSession.rol || 'client';
     const currentPath = window.location.pathname;
     const protectedRoutes = ['/pages/reserva.html', '/pages/admin.html'];
