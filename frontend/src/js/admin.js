@@ -240,11 +240,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function matchesUserSearch(user) {
         if (!state.search) return true;
 
+        const displayName = String(user.display_name || user.displayName || '').toLowerCase();
         const email = String(user.email || '').toLowerCase();
+        const phone = String(user.phone || user.telefono || '').toLowerCase();
         const createdPretty = formatDate(user.created_at).toLowerCase();
         const role = String(user.rol || '').toLowerCase();
 
-        const searchable = [email, createdPretty, role].join(' ');
+        const searchable = [displayName, email, phone, createdPretty, role].join(' ');
         return searchable.includes(state.search);
     }
 
@@ -305,14 +307,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const rows = state.users.filter(matchesUserSearch);
         usersBody.innerHTML = rows.map((u) => {
+            const displayName = (u.display_name || u.displayName || '').trim() || '-';
             const email = u.email || '-';
+            const phone = (u.phone || u.telefono || '').trim() || '-';
             const created = formatDate(u.created_at);
             const role = normalizeRole(u.rol);
 
             return `
                 <tr>
                     <td>${escapeHtml(created)}</td>
+                    <td>${escapeHtml(displayName)}</td>
                     <td>${escapeHtml(email)}</td>
+                    <td>${escapeHtml(phone)}</td>
                     <td>
                         <select class="admin-inline-input admin-role-select" data-field="user-role" data-id="${escapeHtml(u.id)}">
                             <option value="client" ${role === 'client' ? 'selected' : ''}>cliente</option>
