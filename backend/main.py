@@ -130,7 +130,7 @@ def _require_reservas_manager(authorization: str | None) -> tuple[str, dict]:
     app_metadata = payload.get("app_metadata") or {}
     rol = str(user_metadata.get("rol") or app_metadata.get("rol") or "").strip().lower()
 
-    if email == ADMIN_EMAIL or rol in {"admin", "camarero", "cambrer"}:
+    if email == ADMIN_EMAIL or rol in {"admin", "camarero"}:
         return token, payload
 
     raise HTTPException(status_code=403, detail="No tienes permisos para gestionar reservas")
@@ -1055,9 +1055,6 @@ def admin_editar_usuario(user_id: str, payload: AdminUserUpdate, authorization: 
         # Validación de admin antes de editar usuario.
         _require_admin(authorization)
         rol = payload.rol.strip().lower()
-        if rol == "cambrer":
-            rol = "camarero"
-
         if rol not in {"admin", "client", "camarero"}:
             raise HTTPException(status_code=400, detail="Rol no valido")
 

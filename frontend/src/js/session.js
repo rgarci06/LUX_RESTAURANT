@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const isAuthenticated = Boolean(token && email);
     const normalizedRole = String(rol || '').toLowerCase();
     const isAdmin = normalizedRole === 'admin' || (email || '').toLowerCase() === ADMIN_EMAIL;
-    const isCamarero = normalizedRole === 'camarero' || normalizedRole === 'cambrer';
+    const isCamarero = normalizedRole === 'camarero';
     const canManageReservas = isAdmin || isCamarero;
 
     if (isProtectedRoute && !isAuthenticated) {

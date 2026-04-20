@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const token = currentSession.token || '';
     const rol = String(currentSession.rol || '').toLowerCase();
     const isAdmin = rol === 'admin';
-    const isCamarero = rol === 'camarero' || rol === 'cambrer';
+    const isCamarero = rol === 'camarero';
     const canManageReservas = isAdmin || isCamarero;
 
     // Si no tiene token o no tiene permisos de reservas, no puede entrar al panel.
@@ -250,7 +250,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function normalizeRole(role) {
         const normalized = String(role || '').trim().toLowerCase();
-        if (normalized === 'cambrer') return 'camarero';
         return normalized || 'client';
     }
 
@@ -316,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${escapeHtml(email)}</td>
                     <td>
                         <select class="admin-inline-input admin-role-select" data-field="user-role" data-id="${escapeHtml(u.id)}">
-                            <option value="client" ${role === 'client' ? 'selected' : ''}>client</option>
+                            <option value="client" ${role === 'client' ? 'selected' : ''}>cliente</option>
                             <option value="camarero" ${role === 'camarero' ? 'selected' : ''}>camarero</option>
                             <option value="admin" ${role === 'admin' ? 'selected' : ''}>admin</option>
                         </select>

@@ -121,11 +121,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 storage.setItem("lux_rol", respuesta.dades.rol);
                 storage.setItem("lux_email", emailInput.value);
                 
-                const rol = respuesta.dades.rol;
-                if (rol === "admin") window.location.href = "/pages/panel_admin.html";
-                else if (rol === "gestor") window.location.href = "/pages/panel_gestor.html";
-                else if (rol === "cambrer" || rol === "camarero") window.location.href = "/pages/admin.html";
-                else window.location.href = "/index.html"; 
+                const rol = String(respuesta.dades.rol || '').toLowerCase();
+                if (rol === "admin" || rol === "camarero") {
+                    window.location.href = "/pages/admin.html";
+                } else {
+                    window.location.href = "/index.html";
+                }
             } else {
                 showLuxAlert("Credenciales incorrectas o el usuario no existe.", 'error');
             }
