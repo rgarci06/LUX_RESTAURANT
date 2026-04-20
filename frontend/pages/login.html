@@ -52,20 +52,24 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="input-group">
                         <label class="label-luxury">Nombre</label>
-                        <input type="text" class="input-luxury" placeholder="Juan">
+                        <input type="text" class="input-luxury" name="nombre" placeholder="Juan" required>
                     </div>
                     <div class="input-group">
                         <label class="label-luxury">Apellido</label>
-                        <input type="text" class="input-luxury" placeholder="Pérez">
+                        <input type="text" class="input-luxury" name="apellido" placeholder="Pérez" required>
                     </div>
                 </div>
                 <div class="input-group">
+                    <label class="label-luxury">Teléfono</label>
+                    <input type="tel" class="input-luxury" name="telefono" placeholder="612345678" required>
+                </div>
+                <div class="input-group">
                     <label class="label-luxury">Email</label>
-                    <input type="email" class="input-luxury" placeholder="ejemplo@correo.com">
+                    <input type="email" class="input-luxury" name="email" placeholder="ejemplo@correo.com" required>
                 </div>
                 <div class="input-group">
                     <label class="label-luxury">Contraseña</label>
-                    <input type="password" class="input-luxury" placeholder="Crea una contraseña">
+                    <input type="password" class="input-luxury" name="password" placeholder="Crea una contraseña" required>
                 </div>
                 <button type="submit" class="btn-login" style="margin-top: 10px;">CREAR CUENTA</button>
                 <p class="form-footer">

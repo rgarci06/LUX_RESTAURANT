@@ -64,17 +64,29 @@ document.addEventListener('DOMContentLoaded', () => {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const emailInput = registerForm.querySelector('input[type="email"]');
-            const passwordInput = registerForm.querySelector('input[type="password"]');
+            const nameInput = registerForm.querySelector('input[name="nombre"]');
+            const surnameInput = registerForm.querySelector('input[name="apellido"]');
+            const phoneInput = registerForm.querySelector('input[name="telefono"]');
+            const emailInput = registerForm.querySelector('input[name="email"]');
+            const passwordInput = registerForm.querySelector('input[name="password"]');
 
-            if (!emailInput || !passwordInput || !emailInput.value || !passwordInput.value) {
-                return showLuxAlert("El correo y la contraseña son obligatorios.", 'warning');
+            if (
+                !nameInput || !surnameInput || !phoneInput || !emailInput || !passwordInput ||
+                !nameInput.value || !surnameInput.value || !phoneInput.value || !emailInput.value || !passwordInput.value
+            ) {
+                return showLuxAlert("El nombre, apellido, teléfono, correo y contraseña son obligatorios.", 'warning');
             }
 
             if(btnRegisterSubmit) btnRegisterSubmit.innerText = "REGISTRANDO...";
 
             // muestra el mensaje de "registrando..." mientras espera la respuesta del servidor
-            const respuesta = await AuthService.register(emailInput.value, passwordInput.value);
+            const respuesta = await AuthService.register({
+                nombre: nameInput.value,
+                apellido: surnameInput.value,
+                telefono: phoneInput.value,
+                email: emailInput.value,
+                password: passwordInput.value
+            });
 
             if (respuesta.ok) {
                 showLuxAlert("Cuenta creada correctamente. Ya puedes iniciar sesión.", 'success');

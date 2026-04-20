@@ -31,12 +31,12 @@ export const AuthService = {
     },
 
     // Método para Registrar Usuario
-    register: async (email, password) => {
+    register: async (payload) => {
         try {
             const respuesta = await fetch(`${API_URL}/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password, rol: "client" })
+                body: JSON.stringify({ ...payload, rol: "client" })
             });
             const dades = await respuesta.json();
             return { ok: respuesta.ok, status: respuesta.status, dades: dades };

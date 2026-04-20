@@ -270,6 +270,9 @@ class UsuariLogin(BaseModel):
 class UsuariRegistre(BaseModel):
     email: str
     password: str
+    nombre: str
+    apellido: str
+    telefono: str
     rol: str = "client" # Per defecte, tothom que es registra és client
 
 class ReservaPayload(BaseModel):
@@ -490,16 +493,47 @@ def admin_eliminar_menu_item(item_id: str, authorization: str | None = Header(de
 @app.post("/api/register")
 def registrar(user: UsuariRegistre):
     try:
-        # Guardem el rol a les "metadata" de l'usuari
+        nombre = str(user.nombre or "").strip()
+        apellido = str(user.apellido or "").strip()
+        telefono = str(user.telefono or "").strip()
+
+        if not nombre or not apellido or not telefono:
+            raise HTTPException(status_code=400, detail="Nombre, apellido y telefono son obligatorios")
+
+        display_name = f"{nombre} {apellido}".strip()
+
+        # Guardem el rol i les dades de perfil a les "metadata" de l'usuari
         respuesta = supabase.auth.sign_up({
             "email": user.email,
             "password": user.password,
             "options": {
                 "data": {
-                    "rol": user.rol
+                    "rol": user.rol,
+                    "nombre": nombre,
+                    "apellido": apellido,
+                    "display_name": display_name,
+                    "telefono": telefono,
                 }
             }
         })
+
+        user_resp = getattr(respuesta, "user", None)
+        user_id = getattr(user_resp, "id", None) if user_resp else None
+        if user_id:
+            _admin_rest_request(
+                "PUT",
+                f"/admin/users/{user_id}",
+                {
+                    "phone": telefono,
+                    "user_metadata": {
+                        "rol": user.rol,
+                        "nombre": nombre,
+                        "apellido": apellido,
+                        "display_name": display_name,
+                        "telefono": telefono,
+                    }
+                }
+            )
 
         # si el correo ya esta registrado, muestra el error
         user_resp = getattr(respuesta, "user", None)
@@ -1018,25 +1052,35 @@ def admin_listar_usuarios(authorization: str | None = Header(default=None)):
             reverse=True,
         )
 
-        # Devolvemos solo lo que necesitas en la tabla: id, email, creado, rol.
+        # Devolvemos también los campos de perfil para poder mostrarlos en el panel.
         normalized = []
         for u in users:
             if isinstance(u, dict):
                 metadata = (u.get("user_metadata") or u.get("raw_user_meta_data") or {})
+                nombre = str(metadata.get("nombre") or "").strip()
+                apellido = str(metadata.get("apellido") or "").strip()
+                display_name = str(metadata.get("display_name") or f"{nombre} {apellido}").strip()
                 normalized.append(
                     {
                         "id": u.get("id"),
                         "email": u.get("email"),
+                        "phone": u.get("phone") or metadata.get("telefono"),
+                        "display_name": display_name,
                         "created_at": u.get("created_at"),
                         "rol": (metadata.get("rol") if isinstance(metadata, dict) else None) or "client",
                     }
                 )
             else:
                 metadata = getattr(u, "user_metadata", {}) or {}
+                nombre = str(metadata.get("nombre") or "").strip()
+                apellido = str(metadata.get("apellido") or "").strip()
+                display_name = str(metadata.get("display_name") or f"{nombre} {apellido}").strip()
                 normalized.append(
                     {
                         "id": getattr(u, "id", None),
                         "email": getattr(u, "email", None),
+                        "phone": getattr(u, "phone", None) or metadata.get("telefono"),
+                        "display_name": display_name,
                         "created_at": getattr(u, "created_at", None),
                         "rol": metadata.get("rol", "client") if isinstance(metadata, dict) else "client",
                     }
