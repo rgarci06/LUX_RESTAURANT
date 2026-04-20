@@ -316,7 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <h2 class="category-title">${escapeHtml(categoryTitles[categoryKey] || categoryKey)}</h2>
             ${isAdmin ? `
                 <div class="menu-admin-toolbar">
-                    <p class="menu-admin-note">El admin puede añadir, editar y borrar platos.</p>
+                    <p class="menu-admin-note">El modo admin esta activo.</p>
                     <button type="button" class="menu-admin-btn menu-admin-btn-primary menu-admin-btn-add" data-action="add-dish" data-category="${escapeHtml(categoryKey)}">＋ Añadir plato</button>
                 </div>
             ` : ''}
