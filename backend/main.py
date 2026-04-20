@@ -34,7 +34,7 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
-# Extrae el token Bearer del header Authorization.
+# Extrae el token del header Authorization.
 def extract_bearer_token(authorization: str | None) -> str | None:
     if not authorization:
         return None
@@ -46,7 +46,7 @@ def extract_bearer_token(authorization: str | None) -> str | None:
     return token.strip()
 
 
-# Extrae el user_id (claim sub) del JWT.
+# Extrae el user_id del token.
 def extract_user_id_from_jwt(token: str) -> str | None:
     """Extrae el claim `sub` (UUID del usuario) desde el payload del JWT."""
     try:
@@ -66,7 +66,7 @@ def extract_user_id_from_jwt(token: str) -> str | None:
         return None
 
 
-# Decodifica el payload del JWT en formato diccionario.
+# se decodifica el payload (email, rol) para que el backend lea bien los datos del usuario según el token.
 def decode_jwt_payload(token: str) -> dict:
     try:
         parts = token.split(".")
