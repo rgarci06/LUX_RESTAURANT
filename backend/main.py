@@ -385,11 +385,14 @@ def admin_crear_menu_item(payload: MenuItemPayload, authorization: str | None = 
         description = str(payload.description or "").strip()
         price = str(payload.price or "").strip()
         badge = str(payload.badge or "").strip()
+        sort_order = payload.sort_order
 
         if category not in {"starters", "mains", "desserts", "wines"}:
             raise HTTPException(status_code=400, detail="Categoria no valida")
         if not name or not description or not price:
             raise HTTPException(status_code=400, detail="Nombre, descripcion y precio son obligatorios")
+        if sort_order is not None and sort_order < 0:
+            raise HTTPException(status_code=400, detail="sort_order debe ser mayor o igual a 0")
 
         respuesta = (
             menu_supabase
@@ -400,6 +403,7 @@ def admin_crear_menu_item(payload: MenuItemPayload, authorization: str | None = 
                 "description": description,
                 "price": price,
                 "badge": badge,
+                "sort_order": sort_order,
             })
             .execute()
         )
@@ -441,6 +445,10 @@ def admin_editar_menu_item(item_id: str, payload: MenuItemUpdatePayload, authori
             update_data["price"] = price
         if payload.badge is not None:
             update_data["badge"] = str(payload.badge or "").strip()
+        if payload.sort_order is not None:
+            if payload.sort_order < 0:
+                raise HTTPException(status_code=400, detail="sort_order debe ser mayor o igual a 0")
+            update_data["sort_order"] = payload.sort_order
 
         if not update_data:
             raise HTTPException(status_code=400, detail="No hay campos para actualizar")
