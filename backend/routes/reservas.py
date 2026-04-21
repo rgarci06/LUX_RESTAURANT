@@ -34,7 +34,7 @@ def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reser
     msg["To"] = email_cliente
     msg["Subject"] = "Tu reserva en LUX está confirmada"
 
-    url_cancelar = f"http://localhost:8000/api/cancelar-reserva?ids={ids_reserva}"
+    url_cancelar = f"https://lux-restaurant-six.vercel.app/pages/cancelacion.html?ids={ids_reserva}"
 
     html = f"""
     <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #111111; color: #ffffff; padding: 50px 30px; text-align: center; border: 1px solid #d4af37; border-radius: 8px;">
