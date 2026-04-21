@@ -160,25 +160,15 @@ def crear_reserva(reserva: ReservaPayload, authorization: str | None = Header(de
 def cancelar_reserva(ids: str):
     try:
         lista_ids = [int(id_mesa.strip()) for id_mesa in ids.split(",")]
+        
+        # Conectamos con Supabase
         request_supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
         request_supabase.table(SUPABASE_RESERVATIONS_TABLE).delete().in_("id", lista_ids).execute()
-
-        html_content = """
-        <html>
-            <body style="background:#0a0a0a; color:#fff; text-align:center; padding-top:100px; font-family:'Helvetica Neue', Arial, sans-serif;">
-                <h1 style="color:#d4af37; letter-spacing: 4px;">LUX RESTAURANT</h1>
-                <div style="border: 1px solid #333; padding: 40px; max-width: 500px; margin: 0 auto; border-radius: 8px; background: #111;">
-                    <h2 style="margin-bottom: 20px;">Reserva Cancelada</h2>
-                    <p style="color: #ccc; line-height: 1.6;">Tu reserva ha sido anulada correctamente. Las mesas vuelven a estar disponibles.</p>
-                    <p style="color: #ccc;">Esperamos poder atenderte en otra ocasión.</p>
-                    <a href="http://localhost:5173" style="display: inline-block; margin-top: 30px; color: #d4af37; text-decoration: none; border-bottom: 1px solid #d4af37;">Volver al inicio</a>
-                </div>
-            </body>
-        </html>
-        """
-        return HTMLResponse(content=html_content, status_code=200)
+        
+        # Ahora devolvemos un JSON limpio, no un HTML
+        return {"ok": True, "mensaje": "Reserva cancelada correctamente"}
     except Exception as e:
-        return HTMLResponse(content=f"<h1 style='color:red; text-align:center;'>Error al cancelar: {e}</h1>", status_code=400)
+        raise HTTPException(status_code=400, detail=f"Error al cancelar: {str(e)}")
 
 
 @router.get("/api/mesas/disponibles")
