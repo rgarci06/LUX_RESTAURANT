@@ -671,9 +671,14 @@
 
 .detail-label {
     color: #aaaaaa;
+    flex-shrink: 0;
 }
 
 .detail-value {
+    display: block;
+    flex: 1;
+    margin-left: 16px;
+    text-align: right;
     color: #ffffff;
     font-weight: bold;
     font-family: 'Cinzel', serif;
