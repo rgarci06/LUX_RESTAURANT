@@ -15,16 +15,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         // AQUÍ PON LA URL DE TU BACKEND EN RENDER CUANDO LO SUBAS
         // Para probar en local usa: http://localhost:8000/api/cancelar-reserva?ids=${ids}
-        const apiUrl = `https://lux-restaurant.onrender.com/api/cancelar-reserva?ids=${ids}`;
-        
+        const apiUrl = `https://lux-restaurant.onrender.com/api/cancelar-reserva?ids=${encodeURIComponent(ids)}`;
+
         const response = await fetch(apiUrl, {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            headers: { 'Accept': 'application/json' }
         });
 
-        const data = await response.json();
+        const contentType = response.headers.get('content-type') || '';
+        let data = null;
+
+        if (contentType.includes('application/json')) {
+            data = await response.json();
+        } else {
+            const rawText = await response.text();
+            throw new Error(`Respuesta no JSON (${response.status}): ${rawText.slice(0, 180)}...`);
+        }
 
         if (response.ok) {
             // ÉXITO
@@ -38,12 +44,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             message.textContent = "Tu reserva ha sido anulada correctamente. Esperamos poder atenderte en otra ocasión y que disfrutes de la experiencia LUX muy pronto.";
         } else {
             // ERROR DEL BACKEND
-            showError("No se pudo cancelar", data.detail || "La reserva ya ha sido cancelada previamente o no existe.");
+            showError("No se pudo cancelar", data?.detail || "La reserva ya ha sido cancelada previamente o no existe.");
         }
 
     } catch (error) {
-        // ERROR DE RED
-        showError("Error de conexión", "No hemos podido conectar con el servidor. Inténtalo de nuevo más tarde.");
+        // ERROR DE RED / FORMATO
+        showError("Error de conexión", "No hemos podido conectar con el servidor o la respuesta no es válida.");
         console.error("Error cancelando:", error);
     }
 
