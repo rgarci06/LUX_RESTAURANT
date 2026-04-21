@@ -68,6 +68,9 @@ def admin_listar_reservas(authorization: str | None = Header(default=None)):
             dt = parse_iso_datetime(row.get(SUPABASE_RESERVATION_DATETIME_COLUMN))
             row_id = row.get(SUPABASE_RESERVATION_ID_COLUMN)
 
+            if row_id is not None and row.get("id") is None:
+                row["id"] = row_id
+
             if dt and dt >= today_start_utc:
                 active_rows.append(row)
             elif dt and row_id is not None:
