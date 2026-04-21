@@ -21,7 +21,6 @@ SUPABASE_USER_ID_COLUMN = os.getenv("SUPABASE_USER_ID_COLUMN", "user_id").strip(
 SUPABASE_USER_EMAIL_COLUMN = os.getenv("SUPABASE_USER_EMAIL_COLUMN", "").strip()
 SUPABASE_RESERVATION_DATETIME_COLUMN = os.getenv("SUPABASE_RESERVATION_DATETIME_COLUMN", "reservation_datetime")
 SUPABASE_RESERVATION_ID_COLUMN = os.getenv("SUPABASE_RESERVATION_ID_COLUMN", "id").strip()
-ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "ddelpe@insdanielblanxart.cat").strip().lower()
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise RuntimeError("Faltan SUPABASE_URL o una clave de Supabase en backend/.env")
@@ -84,12 +83,11 @@ def require_admin(authorization: str | None) -> tuple[str, dict]:
         raise HTTPException(status_code=401, detail="Necesitas iniciar sesion")
 
     payload = decode_jwt_payload(token)
-    email = str(payload.get("email", "")).strip().lower()
     user_metadata = payload.get("user_metadata") or {}
     app_metadata = payload.get("app_metadata") or {}
     rol = str(user_metadata.get("rol") or app_metadata.get("rol") or "").strip().lower()
 
-    if email != ADMIN_EMAIL and rol != "admin":
+    if rol != "admin":
         raise HTTPException(status_code=403, detail="No tienes permisos de administrador")
 
     return token, payload
@@ -102,12 +100,11 @@ def require_reservas_manager(authorization: str | None) -> tuple[str, dict]:
         raise HTTPException(status_code=401, detail="Necesitas iniciar sesion")
 
     payload = decode_jwt_payload(token)
-    email = str(payload.get("email", "")).strip().lower()
     user_metadata = payload.get("user_metadata") or {}
     app_metadata = payload.get("app_metadata") or {}
     rol = str(user_metadata.get("rol") or app_metadata.get("rol") or "").strip().lower()
 
-    if email == ADMIN_EMAIL or rol in {"admin", "camarero"}:
+    if rol in {"admin", "camarero"}:
         return token, payload
 
     raise HTTPException(status_code=403, detail="No tienes permisos para gestionar reservas")
