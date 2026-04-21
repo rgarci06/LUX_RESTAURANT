@@ -338,7 +338,6 @@ document.addEventListener('DOMContentLoaded', () => {
         bindModalActions();
     }
 
-    // Pongo los botones del admin a funcionar otra vez.
     function bindAdminActions() {
         if (!isAdmin) return;
 
