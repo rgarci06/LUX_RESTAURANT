@@ -4,7 +4,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi import APIRouter, Header, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from supabase import Client, create_client
@@ -82,9 +82,9 @@ class ReservaPayload(BaseModel):
 
 
 @router.post("/api/reservas")
-def crear_reserva(reserva: ReservaPayload, request: Request, authorization: str | None = Header(default=None)):
+def crear_reserva(reserva: ReservaPayload, authorization: str | None = Header(default=None)):
     try:
-        token, auth_user = get_authenticated_user(authorization, request)
+        token, auth_user = get_authenticated_user(authorization)
 
         if not reserva.tables:
             raise HTTPException(status_code=400, detail="Debes seleccionar al menos una mesa")
@@ -159,9 +159,9 @@ def crear_reserva(reserva: ReservaPayload, request: Request, authorization: str 
 
 
 @router.get("/api/cancelar-reserva")
-def cancelar_reserva(ids: str, request: Request, authorization: str | None = Header(default=None)):
+def cancelar_reserva(ids: str, authorization: str | None = Header(default=None)):
     try:
-        _, auth_user = get_authenticated_user(authorization, request)
+        _, auth_user = get_authenticated_user(authorization)
         auth_user_id = str(auth_user.get("id") or "").strip()
         if not auth_user_id:
             raise HTTPException(status_code=401, detail="Sesion invalida o expirada")

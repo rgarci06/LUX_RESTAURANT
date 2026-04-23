@@ -128,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const respuesta = await AuthService.login(emailInput.value, passwordInput.value);
             
             if (respuesta.ok) {
+<<<<<<< HEAD
                 const session = await AuthService.getSession();
                 if (!session.ok || !session.dades?.authenticated) {
                     showLuxAlert("Inicio de sesión correcto, pero la sesión no pudo mantenerse. Revisa cookies del navegador.", 'warning');
@@ -136,6 +137,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 const rol = String(session.dades?.user?.rol || respuesta.dades?.rol || '').toLowerCase();
+=======
+                const storage = isRemembered ? localStorage : sessionStorage;
+                storage.setItem("lux_token", respuesta.dades.token);
+                storage.setItem("lux_rol", respuesta.dades.rol);
+                storage.setItem("lux_email", emailInput.value);
+                
+                const rol = String(respuesta.dades.rol || '').toLowerCase();
+>>>>>>> parent of 61e76fc (quitar autentificacion por local storage)
                 if (rol === "admin" || rol === "camarero") {
                     window.location.href = "/pages/admin.html";
                 } else {

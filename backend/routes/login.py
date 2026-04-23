@@ -1,12 +1,11 @@
-import os
-
-from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from main import AUTH_COOKIE_NAME, admin_rest_request, get_authenticated_user, supabase
+from main import admin_rest_request, supabase
 
 router = APIRouter()
 
+<<<<<<< HEAD
 AUTH_COOKIE_SECURE = (os.getenv("AUTH_COOKIE_SECURE", "false").strip().lower() == "true")
 _auth_cookie_samesite_env = os.getenv("AUTH_COOKIE_SAMESITE", "").strip().lower()
 AUTH_COOKIE_MAX_AGE_SECONDS = int(os.getenv("AUTH_COOKIE_MAX_AGE_SECONDS", "28800"))
@@ -47,6 +46,8 @@ def clear_auth_cookie(response: Response, request: Request):
         samesite=samesite,
     )
 
+=======
+>>>>>>> parent of 61e76fc (quitar autentificacion por local storage)
 
 class UsuariLogin(BaseModel):
     email: str
@@ -133,44 +134,13 @@ def registrar(user: UsuariRegistre):
 
 
 @router.post("/api/login")
-def entrar(user: UsuariLogin, request: Request, response: Response):
+def entrar(user: UsuariLogin):
     try:
         respuesta = supabase.auth.sign_in_with_password({"email": user.email, "password": user.password})
-        set_auth_cookie(response, request, respuesta.session.access_token)
         rol_usuari = respuesta.user.user_metadata.get("rol", "client")
-        return {"rol": rol_usuari}
+        return {"token": respuesta.session.access_token, "rol": rol_usuari}
     except Exception:
         raise HTTPException(status_code=401, detail="Correu o contrasenya incorrectes")
-
-
-@router.get("/api/session")
-def session_actual(request: Request):
-    try:
-        _, user_payload = get_authenticated_user(None, request)
-        user_metadata = user_payload.get("user_metadata") or {}
-        app_metadata = user_payload.get("app_metadata") or {}
-        rol = str(user_metadata.get("rol") or app_metadata.get("rol") or "client").strip().lower() or "client"
-        email = str(user_payload.get("email") or "").strip()
-
-        return {
-            "ok": True,
-            "authenticated": True,
-            "user": {
-                "id": user_payload.get("id"),
-                "email": email,
-                "rol": rol,
-            },
-        }
-    except HTTPException:
-        return {"ok": True, "authenticated": False, "user": None}
-    except Exception:
-        return {"ok": True, "authenticated": False, "user": None}
-
-
-@router.post("/api/logout")
-def logout(request: Request, response: Response):
-    clear_auth_cookie(response, request)
-    return {"ok": True}
 
 
 @router.post("/api/recuperar-password")

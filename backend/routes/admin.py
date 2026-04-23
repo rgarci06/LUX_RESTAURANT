@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 from supabase import Client, create_client
 
@@ -100,9 +100,9 @@ def _delete_reservations_by_ids(reservation_ids: list[str]):
 
 
 @router.get("/api/admin/reservas")
-def admin_listar_reservas(request: Request, authorization: str | None = Header(default=None)):
+def admin_listar_reservas(authorization: str | None = Header(default=None)):
     try:
-        require_reservas_manager(authorization, request)
+        require_reservas_manager(authorization)
         read_supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
         now_utc = datetime.now(timezone.utc)
         today_start_utc = now_utc.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -180,9 +180,9 @@ def admin_listar_reservas(request: Request, authorization: str | None = Header(d
 
 
 @router.patch("/api/admin/reservas/{reservation_id}")
-def admin_editar_reserva(reservation_id: str, payload: AdminReservaUpdate, request: Request, authorization: str | None = Header(default=None)):
+def admin_editar_reserva(reservation_id: str, payload: AdminReservaUpdate, authorization: str | None = Header(default=None)):
     try:
-        require_reservas_manager(authorization, request)
+        require_reservas_manager(authorization)
 
         update_data = {}
         if payload.people is not None:
@@ -212,9 +212,9 @@ def admin_editar_reserva(reservation_id: str, payload: AdminReservaUpdate, reque
 
 
 @router.delete("/api/admin/reservas/{reservation_id}")
-def admin_eliminar_reserva(reservation_id: str, request: Request, authorization: str | None = Header(default=None)):
+def admin_eliminar_reserva(reservation_id: str, authorization: str | None = Header(default=None)):
     try:
-        require_reservas_manager(authorization, request)
+        require_reservas_manager(authorization)
         respuesta = _delete_reservations_by_ids([str(reservation_id).strip()])
         return {"ok": True, "data": respuesta.data}
     except HTTPException:
@@ -224,9 +224,9 @@ def admin_eliminar_reserva(reservation_id: str, request: Request, authorization:
 
 
 @router.patch("/api/admin/reservas/grupo/update")
-def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, request: Request, authorization: str | None = Header(default=None)):
+def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, authorization: str | None = Header(default=None)):
     try:
-        require_reservas_manager(authorization, request)
+        require_reservas_manager(authorization)
 
         reservation_ids = [str(rid).strip() for rid in payload.ids if str(rid).strip()]
         if not reservation_ids:
@@ -351,9 +351,9 @@ def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, request: Reques
 
 
 @router.post("/api/admin/reservas/grupo/delete")
-def admin_eliminar_reserva_grupo(payload: AdminReservaGroupDelete, request: Request, authorization: str | None = Header(default=None)):
+def admin_eliminar_reserva_grupo(payload: AdminReservaGroupDelete, authorization: str | None = Header(default=None)):
     try:
-        require_reservas_manager(authorization, request)
+        require_reservas_manager(authorization)
 
         reservation_ids = [str(rid).strip() for rid in payload.ids if str(rid).strip()]
         if not reservation_ids:
@@ -369,9 +369,9 @@ def admin_eliminar_reserva_grupo(payload: AdminReservaGroupDelete, request: Requ
 
 
 @router.get("/api/admin/users")
-def admin_listar_usuarios(request: Request, authorization: str | None = Header(default=None)):
+def admin_listar_usuarios(authorization: str | None = Header(default=None)):
     try:
-        require_admin(authorization, request)
+        require_admin(authorization)
         response = admin_rest_request("GET", "/admin/users")
         users = response.get("users", []) if isinstance(response, dict) else []
 
@@ -422,9 +422,9 @@ def admin_listar_usuarios(request: Request, authorization: str | None = Header(d
 
 
 @router.patch("/api/admin/users/{user_id}")
-def admin_editar_usuario(user_id: str, payload: AdminUserUpdate, request: Request, authorization: str | None = Header(default=None)):
+def admin_editar_usuario(user_id: str, payload: AdminUserUpdate, authorization: str | None = Header(default=None)):
     try:
-        require_admin(authorization, request)
+        require_admin(authorization)
         rol = payload.rol.strip().lower()
         if rol not in {"admin", "client", "camarero"}:
             raise HTTPException(status_code=400, detail="Rol no valido")
@@ -443,9 +443,9 @@ def admin_editar_usuario(user_id: str, payload: AdminUserUpdate, request: Reques
 
 
 @router.delete("/api/admin/users/{user_id}")
-def admin_eliminar_usuario(user_id: str, request: Request, authorization: str | None = Header(default=None)):
+def admin_eliminar_usuario(user_id: str, authorization: str | None = Header(default=None)):
     try:
-        require_admin(authorization, request)
+        require_admin(authorization)
         respuesta = admin_rest_request("DELETE", f"/admin/users/{user_id}")
         return {"ok": True, "data": respuesta}
     except HTTPException:

@@ -1,6 +1,6 @@
-import { AdminService, AuthService } from './services/api.js';
+import { AdminService } from './services/api.js';
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     // Cogemos referencias del HTML para no repetir document.getElementById todo el rato.
     const searchInput = document.getElementById('admin-search');
     const reservasBody = document.getElementById('admin-reservas-body');
@@ -14,15 +14,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     const cardReservas = document.getElementById('card-reservas');
     const cardUsers = document.getElementById('card-users');
 
-    const sessionResult = await AuthService.getSession();
-    const isAuthenticated = Boolean(sessionResult.ok && sessionResult.dades?.authenticated);
-    const rol = String(sessionResult.dades?.user?.rol || '').toLowerCase();
+    function readSession(storage) {
+        return {
+            token: storage.getItem('lux_token') || '',
+            email: storage.getItem('lux_email') || '',
+            rol: storage.getItem('lux_rol') || ''
+        };
+    }
+
+    function resolveCurrentSession() {
+        const sessionData = readSession(sessionStorage);
+        if (sessionData.token && sessionData.email) {
+            return sessionData;
+        }
+
+        const localData = readSession(localStorage);
+        if (localData.token && localData.email) {
+            return localData;
+        }
+
+        return sessionData.token || sessionData.email || sessionData.rol
+            ? sessionData
+            : localData;
+    }
+
+    const currentSession = resolveCurrentSession();
+    const token = currentSession.token || '';
+    const rol = String(currentSession.rol || '').toLowerCase();
     const isAdmin = rol === 'admin';
     const isCamarero = rol === 'camarero';
     const canManageReservas = isAdmin || isCamarero;
 
     // Si no tiene token o no tiene permisos de reservas, no puede entrar al panel.
-    if (!isAuthenticated || !canManageReservas) {
+    if (!token || !canManageReservas) {
         window.location.href = '/pages/login.html';
         return;
     }
@@ -319,7 +343,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Carga reservas desde el backend.
     async function loadReservas() {
-        const result = await AdminService.listReservations('');
+        const result = await AdminService.listReservations(token);
         if (!result.ok) {
             reservasInfo.textContent = result.dades?.detail || 'No se pudieron cargar las reservas.';
             return;
@@ -333,7 +357,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function loadUsers() {
         if (!isAdmin) return;
 
-        const result = await AdminService.listUsers('');
+        const result = await AdminService.listUsers(token);
         if (!result.ok) {
             if (usersInfo) {
                 usersInfo.textContent = result.dades?.detail || 'No se pudieron cargar los usuarios.';
@@ -393,7 +417,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            const result = await AdminService.deleteReservationGroup(idsToDelete, '');
+            const result = await AdminService.deleteReservationGroup(idsToDelete, token);
             if (!result.ok) {
                 alert(result.dades?.detail || 'No se pudo eliminar la reserva.');
                 return;
@@ -456,7 +480,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 tables: tablesValue
             };
 
-            const result = await AdminService.updateReservationGroup(payload, '');
+            const result = await AdminService.updateReservationGroup(payload, token);
             if (!result.ok) {
                 alert(result.dades?.detail || 'No se pudo actualizar la reserva.');
                 return;
@@ -482,7 +506,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const roleInput = row?.querySelector('select[data-field="user-role"]');
             const selectedRole = normalizeRole(roleInput?.value || 'client');
 
-            const result = await AdminService.updateUser(userId, { rol: selectedRole }, '');
+            const result = await AdminService.updateUser(userId, { rol: selectedRole }, token);
             if (!result.ok) {
                 alert(result.dades?.detail || 'No se pudo actualizar el rol del usuario.');
                 return;
@@ -494,7 +518,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (action === 'delete-user') {
             if (!confirm('¿Seguro que quieres eliminar este usuario?')) return;
-            await AdminService.deleteUser(userId, '');
+            await AdminService.deleteUser(userId, token);
             await loadUsers();
             return;
         }
