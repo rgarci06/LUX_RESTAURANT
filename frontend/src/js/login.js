@@ -128,7 +128,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const respuesta = await AuthService.login(emailInput.value, passwordInput.value);
             
             if (respuesta.ok) {
-                const rol = String(respuesta.dades.rol || '').toLowerCase();
+                const session = await AuthService.getSession();
+                if (!session.ok || !session.dades?.authenticated) {
+                    showLuxAlert("Inicio de sesión correcto, pero la sesión no pudo mantenerse. Revisa cookies del navegador.", 'warning');
+                    if(btnLoginSubmit) btnLoginSubmit.innerText = "ACCEDER";
+                    return;
+                }
+
+                const rol = String(session.dades?.user?.rol || respuesta.dades?.rol || '').toLowerCase();
                 if (rol === "admin" || rol === "camarero") {
                     window.location.href = "/pages/admin.html";
                 } else {

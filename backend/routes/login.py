@@ -9,29 +9,42 @@ router = APIRouter()
 
 AUTH_COOKIE_SECURE = (os.getenv("AUTH_COOKIE_SECURE", "false").strip().lower() == "true")
 _auth_cookie_samesite_env = os.getenv("AUTH_COOKIE_SAMESITE", "").strip().lower()
-AUTH_COOKIE_SAMESITE = _auth_cookie_samesite_env or ("none" if AUTH_COOKIE_SECURE else "lax")
 AUTH_COOKIE_MAX_AGE_SECONDS = int(os.getenv("AUTH_COOKIE_MAX_AGE_SECONDS", "28800"))
 
 
-def set_auth_cookie(response: Response, token: str):
+def resolve_cookie_security(request: Request) -> tuple[bool, str]:
+    host = (request.url.hostname or "").strip().lower()
+    is_local = host in {"localhost", "127.0.0.1"}
+
+    secure = AUTH_COOKIE_SECURE
+    if not secure and not is_local and request.url.scheme == "https":
+        secure = True
+
+    samesite = _auth_cookie_samesite_env or ("none" if secure else "lax")
+    return secure, samesite
+
+
+def set_auth_cookie(response: Response, request: Request, token: str):
+    secure, samesite = resolve_cookie_security(request)
     response.set_cookie(
         key=AUTH_COOKIE_NAME,
         value=token,
         httponly=True,
-        secure=AUTH_COOKIE_SECURE,
-        samesite=AUTH_COOKIE_SAMESITE,
+        secure=secure,
+        samesite=samesite,
         max_age=AUTH_COOKIE_MAX_AGE_SECONDS,
         path="/",
     )
 
 
-def clear_auth_cookie(response: Response):
+def clear_auth_cookie(response: Response, request: Request):
+    secure, samesite = resolve_cookie_security(request)
     response.delete_cookie(
         key=AUTH_COOKIE_NAME,
         path="/",
         httponly=True,
-        secure=AUTH_COOKIE_SECURE,
-        samesite=AUTH_COOKIE_SAMESITE,
+        secure=secure,
+        samesite=samesite,
     )
 
 
@@ -120,10 +133,10 @@ def registrar(user: UsuariRegistre):
 
 
 @router.post("/api/login")
-def entrar(user: UsuariLogin, response: Response):
+def entrar(user: UsuariLogin, request: Request, response: Response):
     try:
         respuesta = supabase.auth.sign_in_with_password({"email": user.email, "password": user.password})
-        set_auth_cookie(response, respuesta.session.access_token)
+        set_auth_cookie(response, request, respuesta.session.access_token)
         rol_usuari = respuesta.user.user_metadata.get("rol", "client")
         return {"rol": rol_usuari}
     except Exception:
@@ -155,8 +168,8 @@ def session_actual(request: Request):
 
 
 @router.post("/api/logout")
-def logout(response: Response):
-    clear_auth_cookie(response)
+def logout(request: Request, response: Response):
+    clear_auth_cookie(response, request)
     return {"ok": True}
 
 
