@@ -416,9 +416,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (action === 'save-edit-reserva') {
-            const peopleInput = reservasBody.querySelector(`input[data-field="people"][data-group="${groupKey}"]`);
-            const datetimeInput = reservasBody.querySelector(`input[data-field="reservationDatetime"][data-group="${groupKey}"]`);
-            const tablesInput = reservasBody.querySelector(`input[data-field="tables"][data-group="${groupKey}"]`);
+            const row = btn.closest('tr');
+            const peopleInput = row?.querySelector('input[data-field="people"]');
+            const datetimeInput = row?.querySelector('input[data-field="reservationDatetime"]');
+            const tablesInput = row?.querySelector('input[data-field="tables"]');
 
             const peopleValue = Number(peopleInput?.value || 0);
             const dateRaw = datetimeInput?.value || '';
@@ -477,7 +478,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const action = btn.dataset.action;
 
         if (action === 'save-user-role') {
-            const roleInput = usersBody.querySelector(`select[data-field="user-role"][data-id="${userId}"]`);
+            const row = btn.closest('tr');
+            const roleInput = row?.querySelector('select[data-field="user-role"]');
             const selectedRole = normalizeRole(roleInput?.value || 'client');
 
             const result = await AdminService.updateUser(userId, { rol: selectedRole }, '');
