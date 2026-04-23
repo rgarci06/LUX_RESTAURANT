@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 from supabase import Client, create_client
 
@@ -44,10 +44,57 @@ class AdminUserUpdate(BaseModel):
     rol: str
 
 
+def _reservation_id_columns() -> list[str]:
+    columns = []
+    for col in [SUPABASE_RESERVATION_ID_COLUMN, "id", "reservation_id"]:
+        if col and col not in columns:
+            columns.append(col)
+    return columns
+
+
+def _find_reservations_by_ids(reservation_ids: list[str]) -> tuple[str, list[dict]]:
+    columns = _reservation_id_columns()
+    fallback_column = columns[0] if columns else "id"
+
+    for col in columns:
+        try:
+            response = (
+                supabase.table(SUPABASE_RESERVATIONS_TABLE)
+                .select("*")
+                .in_(col, reservation_ids)
+                .execute()
+            )
+            rows = response.data if isinstance(response.data, list) else []
+            if rows:
+                return col, rows
+        except Exception:
+            continue
+
+    return fallback_column, []
+
+
+def _delete_reservations_by_ids(reservation_ids: list[str]):
+    for col in _reservation_id_columns():
+        try:
+            response = (
+                supabase.table(SUPABASE_RESERVATIONS_TABLE)
+                .delete()
+                .in_(col, reservation_ids)
+                .execute()
+            )
+            deleted_rows = response.data if isinstance(response.data, list) else []
+            if deleted_rows:
+                return response
+        except Exception:
+            continue
+
+    raise HTTPException(status_code=404, detail="No se encontraron reservas para eliminar")
+
+
 @router.get("/api/admin/reservas")
-def admin_listar_reservas(request: Request, authorization: str | None = Header(default=None)):
+def admin_listar_reservas(authorization: str | None = Header(default=None)):
     try:
-        require_reservas_manager(authorization, request)
+        require_reservas_manager(authorization)
         read_supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
         now_utc = datetime.now(timezone.utc)
         today_start_utc = now_utc.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -125,9 +172,9 @@ def admin_listar_reservas(request: Request, authorization: str | None = Header(d
 
 
 @router.patch("/api/admin/reservas/{reservation_id}")
-def admin_editar_reserva(reservation_id: str, payload: AdminReservaUpdate, request: Request, authorization: str | None = Header(default=None)):
+def admin_editar_reserva(reservation_id: str, payload: AdminReservaUpdate, authorization: str | None = Header(default=None)):
     try:
-        require_reservas_manager(authorization, request)
+        require_reservas_manager(authorization)
 
         update_data = {}
         if payload.people is not None:
@@ -157,15 +204,10 @@ def admin_editar_reserva(reservation_id: str, payload: AdminReservaUpdate, reque
 
 
 @router.delete("/api/admin/reservas/{reservation_id}")
-def admin_eliminar_reserva(reservation_id: str, request: Request, authorization: str | None = Header(default=None)):
+def admin_eliminar_reserva(reservation_id: str, authorization: str | None = Header(default=None)):
     try:
         require_reservas_manager(authorization)
-        respuesta = (
-            supabase.table(SUPABASE_RESERVATIONS_TABLE)
-            .delete()
-            .eq(SUPABASE_RESERVATION_ID_COLUMN, reservation_id)
-            .execute()
-        )
+        respuesta = _delete_reservations_by_ids([str(reservation_id).strip()])
         return {"ok": True, "data": respuesta.data}
     except HTTPException:
         raise
@@ -174,9 +216,9 @@ def admin_eliminar_reserva(reservation_id: str, request: Request, authorization:
 
 
 @router.patch("/api/admin/reservas/grupo/update")
-def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, request: Request, authorization: str | None = Header(default=None)):
+def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, authorization: str | None = Header(default=None)):
     try:
-        require_reservas_manager(authorization, request)
+        require_reservas_manager(authorization)
 
         reservation_ids = [str(rid).strip() for rid in payload.ids if str(rid).strip()]
         if not reservation_ids:
@@ -188,18 +230,20 @@ def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, request: Reques
         if payload.reservationDatetime:
             update_data[SUPABASE_RESERVATION_DATETIME_COLUMN] = payload.reservationDatetime
 
-        rows_response = (
-            supabase.table(SUPABASE_RESERVATIONS_TABLE)
-            .select("*")
-            .in_(SUPABASE_RESERVATION_ID_COLUMN, reservation_ids)
-            .execute()
-        )
-        rows = rows_response.data if isinstance(rows_response.data, list) else []
+        resolved_id_column, rows = _find_reservations_by_ids(reservation_ids)
 
         if not rows:
             raise HTTPException(status_code=404, detail="No se encontraron reservas para editar")
 
-        by_id = {str(row.get(SUPABASE_RESERVATION_ID_COLUMN)): row for row in rows}
+        by_id = {
+            str(
+                row.get(resolved_id_column)
+                or row.get(SUPABASE_RESERVATION_ID_COLUMN)
+                or row.get("id")
+                or row.get("reservation_id")
+            ): row
+            for row in rows
+        }
         ordered_rows = [by_id[rid] for rid in reservation_ids if rid in by_id]
         if not ordered_rows:
             ordered_rows = rows
@@ -211,7 +255,7 @@ def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, request: Reques
             respuesta = (
                 supabase.table(SUPABASE_RESERVATIONS_TABLE)
                 .update(update_data)
-                .in_(SUPABASE_RESERVATION_ID_COLUMN, reservation_ids)
+                .in_(resolved_id_column, reservation_ids)
                 .execute()
             )
             return {"ok": True, "data": respuesta.data}
@@ -232,7 +276,12 @@ def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, request: Reques
 
         for idx, table_id in enumerate(normalized_tables[: len(ordered_rows)]):
             row = ordered_rows[idx]
-            row_id = row.get(SUPABASE_RESERVATION_ID_COLUMN)
+            row_id = (
+                row.get(resolved_id_column)
+                or row.get(SUPABASE_RESERVATION_ID_COLUMN)
+                or row.get("id")
+                or row.get("reservation_id")
+            )
             if row_id is None:
                 continue
 
@@ -240,7 +289,7 @@ def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, request: Reques
             (
                 supabase.table(SUPABASE_RESERVATIONS_TABLE)
                 .update(patch_data)
-                .eq(SUPABASE_RESERVATION_ID_COLUMN, row_id)
+                .eq(resolved_id_column, row_id)
                 .execute()
             )
 
@@ -265,16 +314,24 @@ def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, request: Reques
 
         if len(normalized_tables) < len(ordered_rows):
             extra_ids = [
-                row.get(SUPABASE_RESERVATION_ID_COLUMN)
+                row.get(resolved_id_column)
+                or row.get(SUPABASE_RESERVATION_ID_COLUMN)
+                or row.get("id")
+                or row.get("reservation_id")
                 for row in ordered_rows[len(normalized_tables) :]
-                if row.get(SUPABASE_RESERVATION_ID_COLUMN) is not None
+                if (
+                    row.get(resolved_id_column)
+                    or row.get(SUPABASE_RESERVATION_ID_COLUMN)
+                    or row.get("id")
+                    or row.get("reservation_id")
+                ) is not None
             ]
 
             if extra_ids:
                 (
                     supabase.table(SUPABASE_RESERVATIONS_TABLE)
                     .delete()
-                    .in_(SUPABASE_RESERVATION_ID_COLUMN, extra_ids)
+                    .in_(resolved_id_column, extra_ids)
                     .execute()
                 )
 
@@ -286,20 +343,15 @@ def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, request: Reques
 
 
 @router.post("/api/admin/reservas/grupo/delete")
-def admin_eliminar_reserva_grupo(payload: AdminReservaGroupDelete, request: Request, authorization: str | None = Header(default=None)):
+def admin_eliminar_reserva_grupo(payload: AdminReservaGroupDelete, authorization: str | None = Header(default=None)):
     try:
-        require_reservas_manager(authorization, request)
+        require_reservas_manager(authorization)
 
         reservation_ids = [str(rid).strip() for rid in payload.ids if str(rid).strip()]
         if not reservation_ids:
             raise HTTPException(status_code=400, detail="Debes enviar al menos un id de reserva")
 
-        respuesta = (
-            supabase.table(SUPABASE_RESERVATIONS_TABLE)
-            .delete()
-            .in_(SUPABASE_RESERVATION_ID_COLUMN, reservation_ids)
-            .execute()
-        )
+        respuesta = _delete_reservations_by_ids(reservation_ids)
 
         return {"ok": True, "data": respuesta.data}
     except HTTPException:
@@ -309,9 +361,9 @@ def admin_eliminar_reserva_grupo(payload: AdminReservaGroupDelete, request: Requ
 
 
 @router.get("/api/admin/users")
-def admin_listar_usuarios(request: Request, authorization: str | None = Header(default=None)):
+def admin_listar_usuarios(authorization: str | None = Header(default=None)):
     try:
-        require_admin(authorization, request)
+        require_admin(authorization)
         response = admin_rest_request("GET", "/admin/users")
         users = response.get("users", []) if isinstance(response, dict) else []
 
@@ -362,9 +414,9 @@ def admin_listar_usuarios(request: Request, authorization: str | None = Header(d
 
 
 @router.patch("/api/admin/users/{user_id}")
-def admin_editar_usuario(user_id: str, payload: AdminUserUpdate, request: Request, authorization: str | None = Header(default=None)):
+def admin_editar_usuario(user_id: str, payload: AdminUserUpdate, authorization: str | None = Header(default=None)):
     try:
-        require_admin(authorization, request)
+        require_admin(authorization)
         rol = payload.rol.strip().lower()
         if rol not in {"admin", "client", "camarero"}:
             raise HTTPException(status_code=400, detail="Rol no valido")
@@ -383,9 +435,9 @@ def admin_editar_usuario(user_id: str, payload: AdminUserUpdate, request: Reques
 
 
 @router.delete("/api/admin/users/{user_id}")
-def admin_eliminar_usuario(user_id: str, request: Request, authorization: str | None = Header(default=None)):
+def admin_eliminar_usuario(user_id: str, authorization: str | None = Header(default=None)):
     try:
-        require_admin(authorization, request)
+        require_admin(authorization)
         respuesta = admin_rest_request("DELETE", f"/admin/users/{user_id}")
         return {"ok": True, "data": respuesta}
     except HTTPException:

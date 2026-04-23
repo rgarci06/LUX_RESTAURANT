@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 from datetime import datetime, timezone
@@ -39,60 +40,72 @@ def extract_bearer_token(authorization: str | None) -> str | None:
     return token.strip()
 
 
-def _normalize_user_payload(user_obj) -> dict:
-    if user_obj is None:
-        return {}
-
-    if hasattr(user_obj, "model_dump"):
-        dumped = user_obj.model_dump()
-        return dumped if isinstance(dumped, dict) else {}
-
-    if isinstance(user_obj, dict):
-        return user_obj
-
-    return {}
-
-
-def get_authenticated_user(authorization: str | None) -> tuple[str, dict]:
-    token = extract_bearer_token(authorization)
-    if not token:
-        raise HTTPException(status_code=401, detail="Necesitas iniciar sesion")
-
+# Extrae el user_id del token.
+def extract_user_id_from_jwt(token: str) -> str | None:
+    """Extrae el claim `sub` (UUID del usuario) desde el payload del JWT."""
     try:
-        user_response = supabase.auth.get_user(token)
-        user_obj = getattr(user_response, "user", None)
-        user_payload = _normalize_user_payload(user_obj)
-        if not user_payload.get("id"):
-            raise HTTPException(status_code=401, detail="Sesion invalida o expirada")
-        return token, user_payload
-    except HTTPException:
-        raise
+        parts = token.split(".")
+        if len(parts) != 3:
+            return None
+
+        payload = parts[1]
+        padding = "=" * (-len(payload) % 4)
+        decoded = base64.urlsafe_b64decode(payload + padding)
+        payload_data = json.loads(decoded.decode("utf-8"))
+        user_id = payload_data.get("sub")
+        if not isinstance(user_id, str) or not user_id:
+            return None
+        return user_id
     except Exception:
-        raise HTTPException(status_code=401, detail="Sesion invalida o expirada")
+        return None
+
+
+# se decodifica el payload (email, rol) para que el backend lea bien los datos del usuario según el token.
+def decode_jwt_payload(token: str) -> dict:
+    try:
+        parts = token.split(".")
+        if len(parts) != 3:
+            return {}
+
+        payload = parts[1]
+        padding = "=" * (-len(payload) % 4)
+        decoded = base64.urlsafe_b64decode(payload + padding)
+        payload_data = json.loads(decoded.decode("utf-8"))
+        return payload_data if isinstance(payload_data, dict) else {}
+    except Exception:
+        return {}
 
 
 # Valida que el usuario autenticado tenga permisos de administrador.
 def require_admin(authorization: str | None) -> tuple[str, dict]:
-    token, user_payload = get_authenticated_user(authorization)
-    user_metadata = user_payload.get("user_metadata") or {}
-    app_metadata = user_payload.get("app_metadata") or {}
+    token = extract_bearer_token(authorization)
+    if not token:
+        raise HTTPException(status_code=401, detail="Necesitas iniciar sesion")
+
+    payload = decode_jwt_payload(token)
+    user_metadata = payload.get("user_metadata") or {}
+    app_metadata = payload.get("app_metadata") or {}
     rol = str(user_metadata.get("rol") or app_metadata.get("rol") or "").strip().lower()
 
     if rol != "admin":
         raise HTTPException(status_code=403, detail="No tienes permisos de administrador")
 
-    return token, user_payload
+    return token, payload
 
 
 # Valida que el usuario tenga permisos para gestionar reservas (admin o camarero).
 def require_reservas_manager(authorization: str | None) -> tuple[str, dict]:
-    token, user_payload = get_authenticated_user(authorization)
-    user_metadata = user_payload.get("user_metadata") or {}
-    app_metadata = user_payload.get("app_metadata") or {}
+    token = extract_bearer_token(authorization)
+    if not token:
+        raise HTTPException(status_code=401, detail="Necesitas iniciar sesion")
+
+    payload = decode_jwt_payload(token)
+    user_metadata = payload.get("user_metadata") or {}
+    app_metadata = payload.get("app_metadata") or {}
     rol = str(user_metadata.get("rol") or app_metadata.get("rol") or "").strip().lower()
 
     if rol in {"admin", "camarero"}:
-        return token, user_payload
+        return token, payload
 
     raise HTTPException(status_code=403, detail="No tienes permisos para gestionar reservas")
 

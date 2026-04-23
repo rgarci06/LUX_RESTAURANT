@@ -1,6 +1,6 @@
-import { AuthService, MenuService } from './services/api.js';
+import { MenuService } from './services/api.js';
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     const tabs = document.querySelectorAll('.tab-btn');
     const categories = Array.from(document.querySelectorAll('.menu-category'));
     const ADMIN_EMAIL = 'ddelpe@insdanielblanxart.cat';
@@ -29,11 +29,34 @@ document.addEventListener('DOMContentLoaded', async () => {
         modalItemId: ''
     };
 
-    const sessionResult = await AuthService.getSession();
-    const sessionUser = sessionResult.dades?.user || {};
-    const normalizedRole = String(sessionUser.rol || '').toLowerCase();
-    const isAdmin = normalizedRole === 'admin' || String(sessionUser.email || '').toLowerCase() === ADMIN_EMAIL;
-    const token = '';
+    // Leo la sesion desde donde toque.
+    function readSession(storage) {
+        return {
+            token: storage.getItem('lux_token') || '',
+            email: storage.getItem('lux_email') || '',
+            rol: storage.getItem('lux_rol') || ''
+        };
+    }
+
+    // Primero uso sessionStorage y luego localStorage.
+    function resolveCurrentSession() {
+        const sessionData = readSession(sessionStorage);
+        if (sessionData.token && sessionData.email) {
+            return sessionData;
+        }
+
+        const localData = readSession(localStorage);
+        if (localData.token && localData.email) {
+            return localData;
+        }
+
+        return sessionData.token || sessionData.email || sessionData.rol ? sessionData : localData;
+    }
+
+    const currentSession = resolveCurrentSession();
+    const token = currentSession.token || '';
+    const normalizedRole = String(currentSession.rol || '').toLowerCase();
+    const isAdmin = normalizedRole === 'admin' || String(currentSession.email || '').toLowerCase() === ADMIN_EMAIL;
 
     // Escape simple para pintar texto sin problemas.
     function escapeHtml(value) {

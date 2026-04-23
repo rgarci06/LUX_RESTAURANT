@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 
 from main import SUPABASE_MENU_TABLE, menu_supabase_client, normalize_menu_item, require_admin
@@ -62,9 +62,9 @@ def listar_menu():
 
 
 @router.post("/api/admin/menu")
-def admin_crear_menu_item(payload: MenuItemPayload, request: Request, authorization: str | None = Header(default=None)):
+def admin_crear_menu_item(payload: MenuItemPayload, authorization: str | None = Header(default=None)):
     try:
-        require_admin(authorization, request)
+        require_admin(authorization)
         menu_supabase = menu_supabase_client()
 
         category = str(payload.category or "").strip().lower()
@@ -104,9 +104,9 @@ def admin_crear_menu_item(payload: MenuItemPayload, request: Request, authorizat
 
 
 @router.patch("/api/admin/menu/{item_id}")
-def admin_editar_menu_item(item_id: str, payload: MenuItemUpdatePayload, request: Request, authorization: str | None = Header(default=None)):
+def admin_editar_menu_item(item_id: str, payload: MenuItemUpdatePayload, authorization: str | None = Header(default=None)):
     try:
-        require_admin(authorization, request)
+        require_admin(authorization)
         menu_supabase = menu_supabase_client()
 
         update_data = {}
@@ -149,9 +149,9 @@ def admin_editar_menu_item(item_id: str, payload: MenuItemUpdatePayload, request
 
 
 @router.delete("/api/admin/menu/{item_id}")
-def admin_eliminar_menu_item(item_id: str, request: Request, authorization: str | None = Header(default=None)):
+def admin_eliminar_menu_item(item_id: str, authorization: str | None = Header(default=None)):
     try:
-        require_admin(authorization, request)
+        require_admin(authorization)
         menu_supabase = menu_supabase_client()
         respuesta = menu_supabase.table(SUPABASE_MENU_TABLE).delete().eq("id", item_id).execute()
         return {"ok": True, "data": respuesta.data}

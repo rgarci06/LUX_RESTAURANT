@@ -1,5 +1,3 @@
-import { AuthService } from './services/api.js';
-
 document.addEventListener('DOMContentLoaded', () => {
     
     const navbar = document.getElementById('navbar');
@@ -40,10 +38,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Si no hay sesión, cualquier CTA de reserva redirige al login.
     if (reserveCtas.length > 0) {
         reserveCtas.forEach((cta) => {
-            cta.addEventListener('click', async (e) => {
+            cta.addEventListener('click', (e) => {
             e.preventDefault();
-            const sessionResult = await AuthService.getSession();
-            if (!sessionResult.ok || !sessionResult.dades?.authenticated) {
+            const token = localStorage.getItem('lux_token') || sessionStorage.getItem('lux_token');
+            const email = localStorage.getItem('lux_email') || sessionStorage.getItem('lux_email');
+
+            if (!token || !email) {
                 window.location.href = '/pages/login.html';
                 return;
             }

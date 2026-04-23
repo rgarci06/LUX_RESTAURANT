@@ -2,7 +2,7 @@ import { ReservationService, MesasService } from './services/api.js';
 
 // sistema de reservas para el restaurante
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     function showLuxToast(message, type = 'info', duration = 6000) {
         let container = document.querySelector('.lux-toast-container');
         if (!container) {
@@ -73,23 +73,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const modalPeople = document.getElementById('modal-people');
     const modalTable = document.getElementById('modal-table');
 
-    async function getSessionInfo() {
-        try {
-            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            const baseApiUrl = isLocal
-                ? 'http://localhost:8000/api'
-                : 'https://lux-restaurant.onrender.com/api';
+    function getSessionEmail() {
+        return localStorage.getItem('lux_email') || sessionStorage.getItem('lux_email') || '';
+    }
 
-            const response = await fetch(`${baseApiUrl}/session`, {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include'
-            });
-            const data = await response.json();
-            return data?.authenticated ? data.user : null;
-        } catch (_) {
-            return null;
-        }
+    function getSessionToken() {
+        return localStorage.getItem('lux_token') || sessionStorage.getItem('lux_token') || '';
     }
 
     function formatDateLocal(date) {
@@ -391,8 +380,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 3. Ejecutar la llamada a la Base de Datos al darle a "Sí, Reservar"
     if (btnModalConfirm) {
         btnModalConfirm.addEventListener('click', async () => {
-            const sessionUser = await getSessionInfo();
-            const email = String(sessionUser?.email || '');
+            const email = getSessionEmail();
+            const token = getSessionToken();
 
             if (!email) {
                 showLuxToast('Necesitas iniciar sesión para guardar la reserva.', 'warning');
@@ -425,7 +414,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnModalConfirm.textContent = 'PROCESANDO...';
 
             try {
-                const result = await ReservationService.createReservation(reservation, '');
+                const result = await ReservationService.createReservation(reservation, token);
 
                 if (result.ok) {
                     // Ya no mostramos el toast ni esperamos 3 segundos.
