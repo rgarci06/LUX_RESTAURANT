@@ -128,11 +128,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const respuesta = await AuthService.login(emailInput.value, passwordInput.value);
             
             if (respuesta.ok) {
-                const storage = isRemembered ? localStorage : sessionStorage;
-                storage.setItem("lux_token", respuesta.dades.token);
-                storage.setItem("lux_rol", respuesta.dades.rol);
-                storage.setItem("lux_email", emailInput.value);
-                
                 const rol = String(respuesta.dades.rol || '').toLowerCase();
                 if (rol === "admin" || rol === "camarero") {
                     window.location.href = "/pages/admin.html";

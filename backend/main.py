@@ -5,7 +5,7 @@ from urllib import error as urlerror
 from urllib import request as urlrequest
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from supabase import Client, create_client
 
@@ -20,6 +20,7 @@ SUPABASE_USER_ID_COLUMN = os.getenv("SUPABASE_USER_ID_COLUMN", "user_id").strip(
 SUPABASE_USER_EMAIL_COLUMN = os.getenv("SUPABASE_USER_EMAIL_COLUMN", "").strip()
 SUPABASE_RESERVATION_DATETIME_COLUMN = os.getenv("SUPABASE_RESERVATION_DATETIME_COLUMN", "reservation_datetime")
 SUPABASE_RESERVATION_ID_COLUMN = os.getenv("SUPABASE_RESERVATION_ID_COLUMN", "id").strip()
+AUTH_COOKIE_NAME = os.getenv("AUTH_COOKIE_NAME", "lux_access_token").strip() or "lux_access_token"
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise RuntimeError("Faltan SUPABASE_URL o una clave de Supabase en backend/.env")
@@ -28,8 +29,12 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 # Extrae el token del header Authorization.
-def extract_bearer_token(authorization: str | None) -> str | None:
+def extract_bearer_token(authorization: str | None, request: Request | None = None) -> str | None:
     if not authorization:
+        if request is not None:
+            cookie_token = request.cookies.get(AUTH_COOKIE_NAME)
+            if cookie_token:
+                return cookie_token.strip()
         return None
 
     scheme, _, token = authorization.partition(" ")
@@ -53,8 +58,8 @@ def _normalize_user_payload(user_obj) -> dict:
     return {}
 
 
-def get_authenticated_user(authorization: str | None) -> tuple[str, dict]:
-    token = extract_bearer_token(authorization)
+def get_authenticated_user(authorization: str | None, request: Request | None = None) -> tuple[str, dict]:
+    token = extract_bearer_token(authorization, request)
     if not token:
         raise HTTPException(status_code=401, detail="Necesitas iniciar sesion")
 
@@ -72,8 +77,8 @@ def get_authenticated_user(authorization: str | None) -> tuple[str, dict]:
 
 
 # Valida que el usuario autenticado tenga permisos de administrador.
-def require_admin(authorization: str | None) -> tuple[str, dict]:
-    token, user_payload = get_authenticated_user(authorization)
+def require_admin(authorization: str | None, request: Request | None = None) -> tuple[str, dict]:
+    token, user_payload = get_authenticated_user(authorization, request)
     user_metadata = user_payload.get("user_metadata") or {}
     app_metadata = user_payload.get("app_metadata") or {}
     rol = str(user_metadata.get("rol") or app_metadata.get("rol") or "").strip().lower()
@@ -85,8 +90,8 @@ def require_admin(authorization: str | None) -> tuple[str, dict]:
 
 
 # Valida que el usuario tenga permisos para gestionar reservas (admin o camarero).
-def require_reservas_manager(authorization: str | None) -> tuple[str, dict]:
-    token, user_payload = get_authenticated_user(authorization)
+def require_reservas_manager(authorization: str | None, request: Request | None = None) -> tuple[str, dict]:
+    token, user_payload = get_authenticated_user(authorization, request)
     user_metadata = user_payload.get("user_metadata") or {}
     app_metadata = user_payload.get("app_metadata") or {}
     rol = str(user_metadata.get("rol") or app_metadata.get("rol") or "").strip().lower()
@@ -185,9 +190,19 @@ def menu_supabase_client() -> Client:
 
 app = FastAPI()
 
+frontend_origins_env = os.getenv("FRONTEND_ORIGINS", "")
+if frontend_origins_env.strip():
+    FRONTEND_ORIGINS = [origin.strip() for origin in frontend_origins_env.split(",") if origin.strip()]
+else:
+    FRONTEND_ORIGINS = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://lux-restaurant-six.vercel.app",
+    ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=FRONTEND_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -13,6 +13,14 @@ const API_URL = isLocal
     ? "http://localhost:8000/api" 
     : "https://lux-restaurant.onrender.com/api";
 
+function buildAuthHeaders(token) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+        headers.Authorization = `Bearer ${token}`;
+    }
+    return headers;
+}
+
 export const AuthService = {
     // Método para Iniciar Sesión
     login: async (email, password) => {
@@ -20,6 +28,7 @@ export const AuthService = {
             const respuesta = await fetch(`${API_URL}/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ email, password })
             });
             const dades = await respuesta.json();
@@ -36,10 +45,41 @@ export const AuthService = {
             const respuesta = await fetch(`${API_URL}/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ ...payload, rol: "client" })
             });
             const dades = await respuesta.json();
             return { ok: respuesta.ok, status: respuesta.status, dades: dades };
+        } catch (error) {
+            console.error("Error de conexión:", error);
+            return { ok: false, status: 0, dades: { detail: "El servidor Backend no responde." } };
+        }
+    },
+
+    getSession: async () => {
+        try {
+            const respuesta = await fetch(`${API_URL}/session`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+            const dades = await respuesta.json();
+            return { ok: respuesta.ok, status: respuesta.status, dades };
+        } catch (error) {
+            console.error("Error de conexión:", error);
+            return { ok: false, status: 0, dades: { authenticated: false, user: null } };
+        }
+    },
+
+    logout: async () => {
+        try {
+            const respuesta = await fetch(`${API_URL}/logout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+            const dades = await respuesta.json();
+            return { ok: respuesta.ok, status: respuesta.status, dades };
         } catch (error) {
             console.error("Error de conexión:", error);
             return { ok: false, status: 0, dades: { detail: "El servidor Backend no responde." } };
@@ -50,15 +90,10 @@ export const AuthService = {
 export const ReservationService = {
     createReservation: async (reservation, token) => {
         try {
-            const headers = { 'Content-Type': 'application/json' };
-
-            if (token) {
-                headers.Authorization = `Bearer ${token}`;
-            }
-
             const respuesta = await fetch(`${API_URL}/reservas`, {
                 method: 'POST',
-                headers,
+                headers: buildAuthHeaders(token),
+                credentials: 'include',
                 body: JSON.stringify(reservation)
             });
 
@@ -95,10 +130,8 @@ export const MenuService = {
         try {
             const respuesta = await fetch(`${API_URL}/admin/menu`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
+                headers: buildAuthHeaders(token),
+                credentials: 'include',
                 body: JSON.stringify(payload)
             });
 
@@ -115,10 +148,8 @@ export const MenuService = {
         try {
             const respuesta = await fetch(`${API_URL}/admin/menu/${itemId}`, {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
+                headers: buildAuthHeaders(token),
+                credentials: 'include',
                 body: JSON.stringify(payload)
             });
 
@@ -135,10 +166,8 @@ export const MenuService = {
         try {
             const respuesta = await fetch(`${API_URL}/admin/menu/${itemId}`, {
                 method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                }
+                headers: buildAuthHeaders(token),
+                credentials: 'include'
             });
 
             const dades = await respuesta.json();
@@ -156,10 +185,8 @@ export const AdminService = {
         try {
             const respuesta = await fetch(`${API_URL}/admin/reservas`, {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                }
+                headers: buildAuthHeaders(token),
+                credentials: 'include'
             });
 
             const dades = await respuesta.json();
@@ -175,10 +202,8 @@ export const AdminService = {
         try {
             const respuesta = await fetch(`${API_URL}/admin/reservas/${reservationId}`, {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
+                headers: buildAuthHeaders(token),
+                credentials: 'include',
                 body: JSON.stringify(payload)
             });
 
@@ -195,10 +220,8 @@ export const AdminService = {
         try {
             const respuesta = await fetch(`${API_URL}/admin/reservas/grupo/update`, {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
+                headers: buildAuthHeaders(token),
+                credentials: 'include',
                 body: JSON.stringify(payload)
             });
 
@@ -215,10 +238,8 @@ export const AdminService = {
         try {
             const respuesta = await fetch(`${API_URL}/admin/reservas/${reservationId}`, {
                 method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                }
+                headers: buildAuthHeaders(token),
+                credentials: 'include'
             });
 
             const dades = await respuesta.json();
@@ -234,10 +255,8 @@ export const AdminService = {
         try {
             const respuesta = await fetch(`${API_URL}/admin/reservas/grupo/delete`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
+                headers: buildAuthHeaders(token),
+                credentials: 'include',
                 body: JSON.stringify({ ids })
             });
 
@@ -254,10 +273,8 @@ export const AdminService = {
         try {
             const respuesta = await fetch(`${API_URL}/admin/users`, {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                }
+                headers: buildAuthHeaders(token),
+                credentials: 'include'
             });
 
             const dades = await respuesta.json();
@@ -273,10 +290,8 @@ export const AdminService = {
         try {
             const respuesta = await fetch(`${API_URL}/admin/users/${userId}`, {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
+                headers: buildAuthHeaders(token),
+                credentials: 'include',
                 body: JSON.stringify(payload)
             });
 
@@ -293,10 +308,8 @@ export const AdminService = {
         try {
             const respuesta = await fetch(`${API_URL}/admin/users/${userId}`, {
                 method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                }
+                headers: buildAuthHeaders(token),
+                credentials: 'include'
             });
 
             const dades = await respuesta.json();
