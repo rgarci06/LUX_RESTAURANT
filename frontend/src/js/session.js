@@ -1,9 +1,11 @@
+import { AuthService } from './services/api.js';
+
 /**
  * GESTOR DE SESIÓN DE CABECERA
  * Misión: Modificar el botón de ACCESO si el usuario está logueado.
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Correo admin principal (fallback por si el rol no viene bien guardado)
     const ADMIN_EMAIL = 'ddelpe@insdanielblanxart.cat';
 
@@ -22,55 +24,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function resolveEmail(currentSession) {
-        const directEmail = String(currentSession?.email || '').trim();
-        if (directEmail) return directEmail;
-
-        const payload = decodeJwtPayload(currentSession?.token);
-        const payloadEmail = String(payload?.email || '').trim();
-        if (payloadEmail) return payloadEmail;
-
-        return '';
-    }
-
-    function readSession(storage) {
-        return {
-            token: storage.getItem('lux_token') || '',
-            email: storage.getItem('lux_email') || '',
-            rol: storage.getItem('lux_rol') || ''
-        };
-    }
-
-    function resolveCurrentSession() {
-        const sessionData = readSession(sessionStorage);
-        if (sessionData.token && sessionData.email) {
-            return sessionData;
-        }
-
-        const localData = readSession(localStorage);
-        if (localData.token && localData.email) {
-            return localData;
-        }
-
-        return sessionData.token || sessionData.email || sessionData.rol
-            ? sessionData
-            : localData;
-    }
-
     const authLink = document.getElementById('auth-link');
     const mobileAuthLink = document.querySelector('.mobile-menu-overlay .mobile-btn');
     const desktopNav = document.querySelector('.desktop-nav');
     const mobileNav = document.getElementById('mobile-nav-content');
-    const currentSession = resolveCurrentSession();
-    const token = currentSession.token;
-    const email = resolveEmail(currentSession);
-    const rol = currentSession.rol || 'client';
+    const sessionResult = await AuthService.getSession();
+    const sessionUser = sessionResult.dades?.user || null;
+    const token = sessionResult.dades?.authenticated ? 'cookie' : '';
+    const email = String(sessionUser?.email || '').trim();
+    const rol = String(sessionUser?.rol || 'client').trim().toLowerCase();
     const currentPath = window.location.pathname;
     const protectedRoutes = ['/pages/reserva.html', '/pages/admin.html'];
     const isProtectedRoute = protectedRoutes.some(route => currentPath.endsWith(route));
     const isAdminRoute = currentPath.endsWith('/pages/admin.html');
-    const isAuthenticated = Boolean(token && email);
-    const normalizedRole = String(rol || '').toLowerCase();
+    const isAuthenticated = Boolean(sessionResult.ok && sessionResult.dades?.authenticated && email);
+    const normalizedRole = rol;
     const isAdmin = normalizedRole === 'admin' || (email || '').toLowerCase() === ADMIN_EMAIL;
     const isCamarero = normalizedRole === 'camarero';
     const canManageReservas = isAdmin || isCamarero;
@@ -140,9 +108,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function logoutUser() {
-        localStorage.clear();
-        sessionStorage.clear();
+    async function logoutUser() {
+        await AuthService.logout();
 
         if (isProtectedRoute) {
             window.location.href = '/index.html';
@@ -168,9 +135,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span>${nomUsuari}</span>
             `;
             authLink.href = "#";
-            authLink.addEventListener('click', (e) => {
+            authLink.addEventListener('click', async (e) => {
                 e.preventDefault();
-                logoutUser();
+                await logoutUser();
             });
             
             // Ocultar el botón de acceso en móvil
@@ -186,9 +153,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 mobileAuthLink.href = '#';
                 mobileAuthLink.className = 'mobile-btn mobile-btn-logout';
-                mobileAuthLink.addEventListener('click', (e) => {
+                mobileAuthLink.addEventListener('click', async (e) => {
                     e.preventDefault();
-                    logoutUser();
+                    await logoutUser();
                 });
             }
         } else {

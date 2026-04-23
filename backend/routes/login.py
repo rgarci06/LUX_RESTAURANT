@@ -1,53 +1,39 @@
-from fastapi import APIRouter, HTTPException
+import os
+
+from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel
 
-from main import admin_rest_request, supabase
+from main import AUTH_COOKIE_NAME, admin_rest_request, get_authenticated_user, supabase
 
 router = APIRouter()
 
-<<<<<<< HEAD
 AUTH_COOKIE_SECURE = (os.getenv("AUTH_COOKIE_SECURE", "false").strip().lower() == "true")
 _auth_cookie_samesite_env = os.getenv("AUTH_COOKIE_SAMESITE", "").strip().lower()
+AUTH_COOKIE_SAMESITE = _auth_cookie_samesite_env or ("none" if AUTH_COOKIE_SECURE else "lax")
 AUTH_COOKIE_MAX_AGE_SECONDS = int(os.getenv("AUTH_COOKIE_MAX_AGE_SECONDS", "28800"))
 
 
-def resolve_cookie_security(request: Request) -> tuple[bool, str]:
-    host = (request.url.hostname or "").strip().lower()
-    is_local = host in {"localhost", "127.0.0.1"}
-
-    secure = AUTH_COOKIE_SECURE
-    if not secure and not is_local and request.url.scheme == "https":
-        secure = True
-
-    samesite = _auth_cookie_samesite_env or ("none" if secure else "lax")
-    return secure, samesite
-
-
-def set_auth_cookie(response: Response, request: Request, token: str):
-    secure, samesite = resolve_cookie_security(request)
+def set_auth_cookie(response: Response, token: str):
     response.set_cookie(
         key=AUTH_COOKIE_NAME,
         value=token,
         httponly=True,
-        secure=secure,
-        samesite=samesite,
+        secure=AUTH_COOKIE_SECURE,
+        samesite=AUTH_COOKIE_SAMESITE,
         max_age=AUTH_COOKIE_MAX_AGE_SECONDS,
         path="/",
     )
 
 
-def clear_auth_cookie(response: Response, request: Request):
-    secure, samesite = resolve_cookie_security(request)
+def clear_auth_cookie(response: Response):
     response.delete_cookie(
         key=AUTH_COOKIE_NAME,
         path="/",
         httponly=True,
-        secure=secure,
-        samesite=samesite,
+        secure=AUTH_COOKIE_SECURE,
+        samesite=AUTH_COOKIE_SAMESITE,
     )
 
-=======
->>>>>>> parent of 61e76fc (quitar autentificacion por local storage)
 
 class UsuariLogin(BaseModel):
     email: str
@@ -134,13 +120,44 @@ def registrar(user: UsuariRegistre):
 
 
 @router.post("/api/login")
-def entrar(user: UsuariLogin):
+def entrar(user: UsuariLogin, response: Response):
     try:
         respuesta = supabase.auth.sign_in_with_password({"email": user.email, "password": user.password})
+        set_auth_cookie(response, respuesta.session.access_token)
         rol_usuari = respuesta.user.user_metadata.get("rol", "client")
-        return {"token": respuesta.session.access_token, "rol": rol_usuari}
+        return {"rol": rol_usuari}
     except Exception:
         raise HTTPException(status_code=401, detail="Correu o contrasenya incorrectes")
+
+
+@router.get("/api/session")
+def session_actual(request: Request):
+    try:
+        _, user_payload = get_authenticated_user(None, request)
+        user_metadata = user_payload.get("user_metadata") or {}
+        app_metadata = user_payload.get("app_metadata") or {}
+        rol = str(user_metadata.get("rol") or app_metadata.get("rol") or "client").strip().lower() or "client"
+        email = str(user_payload.get("email") or "").strip()
+
+        return {
+            "ok": True,
+            "authenticated": True,
+            "user": {
+                "id": user_payload.get("id"),
+                "email": email,
+                "rol": rol,
+            },
+        }
+    except HTTPException:
+        return {"ok": True, "authenticated": False, "user": None}
+    except Exception:
+        return {"ok": True, "authenticated": False, "user": None}
+
+
+@router.post("/api/logout")
+def logout(response: Response):
+    clear_auth_cookie(response)
+    return {"ok": True}
 
 
 @router.post("/api/recuperar-password")

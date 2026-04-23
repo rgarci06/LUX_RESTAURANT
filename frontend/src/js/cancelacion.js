@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const ids = urlParams.get('ids');
-    const token = sessionStorage.getItem('lux_token') || localStorage.getItem('lux_token') || '';
 
     const icon = document.getElementById('cancel-icon');
     const title = document.getElementById('cancel-title');
@@ -10,11 +9,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!ids) {
         showError("Enlace inválido", "No se han encontrado datos de la reserva para cancelar.");
-        return;
-    }
-
-    if (!token) {
-        window.location.href = '/pages/login.html';
         return;
     }
 
@@ -28,9 +22,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const response = await fetch(apiUrl, {
             method: 'GET',
             headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
+                'Accept': 'application/json'
+            },
+            credentials: 'include'
         });
 
         const contentType = response.headers.get('content-type') || '';
@@ -55,6 +49,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             message.textContent = "Tu reserva ha sido anulada correctamente. Esperamos poder atenderte en otra ocasión y que disfrutes de la experiencia LUX muy pronto.";
         } else {
             // ERROR DEL BACKEND
+            if (response.status === 401) {
+                window.location.href = '/pages/login.html';
+                return;
+            }
             showError("No se pudo cancelar", data?.detail || "La reserva ya ha sido cancelada previamente o no existe.");
         }
 
