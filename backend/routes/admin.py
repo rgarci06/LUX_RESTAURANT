@@ -178,9 +178,15 @@ def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, authorization: 
     try:
         require_reservas_manager(authorization)
 
-        reservation_ids = [str(reserva_id).strip() for reserva_id in payload.ids if str(reserva_id).strip()]
+        reservation_ids = [str(rid).strip() for rid in payload.ids if str(rid).strip()]
         if not reservation_ids:
             raise HTTPException(status_code=400, detail="Debes enviar al menos un id de reserva")
+
+        update_data = {}
+        if payload.people is not None:
+            update_data["people"] = payload.people
+        if payload.reservationDatetime:
+            update_data[SUPABASE_RESERVATION_DATETIME_COLUMN] = payload.reservationDatetime
 
         rows_response = (
             supabase.table(SUPABASE_RESERVATIONS_TABLE)
@@ -194,23 +200,14 @@ def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, authorization: 
             raise HTTPException(status_code=404, detail="No se encontraron reservas para editar")
 
         by_id = {str(row.get(SUPABASE_RESERVATION_ID_COLUMN)): row for row in rows}
-        ordered_rows = [by_id[rid] for rid in reservation_ids if rid in by_id] or rows
-        seed = ordered_rows[0]
-
-        people_value = payload.people if payload.people is not None else seed.get("people")
-        datetime_value = (
-            payload.reservationDatetime
-            if payload.reservationDatetime
-            else seed.get(SUPABASE_RESERVATION_DATETIME_COLUMN)
-        )
-
-        update_data = {
-            "people": people_value,
-            SUPABASE_RESERVATION_DATETIME_COLUMN: datetime_value,
-        }
+        ordered_rows = [by_id[rid] for rid in reservation_ids if rid in by_id]
+        if not ordered_rows:
+            ordered_rows = rows
 
         if payload.tables is None:
-            # si no cambian las mesas solo actualizamos campos comunes.
+            if not update_data:
+                raise HTTPException(status_code=400, detail="No hay campos para actualizar")
+
             respuesta = (
                 supabase.table(SUPABASE_RESERVATIONS_TABLE)
                 .update(update_data)
@@ -233,28 +230,55 @@ def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, authorization: 
         if not normalized_tables:
             raise HTTPException(status_code=400, detail="Debes indicar al menos una mesa valida")
 
-        # si cambian las mesas borramos las filas antiguas y las recreamos.
-        (
-            supabase.table(SUPABASE_RESERVATIONS_TABLE)
-            .delete()
-            .in_(SUPABASE_RESERVATION_ID_COLUMN, reservation_ids)
-            .execute()
-        )
+        for idx, table_id in enumerate(normalized_tables[: len(ordered_rows)]):
+            row = ordered_rows[idx]
+            row_id = row.get(SUPABASE_RESERVATION_ID_COLUMN)
+            if row_id is None:
+                continue
 
-        inserts = []
-        for table_id in normalized_tables:
-            row = {
-                "tables": table_id,
-                "people": people_value,
-                SUPABASE_RESERVATION_DATETIME_COLUMN: datetime_value,
-                SUPABASE_USER_ID_COLUMN: seed.get(SUPABASE_USER_ID_COLUMN),
-            }
-            if SUPABASE_USER_EMAIL_COLUMN:
-                row[SUPABASE_USER_EMAIL_COLUMN] = seed.get(SUPABASE_USER_EMAIL_COLUMN)
-            inserts.append(row)
+            patch_data = {**update_data, "tables": table_id}
+            (
+                supabase.table(SUPABASE_RESERVATIONS_TABLE)
+                .update(patch_data)
+                .eq(SUPABASE_RESERVATION_ID_COLUMN, row_id)
+                .execute()
+            )
 
-        insert_response = supabase.table(SUPABASE_RESERVATIONS_TABLE).insert(inserts).execute()
-        return {"ok": True, "data": insert_response.data}
+        seed = ordered_rows[0]
+
+        if len(normalized_tables) > len(ordered_rows):
+            for table_id in normalized_tables[len(ordered_rows) :]:
+                insert_data = {
+                    "tables": table_id,
+                    "people": update_data.get("people", seed.get("people")),
+                    SUPABASE_RESERVATION_DATETIME_COLUMN: update_data.get(
+                        SUPABASE_RESERVATION_DATETIME_COLUMN,
+                        seed.get(SUPABASE_RESERVATION_DATETIME_COLUMN),
+                    ),
+                    SUPABASE_USER_ID_COLUMN: seed.get(SUPABASE_USER_ID_COLUMN),
+                }
+
+                if SUPABASE_USER_EMAIL_COLUMN:
+                    insert_data[SUPABASE_USER_EMAIL_COLUMN] = seed.get(SUPABASE_USER_EMAIL_COLUMN)
+
+                supabase.table(SUPABASE_RESERVATIONS_TABLE).insert(insert_data).execute()
+
+        if len(normalized_tables) < len(ordered_rows):
+            extra_ids = [
+                row.get(SUPABASE_RESERVATION_ID_COLUMN)
+                for row in ordered_rows[len(normalized_tables) :]
+                if row.get(SUPABASE_RESERVATION_ID_COLUMN) is not None
+            ]
+
+            if extra_ids:
+                (
+                    supabase.table(SUPABASE_RESERVATIONS_TABLE)
+                    .delete()
+                    .in_(SUPABASE_RESERVATION_ID_COLUMN, extra_ids)
+                    .execute()
+                )
+
+        return {"ok": True, "data": {"updated_ids": reservation_ids, "tables": normalized_tables}}
     except HTTPException:
         raise
     except Exception as e:
