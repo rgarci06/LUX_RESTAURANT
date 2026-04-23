@@ -226,6 +226,45 @@ export const AdminService = {
             });
 
             const dades = await respuesta.json();
+            if (respuesta.ok) {
+                return { ok: true, status: respuesta.status, dades };
+            }
+
+            if (respuesta.status === 404 && Array.isArray(payload?.ids) && payload.ids.length > 0) {
+                const results = await Promise.all(payload.ids.map(async (id) => {
+                    const individualPayload = {};
+                    if (payload.people !== undefined && payload.people !== null) {
+                        individualPayload.people = payload.people;
+                    }
+                    if (payload.reservationDatetime) {
+                        individualPayload.reservationDatetime = payload.reservationDatetime;
+                    }
+                    if (Array.isArray(payload.tables) && payload.tables.length > 0) {
+                        individualPayload.tables = [payload.tables[0]];
+                    }
+
+                    const fallbackResponse = await fetch(`${API_URL}/admin/reservas/${id}`, {
+                        method: 'PATCH',
+                        headers: buildAuthHeaders(token),
+                        credentials: 'include',
+                        body: JSON.stringify(individualPayload)
+                    });
+                    const fallbackData = await fallbackResponse.json();
+                    return { ok: fallbackResponse.ok, status: fallbackResponse.status, dades: fallbackData };
+                }));
+
+                const failed = results.find((result) => !result.ok);
+                if (!failed) {
+                    return {
+                        ok: true,
+                        status: 200,
+                        dades: { ok: true, fallback: true, updated_ids: payload.ids }
+                    };
+                }
+
+                return failed;
+            }
+
             return { ok: respuesta.ok, status: respuesta.status, dades };
         } catch (error) {
             console.error('Error de conexión:', error);
