@@ -44,6 +44,7 @@ class AdminUserUpdate(BaseModel):
     rol: str
 
 
+<<<<<<< HEAD
 def _reservation_id_columns() -> list[str]:
     columns = []
     for col in [SUPABASE_RESERVATION_ID_COLUMN, "id", "reservation_id"]:
@@ -99,6 +100,8 @@ def _delete_reservations_by_ids(reservation_ids: list[str]):
     raise HTTPException(status_code=404, detail="No se encontraron reservas para eliminar")
 
 
+=======
+>>>>>>> parent of 033bfe8 (reservas de admin sites)
 @router.get("/api/admin/reservas")
 def admin_listar_reservas(request: Request, authorization: str | None = Header(default=None)):
     try:
@@ -214,8 +217,18 @@ def admin_editar_reserva(reservation_id: str, payload: AdminReservaUpdate, reque
 @router.delete("/api/admin/reservas/{reservation_id}")
 def admin_eliminar_reserva(reservation_id: str, request: Request, authorization: str | None = Header(default=None)):
     try:
+<<<<<<< HEAD
         require_reservas_manager(authorization, request)
         respuesta = _delete_reservations_by_ids([str(reservation_id).strip()])
+=======
+        require_reservas_manager(authorization)
+        respuesta = (
+            supabase.table(SUPABASE_RESERVATIONS_TABLE)
+            .delete()
+            .eq(SUPABASE_RESERVATION_ID_COLUMN, reservation_id)
+            .execute()
+        )
+>>>>>>> parent of 033bfe8 (reservas de admin sites)
         return {"ok": True, "data": respuesta.data}
     except HTTPException:
         raise
@@ -238,20 +251,18 @@ def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, request: Reques
         if payload.reservationDatetime:
             update_data[SUPABASE_RESERVATION_DATETIME_COLUMN] = payload.reservationDatetime
 
-        resolved_id_column, rows = _find_reservations_by_ids(reservation_ids)
+        rows_response = (
+            supabase.table(SUPABASE_RESERVATIONS_TABLE)
+            .select("*")
+            .in_(SUPABASE_RESERVATION_ID_COLUMN, reservation_ids)
+            .execute()
+        )
+        rows = rows_response.data if isinstance(rows_response.data, list) else []
 
         if not rows:
             raise HTTPException(status_code=404, detail="No se encontraron reservas para editar")
 
-        by_id = {
-            str(
-                row.get(resolved_id_column)
-                or row.get(SUPABASE_RESERVATION_ID_COLUMN)
-                or row.get("id")
-                or row.get("reservation_id")
-            ): row
-            for row in rows
-        }
+        by_id = {str(row.get(SUPABASE_RESERVATION_ID_COLUMN)): row for row in rows}
         ordered_rows = [by_id[rid] for rid in reservation_ids if rid in by_id]
         if not ordered_rows:
             ordered_rows = rows
@@ -263,7 +274,7 @@ def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, request: Reques
             respuesta = (
                 supabase.table(SUPABASE_RESERVATIONS_TABLE)
                 .update(update_data)
-                .in_(resolved_id_column, reservation_ids)
+                .in_(SUPABASE_RESERVATION_ID_COLUMN, reservation_ids)
                 .execute()
             )
             return {"ok": True, "data": respuesta.data}
@@ -284,12 +295,7 @@ def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, request: Reques
 
         for idx, table_id in enumerate(normalized_tables[: len(ordered_rows)]):
             row = ordered_rows[idx]
-            row_id = (
-                row.get(resolved_id_column)
-                or row.get(SUPABASE_RESERVATION_ID_COLUMN)
-                or row.get("id")
-                or row.get("reservation_id")
-            )
+            row_id = row.get(SUPABASE_RESERVATION_ID_COLUMN)
             if row_id is None:
                 continue
 
@@ -297,7 +303,7 @@ def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, request: Reques
             (
                 supabase.table(SUPABASE_RESERVATIONS_TABLE)
                 .update(patch_data)
-                .eq(resolved_id_column, row_id)
+                .eq(SUPABASE_RESERVATION_ID_COLUMN, row_id)
                 .execute()
             )
 
@@ -322,24 +328,16 @@ def admin_editar_reserva_grupo(payload: AdminReservaGroupUpdate, request: Reques
 
         if len(normalized_tables) < len(ordered_rows):
             extra_ids = [
-                row.get(resolved_id_column)
-                or row.get(SUPABASE_RESERVATION_ID_COLUMN)
-                or row.get("id")
-                or row.get("reservation_id")
+                row.get(SUPABASE_RESERVATION_ID_COLUMN)
                 for row in ordered_rows[len(normalized_tables) :]
-                if (
-                    row.get(resolved_id_column)
-                    or row.get(SUPABASE_RESERVATION_ID_COLUMN)
-                    or row.get("id")
-                    or row.get("reservation_id")
-                ) is not None
+                if row.get(SUPABASE_RESERVATION_ID_COLUMN) is not None
             ]
 
             if extra_ids:
                 (
                     supabase.table(SUPABASE_RESERVATIONS_TABLE)
                     .delete()
-                    .in_(resolved_id_column, extra_ids)
+                    .in_(SUPABASE_RESERVATION_ID_COLUMN, extra_ids)
                     .execute()
                 )
 
@@ -359,7 +357,12 @@ def admin_eliminar_reserva_grupo(payload: AdminReservaGroupDelete, request: Requ
         if not reservation_ids:
             raise HTTPException(status_code=400, detail="Debes enviar al menos un id de reserva")
 
-        respuesta = _delete_reservations_by_ids(reservation_ids)
+        respuesta = (
+            supabase.table(SUPABASE_RESERVATIONS_TABLE)
+            .delete()
+            .in_(SUPABASE_RESERVATION_ID_COLUMN, reservation_ids)
+            .execute()
+        )
 
         return {"ok": True, "data": respuesta.data}
     except HTTPException:
