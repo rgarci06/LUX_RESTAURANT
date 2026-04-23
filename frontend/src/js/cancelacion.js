@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const ids = urlParams.get('ids');
+    const token = sessionStorage.getItem('lux_token') || localStorage.getItem('lux_token') || '';
 
     const icon = document.getElementById('cancel-icon');
     const title = document.getElementById('cancel-title');
@@ -12,14 +13,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    if (!token) {
+        window.location.href = '/pages/login.html';
+        return;
+    }
+
     try {
-        // AQUÍ PON LA URL DE TU BACKEND EN RENDER CUANDO LO SUBAS
-        // Para probar en local usa: http://localhost:8000/api/cancelar-reserva?ids=${ids}
-        const apiUrl = `https://lux-restaurant.onrender.com/api/cancelar-reserva?ids=${encodeURIComponent(ids)}`;
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const baseApiUrl = isLocal
+            ? 'http://localhost:8000/api'
+            : 'https://lux-restaurant.onrender.com/api';
+        const apiUrl = `${baseApiUrl}/cancelar-reserva?ids=${encodeURIComponent(ids)}`;
 
         const response = await fetch(apiUrl, {
             method: 'GET',
-            headers: { 'Accept': 'application/json' }
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
         });
 
         const contentType = response.headers.get('content-type') || '';

@@ -17,7 +17,6 @@ class UsuariRegistre(BaseModel):
     nombre: str
     apellido: str
     telefono: str
-    rol: str = "client"
 
 
 class RecuperarPassword(BaseModel):
@@ -36,6 +35,7 @@ def registrar(user: UsuariRegistre):
         nombre = str(user.nombre or "").strip()
         apellido = str(user.apellido or "").strip()
         telefono = str(user.telefono or "").strip()
+        rol = "client"
 
         if not nombre or not apellido or not telefono:
             raise HTTPException(status_code=400, detail="Nombre, apellido y telefono son obligatorios")
@@ -48,7 +48,7 @@ def registrar(user: UsuariRegistre):
                 "password": user.password,
                 "options": {
                     "data": {
-                        "rol": user.rol,
+                        "rol": rol,
                         "nombre": nombre,
                         "apellido": apellido,
                         "display_name": display_name,
@@ -67,7 +67,7 @@ def registrar(user: UsuariRegistre):
                 {
                     "phone": telefono,
                     "user_metadata": {
-                        "rol": user.rol,
+                        "rol": rol,
                         "nombre": nombre,
                         "apellido": apellido,
                         "display_name": display_name,

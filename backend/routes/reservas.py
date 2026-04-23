@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -11,12 +12,12 @@ from supabase import Client, create_client
 from main import (
     SUPABASE_KEY,
     SUPABASE_RESERVATIONS_TABLE,
+    SUPABASE_RESERVATION_ID_COLUMN,
     SUPABASE_RESERVATION_DATETIME_COLUMN,
     SUPABASE_USER_EMAIL_COLUMN,
     SUPABASE_USER_ID_COLUMN,
     SUPABASE_URL,
-    extract_bearer_token,
-    extract_user_id_from_jwt,
+    get_authenticated_user,
     parse_iso_datetime,
     supabase,
 )
@@ -26,8 +27,11 @@ router = APIRouter()
 
 def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reserva):
     # Envia correo de confirmacion de la reserva con enlace de cancelacion.
-    remitente = "garciamagroraul5@gmail.com"
-    password = "zqkc ftfn qbjw knab"
+    remitente = (os.getenv("SMTP_EMAIL") or "").strip()
+    password = (os.getenv("SMTP_PASSWORD") or "").strip()
+    if not remitente or not password:
+        print("Aviso: correo de reserva omitido por falta de SMTP_EMAIL/SMTP_PASSWORD")
+        return
 
     msg = MIMEMultipart()
     msg["From"] = f"LUX Restaurant <{remitente}>"
@@ -80,14 +84,12 @@ class ReservaPayload(BaseModel):
 @router.post("/api/reservas")
 def crear_reserva(reserva: ReservaPayload, authorization: str | None = Header(default=None)):
     try:
-        token = extract_bearer_token(authorization)
-        if not token:
-            raise HTTPException(status_code=401, detail="Necesitas iniciar sesion para crear una reserva")
+        token, auth_user = get_authenticated_user(authorization)
 
         if not reserva.tables:
             raise HTTPException(status_code=400, detail="Debes seleccionar al menos una mesa")
 
-        auth_user_id = extract_user_id_from_jwt(token)
+        auth_user_id = str(auth_user.get("id") or "").strip()
         if not auth_user_id:
             raise HTTPException(status_code=401, detail="No se pudo validar tu sesion")
 
@@ -157,16 +159,42 @@ def crear_reserva(reserva: ReservaPayload, authorization: str | None = Header(de
 
 
 @router.get("/api/cancelar-reserva")
-def cancelar_reserva(ids: str):
+def cancelar_reserva(ids: str, authorization: str | None = Header(default=None)):
     try:
-        lista_ids = [int(id_mesa.strip()) for id_mesa in ids.split(",")]
-        
-        # Conectamos con Supabase
+        _, auth_user = get_authenticated_user(authorization)
+        auth_user_id = str(auth_user.get("id") or "").strip()
+        if not auth_user_id:
+            raise HTTPException(status_code=401, detail="Sesion invalida o expirada")
+
+        lista_ids = [int(id_mesa.strip()) for id_mesa in ids.split(",") if id_mesa.strip()]
+        if not lista_ids:
+            raise HTTPException(status_code=400, detail="Debes indicar al menos un id de reserva")
+
         request_supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-        request_supabase.table(SUPABASE_RESERVATIONS_TABLE).delete().in_("id", lista_ids).execute()
-        
-        # Ahora devolvemos un JSON limpio, no un HTML
+        rows_response = (
+            request_supabase.table(SUPABASE_RESERVATIONS_TABLE)
+            .select(f"{SUPABASE_RESERVATION_ID_COLUMN}, {SUPABASE_USER_ID_COLUMN}")
+            .in_(SUPABASE_RESERVATION_ID_COLUMN, lista_ids)
+            .execute()
+        )
+
+        rows = rows_response.data if isinstance(rows_response.data, list) else []
+        if not rows:
+            raise HTTPException(status_code=404, detail="No se encontraron reservas para cancelar")
+
+        unauthorized = [
+            row.get(SUPABASE_RESERVATION_ID_COLUMN)
+            for row in rows
+            if str(row.get(SUPABASE_USER_ID_COLUMN) or "").strip() != auth_user_id
+        ]
+        if unauthorized:
+            raise HTTPException(status_code=403, detail="No puedes cancelar reservas de otro usuario")
+
+        request_supabase.table(SUPABASE_RESERVATIONS_TABLE).delete().in_(SUPABASE_RESERVATION_ID_COLUMN, lista_ids).execute()
+
         return {"ok": True, "mensaje": "Reserva cancelada correctamente"}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error al cancelar: {str(e)}")
 
