@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         tokens.forEach((token) => {
             const parsed = Number(token);
-            if (!Number.isInteger(parsed) || parsed < 1 || seen.has(parsed)) {
+            if (!Number.isInteger(parsed) || parsed < 1 || parsed > 12 || seen.has(parsed)) {
                 return;
             }
             seen.add(parsed);

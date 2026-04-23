@@ -347,16 +347,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (stepTime) stepTime.classList.add('hidden');
     }
 
-    // ==========================================
-    // LÓGICA DEL POPUP Y ENVÍO A BASE DE DATOS
-    // ==========================================
-
-    // 1. Mostrar el Popup al hacer click en el primer botón de confirmar
+    // Mostra el Popup al hacer click en el primer botón de confirmar
     if (btnConfirm) {
         btnConfirm.addEventListener('click', () => {
             if (!btnConfirm.disabled && modal) {
                 
-                // Formatear la fecha para que quede bonita (Ej: "Jueves, 14 de Abril de 2026")
+                // Formatea la fecha para que quede bonita (Ej: "Jueves, 14 de Abril de 2026")
                 const [year, month, day] = state.selectedDate.split('-');
                 const dateObj = new Date(year, month - 1, day);
                 const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -366,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (modalPeople) modalPeople.textContent = state.people + (state.people > 1 ? " Personas" : " Persona");
                 if (modalTable) modalTable.textContent = "Mesa(s): " + state.selectedTables.join(', ');
 
-                // Mostrar modal con animación
+                // Mostra modal con animación
                 modal.classList.remove('hidden');
                 setTimeout(() => modal.classList.add('active'), 10);
             }
