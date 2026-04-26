@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             // URL de tu servidor Python en LOCAL (cambiar a Render cuando subas a Vercel)
-            const res = await fetch(`http://localhost:8000/api/actualizar-password`, {
+            const res = await fetch(`https://lux-restaurant.onrender.com`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
