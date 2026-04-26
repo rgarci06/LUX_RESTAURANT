@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const ids = urlParams.get('ids');
-
     const icon = document.getElementById('cancel-icon');
     const title = document.getElementById('cancel-title');
     const subtitle = document.getElementById('cancel-subtitle');
@@ -13,8 +12,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        // AQUÍ PON LA URL DE TU BACKEND EN RENDER CUANDO LO SUBAS
-        // Para probar en local usa: http://localhost:8000/api/cancelar-reserva?ids=${ids}
         const apiUrl = `https://lux-restaurant.onrender.com/api/cancelar-reserva?ids=${encodeURIComponent(ids)}`;
 
         const response = await fetch(apiUrl, {
@@ -32,17 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             throw new Error(`Respuesta no JSON (${response.status}): ${rawText.slice(0, 180)}...`);
         }
 
-        if (response.ok) {
-            // ÉXITO
-            icon.textContent = "✓";
-            icon.style.color = "#d4af37";
-            title.textContent = "RESERVA CANCELADA";
-            title.style.background = "linear-gradient(to bottom, #fef08a, #d4af37, #a16207)";
-            title.style.webkitBackgroundClip = "text";
-            title.style.color = "transparent";
-            subtitle.textContent = "Las mesas vuelven a estar disponibles";
-            message.textContent = "Tu reserva ha sido anulada correctamente. Esperamos poder atenderte en otra ocasión y que disfrutes de la experiencia LUX muy pronto.";
-        } else {
+        if (!response.ok) {
             // ERROR DEL BACKEND
             showError("No se pudo cancelar", data?.detail || "La reserva ya ha sido cancelada previamente o no existe.");
         }

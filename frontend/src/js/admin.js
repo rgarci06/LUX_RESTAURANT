@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
         reservasInfo.textContent = `${groupedRows.length} reservas visibles (${totalTables} mesas)`;
     }
 
-    // Pinta la tabla de usuarios.
+    // Rellena la tabla de usuarios.
     function renderUsers() {
         if (!isAdmin) {
             usersBody.innerHTML = '';
@@ -391,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
         syncCollapseUi();
     });
 
-    // Delegación de eventos para acciones de reservas (editar / eliminar).
+    // Eventos para acciones de reservas (editar / eliminar).
     reservasBody?.addEventListener('click', async (e) => {
         const btn = e.target.closest('button');
         if (!btn) return;
@@ -458,7 +458,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Mantener hora local del input datetime-local y añadir segundos sin convertir a UTC.
             const reservationDatetime = dateRaw.length === 16 ? `${dateRaw}:00` : dateRaw;
             const idsToUpdate = targetGroup.ids;
 
@@ -473,7 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 reservationDatetime,
                 tables: tablesValue
             };
-
+            // manda datos a api
             const result = await AdminService.updateReservationGroup(payload, token);
             if (!result.ok) {
                 alert(result.dades?.detail || 'No se pudo actualizar la reserva.');
@@ -485,7 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Delegación de eventos para eliminar usuarios.
+    // accienes para editar roles o eliminar usuarios
     usersBody?.addEventListener('click', async (e) => {
         const btn = e.target.closest('button');
         if (!btn) return;
