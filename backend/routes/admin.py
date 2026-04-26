@@ -76,15 +76,25 @@ def _find_reservations_by_ids(reservation_ids: list[str]) -> tuple[str, list[dic
 def _delete_reservations_by_ids(reservation_ids: list[str]):
     for col in _reservation_id_columns():
         try:
+            existing = (
+                supabase.table(SUPABASE_RESERVATIONS_TABLE)
+                .select(col)
+                .in_(col, reservation_ids)
+                .limit(1)
+                .execute()
+            )
+            existing_rows = existing.data if isinstance(existing.data, list) else []
+            if not existing_rows:
+                continue
+
             response = (
                 supabase.table(SUPABASE_RESERVATIONS_TABLE)
                 .delete()
                 .in_(col, reservation_ids)
                 .execute()
             )
-            deleted_rows = response.data if isinstance(response.data, list) else []
-            if deleted_rows:
-                return response
+            # Supabase puede devolver `data` vacio tras delete aun cuando la operacion fue correcta.
+            return response
         except Exception:
             continue
 

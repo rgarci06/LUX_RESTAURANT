@@ -1,7 +1,6 @@
 import { AdminService } from './services/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Cogemos referencias del HTML para no repetir document.getElementById todo el rato.
     const searchInput = document.getElementById('admin-search');
     const reservasBody = document.getElementById('admin-reservas-body');
     const usersBody = document.getElementById('admin-users-body');
@@ -66,12 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function getReservationId(reservation) {
-        return String(
-            reservation?.id
-            ?? reservation?.reservation_id
-            ?? reservation?.reservationId
-            ?? ''
-        );
+    return String(reservation?.id ?? '');
     }
 
     function getReservationDateRaw(reservation) {
@@ -132,6 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // mesas con formato correcto
     function parseTablesInput(value) {
         const raw = String(value || '').trim();
         if (!raw) return [];
@@ -179,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/'/g, '&#039;');
     }
 
-    // Formatea fechas para verlas bonitas en español.
+    // Formatea fechas para verlas bien
     function formatDate(value) {
         if (!value) return '-';
         const d = new Date(value);
@@ -190,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Formato reservas
+    // Formato data reservas
     function formatReservationDateHour(value) {
         if (!value) return '-';
         const text = String(value).trim();
@@ -255,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return normalized || 'client';
     }
 
-    // Pinta la tabla de reservas.
+    // carga la tabla de reservas.
     function renderReservas() {
         const groupedRows = groupReservations(state.reservas).filter(matchesReservaSearch);
 

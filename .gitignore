@@ -84,5 +84,5 @@ frontend/.vite/
 # Archivo temporal detectado en frontend
 frontend/frontend@0.0.0
 
-# Ignorar el propio gitignore (solicitado)
+# Ignorar el propio gitignore
 .gitignore
