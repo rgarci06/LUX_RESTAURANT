@@ -1,3 +1,5 @@
+import { AuthService } from './services/api.js';
+
 document.addEventListener('DOMContentLoaded', () => {
 
     function showLuxAlert(message, type = 'info') {
@@ -21,11 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3200);
     }
 
-    // 1. Extraer la llave (token) de la URL que nos manda el correo
-    const hash = window.location.hash;
-    const urlParams = new URLSearchParams(hash.replace('#', '?'));
-    const token = urlParams.get('access_token');
-    const refreshToken = urlParams.get('refresh_token');
+    // 1. Extraer tokens del hash (flujo clásico) o de querystring.
+    const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+    const queryParams = new URLSearchParams(window.location.search);
+
+    const token = hashParams.get('access_token') || queryParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token') || queryParams.get('refresh_token');
 
     // Si alguien entra escribiendo la URL a mano sin venir del correo, lo echamos
     if (!token || !refreshToken) {
@@ -55,16 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnSubmit.innerText = "GUARDANDO...";
 
         try {
-            // URL de tu servidor Python en LOCAL (cambiar a Render cuando subas a Vercel)
-            const res = await fetch(`https://lux-restaurant.onrender.com`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    token: token, 
-                    refresh: refreshToken, 
-                    password: pwd1 
-                })
-            });
+            const res = await AuthService.updatePassword(token, refreshToken, pwd1);
 
             if(res.ok) {
                 showLuxAlert("¡Contraseña actualizada con éxito!", 'success');

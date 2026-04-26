@@ -55,6 +55,22 @@ export const AuthService = {
             console.error("Error de conexión:", error);
             return { ok: false, status: 0, dades: { detail: "El servidor Backend no responde." } };
         }
+    },
+
+    // Método para confirmar nueva contraseña desde enlace de recuperación
+    updatePassword: async (token, refresh, password) => {
+        try {
+            const respuesta = await fetch(`${API_URL}/actualizar-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, refresh, password })
+            });
+            const dades = await respuesta.json();
+            return { ok: respuesta.ok, status: respuesta.status, dades: dades };
+        } catch (error) {
+            console.error("Error de conexión:", error);
+            return { ok: false, status: 0, dades: { detail: "El servidor Backend no responde." } };
+        }
     }
 };
 
