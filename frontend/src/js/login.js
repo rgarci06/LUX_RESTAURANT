@@ -159,12 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(btnForgotSubmit) btnForgotSubmit.innerText = "ENVIANDO...";
                 
                 try {
-                    // Cambia la URL de Render por la de tu localhost
-                    const response = await fetch("http://localhost:8000/api/recuperar-password", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email: emailInput.value })
-                    });
+                    const response = await AuthService.recoverPassword(emailInput.value);
 
                     if (response.ok) {
                         showLuxAlert(`Si el correo existe, recibirá un enlace en ${emailInput.value}`, 'success');

@@ -103,7 +103,7 @@ def entrar(user: UsuariLogin):
 @router.post("/api/recuperar-password")
 def pedir_recuperacion(datos: RecuperarPassword):
     try:
-        url_destino = "http://localhost:5173/pages/recovery.html"
+        url_destino = "https://lux-restaurant.onrender.com/pages/recovery.html"
         supabase.auth.reset_password_email(datos.email, options={"redirect_to": url_destino})
         return {"mensaje": "Correo de recuperación enviado."}
     except Exception as e:

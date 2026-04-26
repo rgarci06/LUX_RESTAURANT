@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Formato simple para reservas: fecha + hora limpia (HH:mm).
+    // Formato reservas
     function formatReservationDateHour(value) {
         if (!value) return '-';
         const text = String(value).trim();
@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${day}/${month}/${year} - ${hour}:${minute}`;
     }
 
-    // Pasa una fecha ISO a formato para input datetime-local.
+    // Pasa una fecha a formato texto para poder editarlo
     function toDateTimeLocalValue(value) {
         if (!value) return '';
         const text = String(value).trim();

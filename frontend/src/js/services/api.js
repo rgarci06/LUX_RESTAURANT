@@ -6,12 +6,7 @@
  * pero aislamos la lógica de red del diseño visual.
  */
 
-// Detectamos si el navegador está en modo local o en internet
-const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-
-const API_URL = isLocal 
-    ? "http://localhost:8000/api" 
-    : "https://lux-restaurant.onrender.com/api";
+const API_URL = "https://lux-restaurant.onrender.com/api";
 
 export const AuthService = {
     // Método para Iniciar Sesión
@@ -37,6 +32,22 @@ export const AuthService = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...payload, rol: "client" })
+            });
+            const dades = await respuesta.json();
+            return { ok: respuesta.ok, status: respuesta.status, dades: dades };
+        } catch (error) {
+            console.error("Error de conexión:", error);
+            return { ok: false, status: 0, dades: { detail: "El servidor Backend no responde." } };
+        }
+    },
+
+    // Método para recuperar contraseña
+    recoverPassword: async (email) => {
+        try {
+            const respuesta = await fetch(`${API_URL}/recuperar-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
             });
             const dades = await respuesta.json();
             return { ok: respuesta.ok, status: respuesta.status, dades: dades };
