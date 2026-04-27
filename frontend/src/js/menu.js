@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Paso la respuesta del backend al formato del frontend
+    // carga todos los platos de cada categoria
     function normalizeMenuData(data) {
         const normalized = { ...emptyMenuData };
 
