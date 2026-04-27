@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${year}-${month}-${day}`;
     }
 
-    // paso 1: elegir cuanta gente va a venir
+    // elegir cuanta gente va a venir
     function updatePeopleCount(delta) {
         state.people = Math.max(1, Math.min(20, state.people + delta));
         if (peopleCount) peopleCount.textContent = state.people;
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnInc) btnInc.addEventListener('click', () => updatePeopleCount(1));
     if (btnDec) btnDec.addEventListener('click', () => updatePeopleCount(-1));
 
-    // paso 2: calendario para elegir el dia
+    // calendario para elegir el dia
     function generateCalendar() {
         if (!calendarGrid) return;
         calendarGrid.innerHTML = '';
@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         validateForm();
     }
 
-    // paso 3: elegir la hora de la reserva
+    // elegir la hora de la reserva
     function generateTimeSlots(dayOfWeek) {
         if (!middaySlots || !eveningSlots) return;
         middaySlots.innerHTML = '';
@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
         validateForm();
     }
 
-    // paso 4: escojer las mesas
+    // escojer las mesas
     function generateTables() {
         if (!tableMap) return;
         tableMap.innerHTML = '';
@@ -369,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 2. Cerrar el Popup al hacer click en Cancelar
+    // Cerrar el Popup al hacer click en Cancelar
     if (btnModalCancel) {
         btnModalCancel.addEventListener('click', () => {
             modal.classList.remove('active');
@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 3. Ejecutar la llamada a la Base de Datos al darle a "Sí, Reservar"
+    // Ejecutar la llamada a la Base de Datos al darle a "Sí, Reservar"
     if (btnModalConfirm) {
         btnModalConfirm.addEventListener('click', async () => {
             const email = getSessionEmail();
@@ -417,8 +417,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await ReservationService.createReservation(reservation, token);
 
                 if (result.ok) {
-                    // Ya no mostramos el toast ni esperamos 3 segundos.
-                    // Simplemente redirigimos directamente a la página de éxito.
                     window.location.href = 'confirmacion.html';
                 } else {
                     showLuxToast(`Error: ${result.dades?.detail || 'No se pudo guardar la reserva'}`, 'error');

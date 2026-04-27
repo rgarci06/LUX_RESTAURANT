@@ -52,12 +52,11 @@
         </nav>
     </div>
 
-    <!-- CONTENIDO DE RESERVAS -->
     <main class="reserve-container">
         <h1 class="font-luxury-title reserva-title">Reserva tu mesa</h1>
         <p class="font-luxury-serif subtitle-reserva">Selecciona tu día, hora y mesa</p>
 
-        <!-- PASO 1: aquí elegimos cuántas personas van a venir -->
+        <!-- personas que van a venir -->
         <section class="reservation-step" id="step-people">
             <h2 class="step-title font-luxury-serif">¿Cuántas personas sois?</h2>
             <div class="people-selector">
@@ -68,39 +67,35 @@
             <p class="people-info font-luxury-serif" id="people-info"></p>
         </section>
 
-        <!-- PASO 2: aquí se escoge el día con el calendario -->
+        <!-- día del calendario -->
         <section class="reservation-step" id="step-date">
             <h2 class="step-title font-luxury-serif">Elige tu día</h2>
             <div class="calendar-grid" id="calendar-grid">
-                <!-- Esto lo pinta JavaScript automáticamente -->
             </div>
         </section>
 
-        <!-- PASO 3: aquí se selecciona la hora -->
+        <!-- la hora -->
         <section class="reservation-step" id="step-time">
             <h2 class="step-title font-luxury-serif">Selecciona la hora</h2>
             <div class="time-slots-container">
                 <div class="time-period">
                     <h3 class="font-luxury-serif">Mediodía</h3>
                     <div class="time-slots" id="midday-slots">
-                        <!-- Esto lo pinta JavaScript automáticamente -->
                     </div>
                 </div>
                 <div class="time-period">
                     <h3 class="font-luxury-serif">Noche</h3>
                     <div class="time-slots" id="evening-slots">
-                        <!-- Esto lo pinta JavaScript automáticamente -->
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- PASO 4: aquí se elige la mesa -->
+        <!-- elegir la mesa -->
         <section class="reservation-step" id="step-tables">
             <h2 class="step-title font-luxury-serif">Escoge tu mesa</h2>
             <p class="table-instruction" id="table-instruction"></p>
             <div id="table-map" class="table-map">
-                <!-- Esto lo pinta JavaScript automáticamente -->
             </div>
         </section>
 
@@ -114,7 +109,7 @@
             </div>
         </section>
 
-        <!-- Botón final para confirmar la reserva -->
+        <!-- Botón para confirmar la reserva -->
         <div class="reservation-actions">
             <button class="btn-gold btn-confirm" id="btn-confirm" disabled>Confirmar reserva</button>
         </div>
