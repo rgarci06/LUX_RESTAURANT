@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (forgotForm) {
             const btnForgotSubmit = forgotForm.querySelector('.btn-login');
             
-            forgotForm.addEventListener('submit', async (e) => { // <-- Añadimos 'async' aquí
+            forgotForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const emailInput = forgotForm.querySelector('input[type="email"]');
                 if (!emailInput || !emailInput.value) return showLuxAlert("Introduzca su correo electrónico.", 'warning');
