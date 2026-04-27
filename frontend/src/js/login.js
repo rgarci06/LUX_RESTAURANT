@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const show = input.type === 'password';
             input.type = show ? 'text' : 'password';
             btn.classList.toggle('active', show);
+            btn.setAttribute('aria-pressed', show ? 'true' : 'false');
             btn.setAttribute('aria-label', show ? 'Ocultar contraseña' : 'Mostrar contraseña');
         });
     });

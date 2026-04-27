@@ -27,19 +27,52 @@
 
 .password-wrap { display: flex; align-items: center; gap: 10px; }
 .toggle-password {
-    border: 1px solid rgba(212,175,55,0.45);
-    background: rgba(0,0,0,0.35);
-    color: #d4af37;
+    border: 1px solid rgba(212,175,55,0.38);
+    background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.35) 100%);
+    color: rgba(212,175,55,0.95);
     border-radius: 6px;
     width: 34px;
     height: 34px;
     display: grid;
     place-items: center;
     cursor: pointer;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.25s ease, background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
 }
-.toggle-password:hover { color: #fff; border-color: rgba(212,175,55,0.75); }
+.toggle-password:hover {
+    color: #fff;
+    border-color: rgba(212,175,55,0.85);
+    box-shadow: 0 0 0 1px rgba(212,175,55,0.2), 0 8px 18px rgba(0,0,0,0.35);
+    transform: translateY(-1px);
+}
+.toggle-password:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(212,175,55,0.45), 0 0 0 5px rgba(212,175,55,0.16);
+}
 .toggle-password svg { width: 18px; height: 18px; fill: currentColor; }
-.toggle-password.active { color: #fff; border-color: #d4af37; }
+.toggle-password::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    transform: rotate(-32deg) scaleX(0);
+    transform-origin: center;
+    opacity: 0;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.toggle-password.active {
+    color: #fff;
+    border-color: rgba(212,175,55,0.95);
+    background: linear-gradient(180deg, rgba(212,175,55,0.38) 0%, rgba(212,175,55,0.14) 100%);
+    box-shadow: 0 0 0 1px rgba(212,175,55,0.34), 0 10px 24px rgba(212,175,55,0.22);
+    transform: translateY(-1px);
+}
+.toggle-password.active::after {
+    opacity: 0.95;
+    transform: rotate(-32deg) scaleX(1);
+}
 .password-strength { display: block; margin-top: 8px; font-size: 10px; letter-spacing: 1px; color: #aaa; text-transform: uppercase; }
 .password-strength.weak { color: #f97373; }
 .password-strength.medium { color: #f59e0b; }
