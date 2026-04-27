@@ -93,7 +93,6 @@ def _delete_reservations_by_ids(reservation_ids: list[str]):
                 .in_(col, reservation_ids)
                 .execute()
             )
-            # Supabase puede devolver `data` vacio tras delete aun cuando la operacion fue correcta.
             return response
         except Exception:
             continue
