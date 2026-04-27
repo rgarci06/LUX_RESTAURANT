@@ -29,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
         modalItemId: ''
     };
 
-    // Leo la sesion desde donde toque.
     function readSession(storage) {
         return {
             token: storage.getItem('lux_token') || '',
@@ -38,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Primero uso sessionStorage y luego localStorage.
+    // guarda les dades per saber si l'usuari es admin o no
     function resolveCurrentSession() {
         const sessionData = readSession(sessionStorage);
         if (sessionData.token && sessionData.email) {
@@ -58,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const normalizedRole = String(currentSession.rol || '').toLowerCase();
     const isAdmin = normalizedRole === 'admin' || String(currentSession.email || '').toLowerCase() === ADMIN_EMAIL;
 
-    // Escape simple para pintar texto sin problemas.
+    // remplaza caracteres especiales
     function escapeHtml(value) {
         return String(value ?? '')
             .replace(/&/g, '&amp;')
@@ -68,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/'/g, '&#039;');
     }
 
-    // Preparo cada plato con valores seguros.
+    // prepara cada plato con valores seguros.
     function normalizeItem(item) {
         return {
             id: String(item?.id || ''),
@@ -80,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Paso la respuesta del backend al formato del front.
+    // Paso la respuesta del backend al formato del frontend
     function normalizeMenuData(data) {
         const normalized = { ...emptyMenuData };
 
