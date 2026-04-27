@@ -36,9 +36,10 @@
                     <label class="label-luxury">Contraseña</label>
                     <div class="password-wrap">
                         <input id="login-password" type="password" class="input-luxury" placeholder="Tu contraseña">
-                        <button id="toggle-login-password" type="button" class="toggle-password" aria-label="Mostrar contraseña">OJO</button>
+                        <button type="button" class="toggle-password" data-target="login-password" aria-label="Mostrar contraseña">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5C7 5 3 9.5 2 12c1 2.5 5 7 10 7s9-4.5 10-7c-1-2.5-5-7-10-7Zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"></path></svg>
+                        </button>
                     </div>
-                    <small id="password-strength" class="password-strength"></small>
                 </div>
                 <div class="form-options">
                     <label class="remember-box">
@@ -73,7 +74,13 @@
                 </div>
                 <div class="input-group">
                     <label class="label-luxury">Contraseña</label>
-                    <input type="password" class="input-luxury" name="password" placeholder="Crea una contraseña" required>
+                    <div class="password-wrap">
+                        <input id="register-password" type="password" class="input-luxury" name="password" placeholder="Crea una contraseña" required>
+                        <button type="button" class="toggle-password" data-target="register-password" aria-label="Mostrar contraseña">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5C7 5 3 9.5 2 12c1 2.5 5 7 10 7s9-4.5 10-7c-1-2.5-5-7-10-7Zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"></path></svg>
+                        </button>
+                    </div>
+                    <small id="register-password-strength" class="password-strength"></small>
                 </div>
                 <button type="submit" class="btn-login" style="margin-top: 10px;">CREAR CUENTA</button>
                 <p class="form-footer">

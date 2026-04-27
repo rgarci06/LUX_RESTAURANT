@@ -30,13 +30,16 @@
     border: 1px solid rgba(212,175,55,0.45);
     background: rgba(0,0,0,0.35);
     color: #d4af37;
-    font-size: 10px;
-    letter-spacing: 1px;
     border-radius: 6px;
-    padding: 7px 9px;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
     cursor: pointer;
 }
 .toggle-password:hover { color: #fff; border-color: rgba(212,175,55,0.75); }
+.toggle-password svg { width: 18px; height: 18px; fill: currentColor; }
+.toggle-password.active { color: #fff; border-color: #d4af37; }
 .password-strength { display: block; margin-top: 8px; font-size: 10px; letter-spacing: 1px; color: #aaa; text-transform: uppercase; }
 .password-strength.weak { color: #f97373; }
 .password-strength.medium { color: #f59e0b; }

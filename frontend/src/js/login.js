@@ -36,9 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnToLogin = document.getElementById('btn-to-login');
     const linkForgot = document.getElementById('link-forgot');
     const btnBackFromForgot = document.getElementById('btn-back-from-forgot');
-    const loginPassword = document.getElementById('login-password');
-    const toggleLoginPassword = document.getElementById('toggle-login-password');
-    const passwordStrength = document.getElementById('password-strength');
+    const registerPassword = document.getElementById('register-password');
+    const registerPasswordStrength = document.getElementById('register-password-strength');
 
     function getPasswordStrength(value) {
         let score = 0;
@@ -65,24 +64,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if(linkForgot) linkForgot.addEventListener('click', (e) => { e.preventDefault(); switchForm(loginForm, forgotForm, "RECUPERAR CLAVE"); });
     if(btnBackFromForgot) btnBackFromForgot.addEventListener('click', () => switchForm(forgotForm, loginForm, "INICIAR SESIÓN"));
 
-    if (toggleLoginPassword && loginPassword) {
-        toggleLoginPassword.addEventListener('click', () => {
-            const show = loginPassword.type === 'password';
-            loginPassword.type = show ? 'text' : 'password';
-            toggleLoginPassword.textContent = show ? 'OCUL' : 'OJO';
-        });
-    }
+    document.querySelectorAll('.toggle-password').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-target');
+            if (!targetId) return;
+            const input = document.getElementById(targetId);
+            if (!input) return;
 
-    if (loginPassword && passwordStrength) {
-        loginPassword.addEventListener('input', () => {
-            if (!loginPassword.value) {
-                passwordStrength.textContent = '';
-                passwordStrength.className = 'password-strength';
+            const show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            btn.classList.toggle('active', show);
+            btn.setAttribute('aria-label', show ? 'Ocultar contraseña' : 'Mostrar contraseña');
+        });
+    });
+
+    if (registerPassword && registerPasswordStrength) {
+        registerPassword.addEventListener('input', () => {
+            if (!registerPassword.value) {
+                registerPasswordStrength.textContent = '';
+                registerPasswordStrength.className = 'password-strength';
                 return;
             }
-            const result = getPasswordStrength(loginPassword.value);
-            passwordStrength.textContent = `Seguridad: ${result.label}`;
-            passwordStrength.className = `password-strength ${result.className}`;
+            const result = getPasswordStrength(registerPassword.value);
+            registerPasswordStrength.textContent = `Seguridad: ${result.label}`;
+            registerPasswordStrength.className = `password-strength ${result.className}`;
         });
     }
 
