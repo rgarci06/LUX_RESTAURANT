@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    // aqui pillo los ids que vienen en la URL del enlace del correo
     const urlParams = new URLSearchParams(window.location.search);
     const ids = urlParams.get('ids');
     const icon = document.getElementById('cancel-icon');
@@ -12,6 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
+        // aqui mando la cancelacion al backend
         const apiUrl = `https://lux-restaurant.onrender.com/api/cancelar-reserva?ids=${encodeURIComponent(ids)}`;
 
         const response = await fetch(apiUrl, {
@@ -30,12 +32,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (!response.ok) {
-            // ERROR DEL BACKEND
+            // si backend devuelve error lo enseño en pantalla
             showError("No se pudo cancelar", data?.detail || "La reserva ya ha sido cancelada previamente o no existe.");
         }
 
     } catch (error) {
-        // ERROR DE RED / FORMATO
+        // si falla la conexion o la respuesta viene rara
         showError("Error de conexión", "No hemos podido conectar con el servidor o la respuesta no es válida.");
         console.error("Error cancelando:", error);
     }

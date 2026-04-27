@@ -1,13 +1,8 @@
-/**
- * CAPA 1: LÓGICA DE INTERFAZ (Frontend)
- * Este archivo controla el DOM (el HTML de la página de login).
- * QUÉ HACE: Escucha cuando haces clic, lee lo que escribes y muestra alertas.
- * CONEXIÓN: No habla con la base de datos directamente; le pide el favor a 'api.js'.
- */
-
 import { AuthService } from './services/api.js';
     
 document.addEventListener('DOMContentLoaded', () => {
+
+    // este aviso lo uso para mensajes rapidos en pantalla
 
     function showLuxAlert(message, type = 'info') {
         let container = document.querySelector('.lux-toast-container');
@@ -22,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.textContent = message;
         container.appendChild(toast);
 
-        // Trigger animation in next paint.
+        // esto hace que la animacion entre suave
         requestAnimationFrame(() => toast.classList.add('show'));
 
         setTimeout(() => {
@@ -31,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3200);
     }
     
-    // 1. REFERENCIAS AL DOM
+    // aqui cojo todos los elementos del login/register/forgot
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
     const forgotForm = document.getElementById('forgot-form');
@@ -42,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkForgot = document.getElementById('link-forgot');
     const btnBackFromForgot = document.getElementById('btn-back-from-forgot');
 
-    // 2. ANIMACIONES DE PANTALLA
+    // con esto cambio de un formulario a otro
     function switchForm(hide, show, title) {
         hide.classList.add('hidden');
         hide.classList.remove('form-visible');
@@ -57,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(linkForgot) linkForgot.addEventListener('click', (e) => { e.preventDefault(); switchForm(loginForm, forgotForm, "RECUPERAR CLAVE"); });
     if(btnBackFromForgot) btnBackFromForgot.addEventListener('click', () => switchForm(forgotForm, loginForm, "INICIAR SESIÓN"));
 
-    // 3. REGISTRO (Usa el AuthService)
+    // bloque de registro
     if (registerForm) {
         const btnRegisterSubmit = registerForm.querySelector('.btn-login');
 
@@ -79,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if(btnRegisterSubmit) btnRegisterSubmit.innerText = "REGISTRANDO...";
 
-            // muestra el mensaje de "registrando..." mientras espera la respuesta del servidor
+            // aqui llamo al backend para crear usuario
             const respuesta = await AuthService.register({
                 nombre: nameInput.value,
                 apellido: surnameInput.value,
@@ -105,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 4. LOGIN (Usa el AuthService)
+    // bloque de login
     if (loginForm) {
         const btnLoginSubmit = loginForm.querySelector('.btn-login');
 
@@ -124,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if(btnLoginSubmit) btnLoginSubmit.innerText = "ACCEDIENDO...";
 
-            // Llama al mensajero (api.js)
+            // aqui pido login al backend
             const respuesta = await AuthService.login(emailInput.value, passwordInput.value);
             
             if (respuesta.ok) {
@@ -147,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 5. RECUPERAR CLAU
+    // bloque para enviar email de recuperacion
         if (forgotForm) {
             const btnForgotSubmit = forgotForm.querySelector('.btn-login');
             

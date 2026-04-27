@@ -1,10 +1,5 @@
-/**
- * GESTOR DE SESIÓN DE CABECERA
- * Misión: Modificar el botón de ACCESO si el usuario está logueado.
- */
-
 document.addEventListener('DOMContentLoaded', () => {
-    // Correo admin principal (fallback por si el rol no viene bien guardado)
+    // este correo lo uso como apoyo por si el rol viene mal guardado
     const ADMIN_EMAIL = 'ddelpe@insdanielblanxart.cat';
 
     function decodeJwtPayload(token) {
@@ -156,10 +151,10 @@ document.addEventListener('DOMContentLoaded', () => {
         injectAdminLinks();
 
         if (isAuthenticated) {
-            // L'usuari TÉ sessió
+            // aqui trato el caso con sesion activa
             const nomUsuari = email.split('@')[0].toUpperCase();
             
-            // En desktop: mostrar nombre en header
+            // en desktop muestro nombre y boton logout
             authLink.className = "auth-nav-btn";
             authLink.innerHTML = `
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -173,10 +168,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 logoutUser();
             });
             
-            // Ocultar el botón de acceso en móvil
+            // oculto este boton en movil
             authLink.classList.add('hide-on-mobile');
 
-            // En móvil se muestra solo el botón de logout con el nombre dentro del menú
+            // en movil dejo el boton de salir dentro del menu
             if (mobileAuthLink) {
                 mobileAuthLink.innerHTML = `
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16">
@@ -192,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         } else {
-            // L'usuari NO té sessió
+            // aqui trato el caso sin sesion
             authLink.className = "auth-nav-btn";
             authLink.innerHTML = `
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">

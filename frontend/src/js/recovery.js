@@ -23,21 +23,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3200);
     }
 
-    // 1. Extraer tokens del hash (flujo clásico) o de querystring.
+    // aqui cojo los tokens que vienen en la URL
     const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
     const queryParams = new URLSearchParams(window.location.search);
 
     const token = hashParams.get('access_token') || queryParams.get('access_token');
     const refreshToken = hashParams.get('refresh_token') || queryParams.get('refresh_token');
 
-    // Si alguien entra escribiendo la URL a mano sin venir del correo, lo echamos
+    // si no hay tokens, este enlace no vale
     if (!token || !refreshToken) {
         showLuxAlert("Enlace inválido o caducado.", 'error');
         setTimeout(() => { window.location.href = "login.html"; }, 2000);
         return;
     }
 
-    // 2. Controlar el formulario
+    // formulario para poner la nueva contraseña
     const recoveryForm = document.getElementById('recovery-form');
     const btnSubmit = recoveryForm.querySelector('.btn-login');
 
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if(res.ok) {
                 showLuxAlert("¡Contraseña actualizada con éxito!", 'success');
-                // Si va bien, lo mandamos al login
+                // si va bien vuelvo al login
                 setTimeout(() => { window.location.href = "login.html"; }, 2000);
             } else {
                 showLuxAlert("Error al actualizar. El enlace puede haber caducado.", 'error');

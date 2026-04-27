@@ -6,10 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileLinks = document.querySelectorAll('.mobile-link');
     const reserveCtas = document.querySelectorAll('#btn-reserva, .btn-reserve-full');
     
-    // --- 1. EFECTO SCROLL (Fondo Negro al bajar) ---
+    // al bajar un poco pongo el header en modo scrolled
     window.addEventListener('scroll', () => {
         const header = document.querySelector('.main-header');
-        // Mirem el scroll a dos llocs diferents per compatibilitat
+        // miro dos opciones por compatibilidad
         const scrollPosition = window.scrollY || document.documentElement.scrollTop;
 
         if (scrollPosition > 50) {
@@ -19,11 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- 2. MENÚ MÓVIL ---
+    // esto abre/cierra el menu movil
     const toggleMenu = () => {
         mobileMenu.classList.toggle('mobile-menu-open');
         
-        // Efecto icono hamburguesa
+        // aqui cambio el icono y bloqueo scroll cuando menu esta abierto
         if (mobileMenu.classList.contains('mobile-menu-open')) {
             menuBtn.classList.add('active-burger');
             document.body.style.overflow = 'hidden';
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (menuBtn) menuBtn.addEventListener('click', toggleMenu);
 
-    // Si no hay sesión, cualquier CTA de reserva redirige al login.
+    // si no hay sesion mando al login, si hay mando a reserva
     if (reserveCtas.length > 0) {
         reserveCtas.forEach((cta) => {
             cta.addEventListener('click', (e) => {
