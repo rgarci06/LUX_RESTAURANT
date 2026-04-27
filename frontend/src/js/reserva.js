@@ -1,7 +1,5 @@
 import { ReservationService, MesasService } from './services/api.js';
 
-// sistema de reservas para el restaurante
-
 document.addEventListener('DOMContentLoaded', () => {
     function showLuxToast(message, type = 'info', duration = 6000) {
         let container = document.querySelector('.lux-toast-container');
