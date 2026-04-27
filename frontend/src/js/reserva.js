@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 12, x: 79, y: 74, zone: 'gold' }
     ];
 
-    // aqui guardo toda la info de la reserva
+    // info de la reserva
     const state = {
         people: 2,
         selectedDate: null,
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         occupiedTables: []
     };
 
-    // cojo los elementos del html
+    // elementos del html
     const peopleCount = document.getElementById('people-count');
     const peopleInfo = document.getElementById('people-info');
     const calendarGrid = document.getElementById('calendar-grid');
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const stepTime = document.getElementById('step-time');
     const stepTables = document.getElementById('step-tables');
 
-    // NUEVOS: Elementos del Popup (Modal)
+    // Elementos del Popup (Modal)
     const modal = document.getElementById('reservation-modal');
     const btnModalCancel = document.getElementById('btn-modal-cancel');
     const btnModalConfirm = document.getElementById('btn-modal-confirm');
