@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    // Pinto una categoria entera.
+    // Pinto una categoria entera con los platos de esa categoria.
     function renderCategory(categoryEl) {
         const categoryKey = categoryEl.id;
         const items = getItems(categoryKey);
@@ -427,14 +427,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Cambio de pestaña al hacer click.
-    tabs.forEach((tab) => {
-        tab.addEventListener('click', () => {
-            const target = tab.dataset.target;
-            if (target) {
-                setActiveCategory(target);
-            }
-        });
+    // Cambio de pestaña al hacer click 
+    const tabsContainer = tabs.length ? tabs[0].parentElement : document;
+    tabsContainer.addEventListener('click', (event) => {
+        const btn = event.target.closest('.tab-btn');
+        if (!btn || !tabsContainer.contains(btn)) return;
+
+        const target = String(btn.dataset.target || '');
+        if (target === 'starters') {
+            setActiveCategory('starters');
+        } else if (target === 'mains') {
+            setActiveCategory('mains');
+        } else if (target === 'desserts') {
+            setActiveCategory('desserts');
+        } else if (target === 'wines') {
+            setActiveCategory('wines');
+        }
     });
 
     if (isAdmin) {
