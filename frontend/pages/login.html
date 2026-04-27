@@ -34,7 +34,11 @@
                 </div>
                 <div class="input-group">
                     <label class="label-luxury">Contraseña</label>
-                    <input type="password" class="input-luxury" placeholder="Tu contraseña">
+                    <div class="password-wrap">
+                        <input id="login-password" type="password" class="input-luxury" placeholder="Tu contraseña">
+                        <button id="toggle-login-password" type="button" class="toggle-password" aria-label="Mostrar contraseña">OJO</button>
+                    </div>
+                    <small id="password-strength" class="password-strength"></small>
                 </div>
                 <div class="form-options">
                     <label class="remember-box">

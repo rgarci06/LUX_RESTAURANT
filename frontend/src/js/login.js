@@ -36,6 +36,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnToLogin = document.getElementById('btn-to-login');
     const linkForgot = document.getElementById('link-forgot');
     const btnBackFromForgot = document.getElementById('btn-back-from-forgot');
+    const loginPassword = document.getElementById('login-password');
+    const toggleLoginPassword = document.getElementById('toggle-login-password');
+    const passwordStrength = document.getElementById('password-strength');
+
+    function getPasswordStrength(value) {
+        let score = 0;
+        if (value.length >= 6) score++;
+        if (/[A-Z]/.test(value) && /[a-z]/.test(value)) score++;
+        if (/\d/.test(value) || /[^A-Za-z0-9]/.test(value)) score++;
+        if (score <= 1) return { label: 'Debil', className: 'weak' };
+        if (score === 2) return { label: 'Media', className: 'medium' };
+        return { label: 'Fuerte', className: 'strong' };
+    }
 
     // con esto cambio de un formulario a otro
     function switchForm(hide, show, title) {
@@ -51,6 +64,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if(btnToLogin) btnToLogin.addEventListener('click', () => switchForm(registerForm, loginForm, "INICIAR SESIÓN"));
     if(linkForgot) linkForgot.addEventListener('click', (e) => { e.preventDefault(); switchForm(loginForm, forgotForm, "RECUPERAR CLAVE"); });
     if(btnBackFromForgot) btnBackFromForgot.addEventListener('click', () => switchForm(forgotForm, loginForm, "INICIAR SESIÓN"));
+
+    if (toggleLoginPassword && loginPassword) {
+        toggleLoginPassword.addEventListener('click', () => {
+            const show = loginPassword.type === 'password';
+            loginPassword.type = show ? 'text' : 'password';
+            toggleLoginPassword.textContent = show ? 'OCUL' : 'OJO';
+        });
+    }
+
+    if (loginPassword && passwordStrength) {
+        loginPassword.addEventListener('input', () => {
+            if (!loginPassword.value) {
+                passwordStrength.textContent = '';
+                passwordStrength.className = 'password-strength';
+                return;
+            }
+            const result = getPasswordStrength(loginPassword.value);
+            passwordStrength.textContent = `Seguridad: ${result.label}`;
+            passwordStrength.className = `password-strength ${result.className}`;
+        });
+    }
 
     // bloque de registro
     if (registerForm) {
