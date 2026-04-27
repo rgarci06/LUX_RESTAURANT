@@ -31,7 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerForm = document.getElementById('register-form');
     const forgotForm = document.getElementById('forgot-form');
     const formTitle = document.getElementById('form-title');
-
     const btnToRegister = document.getElementById('btn-to-register');
     const btnToLogin = document.getElementById('btn-to-login');
     const linkForgot = document.getElementById('link-forgot');
