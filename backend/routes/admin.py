@@ -76,14 +76,13 @@ def _find_reservations_by_ids(reservation_ids: list[str]) -> tuple[str, list[dic
 def _delete_reservations_by_ids(reservation_ids: list[str]):
     for col in _reservation_id_columns():
         try:
-            existing = (
+            existing_response = (
                 supabase.table(SUPABASE_RESERVATIONS_TABLE)
-                .select(col)
+                .select("id")
                 .in_(col, reservation_ids)
-                .limit(1)
                 .execute()
             )
-            existing_rows = existing.data if isinstance(existing.data, list) else []
+            existing_rows = existing_response.data if isinstance(existing_response.data, list) else []
             if not existing_rows:
                 continue
 
