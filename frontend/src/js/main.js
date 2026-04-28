@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // al bajar un poco pongo el header en modo scrolled
     window.addEventListener('scroll', () => {
         const header = document.querySelector('.main-header');
-        // miro dos opciones por compatibilidad
         const scrollPosition = window.scrollY || document.documentElement.scrollTop;
 
         if (scrollPosition > 50) {
@@ -23,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleMenu = () => {
         mobileMenu.classList.toggle('mobile-menu-open');
         
-        // aqui cambio el icono y bloqueo scroll cuando menu esta abierto
         if (mobileMenu.classList.contains('mobile-menu-open')) {
             menuBtn.classList.add('active-burger');
             document.body.style.overflow = 'hidden';
