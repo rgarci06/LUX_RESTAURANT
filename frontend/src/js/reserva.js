@@ -55,7 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const middaySlots = document.getElementById('midday-slots');
     const eveningSlots = document.getElementById('evening-slots');
     const tableMap = document.getElementById('table-map');
-    const tableInstruction = document.getElementById('table-instruction');
     const btnConfirm = document.getElementById('btn-confirm');
     const stepContact = document.getElementById('step-contact');
     const stepDate = document.getElementById('step-date');

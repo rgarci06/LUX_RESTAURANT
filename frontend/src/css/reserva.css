@@ -210,15 +210,6 @@
     pointer-events: none;
 }
 
-/* Mapa de mesas */
-.table-instruction {
-    color: #ccc;
-    font-size: 14px;
-    margin-bottom: 20px;
-    font-family: 'Cormorant Garamond', serif;
-    font-style: italic;
-}
-
 .table-map {
     position: relative;
     width: min(840px, 100%);
