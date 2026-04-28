@@ -74,35 +74,29 @@ def _find_reservations_by_ids(reservation_ids: list[str]) -> tuple[str, list[dic
 
 
 def _delete_reservations_by_ids(reservation_ids: list[str]):
-    if not reservation_ids:
-        raise HTTPException(status_code=400, detail="No hay IDs de reservas para eliminar")
+    for col in _reservation_id_columns():
+        try:
+            existing_response = (
+                supabase.table(SUPABASE_RESERVATIONS_TABLE)
+                .select("id")
+                .in_(col, reservation_ids)
+                .execute()
+            )
+            existing_rows = existing_response.data if isinstance(existing_response.data, list) else []
+            if not existing_rows:
+                continue
 
-    try:
-        # Intentar eliminar directamente usando la columna ID estándar
-        response = (
-            supabase.table(SUPABASE_RESERVATIONS_TABLE)
-            .delete()
-            .in_("id", reservation_ids)
-            .execute()
-        )
-        return response
-    except Exception as e:
-        print(f"Error al eliminar con 'id': {str(e)}")
-        
-        # Si falla, intentar con SUPABASE_RESERVATION_ID_COLUMN
-        if SUPABASE_RESERVATION_ID_COLUMN and SUPABASE_RESERVATION_ID_COLUMN != "id":
-            try:
-                response = (
-                    supabase.table(SUPABASE_RESERVATIONS_TABLE)
-                    .delete()
-                    .in_(SUPABASE_RESERVATION_ID_COLUMN, reservation_ids)
-                    .execute()
-                )
-                return response
-            except Exception as e2:
-                print(f"Error al eliminar con '{SUPABASE_RESERVATION_ID_COLUMN}': {str(e2)}")
-        
-        raise HTTPException(status_code=400, detail=f"No se pudo eliminar las reservas: {str(e)}")
+            response = (
+                supabase.table(SUPABASE_RESERVATIONS_TABLE)
+                .delete()
+                .in_(col, reservation_ids)
+                .execute()
+            )
+            return response
+        except Exception:
+            continue
+
+    raise HTTPException(status_code=404, detail="No se encontraron reservas para eliminar")
 
 
 @router.get("/api/admin/reservas")
