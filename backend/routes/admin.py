@@ -87,41 +87,37 @@ def _delete_reservations_by_ids(reservation_ids: list[str]):
         # No se encontraron filas con esos ids
         raise HTTPException(status_code=404, detail="No se encontraron reservas para eliminar")
 
-    # Intentar eliminar por 'id' interno si está presente en los rows
-    primary_ids = []
+    # Extraer los valores reales presentes en la tabla para esa columna
+    values_to_delete = []
     for row in rows:
-        pid = row.get("id") or row.get(SUPABASE_RESERVATION_ID_COLUMN) or row.get(resolved_col) or row.get("reservation_id")
-        if pid is not None:
-            primary_ids.append(str(pid).strip())
+        val = (
+            row.get(resolved_col)
+            or row.get(SUPABASE_RESERVATION_ID_COLUMN)
+            or row.get("id")
+            or row.get("reservation_id")
+        )
+        if val is not None:
+            values_to_delete.append(val)
 
-    primary_ids = [p for p in dict.fromkeys(primary_ids) if p]
+    # Normalizar y deduplicar
+    values_to_delete = [str(v).strip() for v in values_to_delete if str(v).strip()]
+    values_to_delete = list(dict.fromkeys(values_to_delete))
 
-    # Si hay primary_ids, eliminamos por la columna 'id' (más fiable)
-    if primary_ids:
-        try:
-            response = (
-                supabase.table(SUPABASE_RESERVATIONS_TABLE)
-                .delete()
-                .in_("id", primary_ids)
-                .execute()
-            )
-            print(f"[DELETE] Eliminado por 'id' count={len(primary_ids)} result={getattr(response, 'data', None)}")
-            return response
-        except Exception as e:
-            print(f"[DELETE] Error eliminando por 'id': {e}")
+    if not values_to_delete:
+        raise HTTPException(status_code=404, detail="No se encontraron valores válidos para eliminar")
 
-    # Fallback: eliminar usando la columna resuelta
     try:
+        # Intentar eliminar usando la columna resuelta
         response = (
             supabase.table(SUPABASE_RESERVATIONS_TABLE)
             .delete()
-            .in_(resolved_col, cleaned_ids)
+            .in_(resolved_col, values_to_delete)
             .execute()
         )
-        print(f"[DELETE] Fallback columna={resolved_col} cleaned_ids={cleaned_ids} result={getattr(response, 'data', None)}")
+        print(f"[DELETE] columna={resolved_col} removed={len(values_to_delete)} response_rows={getattr(response, 'data', None)}")
         return response
     except Exception as e:
-        print(f"[DELETE] Error en fallback columna {resolved_col}: {e}")
+        print(f"[DELETE] Error al eliminar con columna {resolved_col}: {e}")
         raise HTTPException(status_code=400, detail=f"Error al eliminar reservas: {e}")
 
 
