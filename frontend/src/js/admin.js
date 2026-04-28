@@ -38,7 +38,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const currentSession = resolveCurrentSession();
-    const token = currentSession.token || '';
+    // Lee el token en tiempo real desde sessionStorage o localStorage.
+    function getValidToken() {
+        const s = readSession(sessionStorage);
+        if (s.token) return s.token;
+        const l = readSession(localStorage);
+        if (l.token) return l.token;
+        return '';
+    }
+
+    const token = getValidToken();
     const rol = String(currentSession.rol || '').toLowerCase();
     const isAdmin = rol === 'admin';
     const isCamarero = rol === 'camarero';
@@ -338,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Carga reservas desde el backend.
     async function loadReservas() {
-        const result = await AdminService.listReservations(token);
+        const result = await AdminService.listReservations(getValidToken());
         if (!result.ok) {
             reservasInfo.textContent = result.dades?.detail || 'No se pudieron cargar las reservas.';
             return;
@@ -352,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadUsers() {
         if (!isAdmin) return;
 
-        const result = await AdminService.listUsers(token);
+        const result = await AdminService.listUsers(getValidToken());
         if (!result.ok) {
             if (usersInfo) {
                 usersInfo.textContent = result.dades?.detail || 'No se pudieron cargar los usuarios.';
@@ -410,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const result = await AdminService.deleteReservationGroup(idsToDelete, token);
+            const result = await AdminService.deleteReservationGroup(idsToDelete, getValidToken());
             if (!result.ok) {
                 alert(result.dades?.detail || 'No se pudo eliminar la reserva.');
                 return;
@@ -471,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 tables: tablesValue
             };
             // manda datos a api
-            const result = await AdminService.updateReservationGroup(payload, token);
+            const result = await AdminService.updateReservationGroup(payload, getValidToken());
             if (!result.ok) {
                 alert(result.dades?.detail || 'No se pudo actualizar la reserva.');
                 return;
@@ -496,7 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const roleInput = usersBody.querySelector(`select[data-field="user-role"][data-id="${userId}"]`);
             const selectedRole = normalizeRole(roleInput?.value || 'client');
 
-            const result = await AdminService.updateUser(userId, { rol: selectedRole }, token);
+            const result = await AdminService.updateUser(userId, { rol: selectedRole }, getValidToken());
             if (!result.ok) {
                 alert(result.dades?.detail || 'No se pudo actualizar el rol del usuario.');
                 return;
@@ -508,7 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (action === 'delete-user') {
             if (!confirm('¿Seguro que quieres eliminar este usuario?')) return;
-            await AdminService.deleteUser(userId, token);
+            await AdminService.deleteUser(userId, getValidToken());
             await loadUsers();
             return;
         }
