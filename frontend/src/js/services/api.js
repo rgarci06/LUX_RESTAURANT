@@ -183,7 +183,9 @@ export const AdminService = {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
-                }
+                },
+                // Obliguem al navegador a preguntar el token al servidor 
+                cache: 'no-store' 
             });
 
             const dades = await respuesta.json();
