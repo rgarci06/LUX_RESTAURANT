@@ -74,29 +74,51 @@ def _find_reservations_by_ids(reservation_ids: list[str]) -> tuple[str, list[dic
 
 
 def _delete_reservations_by_ids(reservation_ids: list[str]):
-    for col in _reservation_id_columns():
-        try:
-            existing_response = (
-                supabase.table(SUPABASE_RESERVATIONS_TABLE)
-                .select("id")
-                .in_(col, reservation_ids)
-                .execute()
-            )
-            existing_rows = existing_response.data if isinstance(existing_response.data, list) else []
-            if not existing_rows:
-                continue
+    if not reservation_ids:
+        raise HTTPException(status_code=400, detail="No hay IDs para eliminar")
 
-            response = (
-                supabase.table(SUPABASE_RESERVATIONS_TABLE)
-                .delete()
-                .in_(col, reservation_ids)
-                .execute()
-            )
-            return response
-        except Exception:
-            continue
+    cleaned_ids = [str(rid).strip() for rid in reservation_ids if str(rid).strip()]
+    if not cleaned_ids:
+        raise HTTPException(status_code=400, detail="IDs inválidos")
 
-    raise HTTPException(status_code=404, detail="No se encontraron reservas para eliminar")
+    # Resolver la columna que realmente contiene los IDs enviados
+    resolved_col, rows = _find_reservations_by_ids(cleaned_ids)
+    if not rows:
+        # No se encontraron filas con esos ids
+        raise HTTPException(status_code=404, detail="No se encontraron reservas para eliminar")
+
+    # Extraer los valores reales presentes en la tabla para esa columna
+    values_to_delete = []
+    for row in rows:
+        val = (
+            row.get(resolved_col)
+            or row.get(SUPABASE_RESERVATION_ID_COLUMN)
+            or row.get("id")
+            or row.get("reservation_id")
+        )
+        if val is not None:
+            values_to_delete.append(val)
+
+    # Normalizar y deduplicar
+    values_to_delete = [str(v).strip() for v in values_to_delete if str(v).strip()]
+    values_to_delete = list(dict.fromkeys(values_to_delete))
+
+    if not values_to_delete:
+        raise HTTPException(status_code=404, detail="No se encontraron valores válidos para eliminar")
+
+    try:
+        # Intentar eliminar usando la columna resuelta
+        response = (
+            supabase.table(SUPABASE_RESERVATIONS_TABLE)
+            .delete()
+            .in_(resolved_col, values_to_delete)
+            .execute()
+        )
+        print(f"[DELETE] columna={resolved_col} removed={len(values_to_delete)} response_rows={getattr(response, 'data', None)}")
+        return response
+    except Exception as e:
+        print(f"[DELETE] Error al eliminar con columna {resolved_col}: {e}")
+        raise HTTPException(status_code=400, detail=f"Error al eliminar reservas: {e}")
 
 
 @router.get("/api/admin/reservas")
