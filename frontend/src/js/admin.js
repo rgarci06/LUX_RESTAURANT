@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderReservas();
     }
 
-    // Carga usuarios desde el backend.
+    // Carga las listas de usuarios i las tablas
     async function loadUsers() {
         if (!isAdmin) return;
 
@@ -362,8 +362,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         state.users = Array.isArray(result.dades?.data) ? result.dades.data : [];
         renderUsers();
-
-        // Volvemos a pintar reservas para cambiar UUID -> email si hay match por user_id.
         renderReservas();
     }
 

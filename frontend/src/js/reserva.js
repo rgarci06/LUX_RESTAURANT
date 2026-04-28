@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
             state.occupiedTables = [];
         }
     }
-
+    // cambia el color de las mesas ocupadas y deshabilita su selección
     function updateTableVisuals() {
         document.querySelectorAll('.table-slot').forEach(table => {
             const tableId = parseInt(table.dataset.id);
@@ -299,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showLuxToast('Esta mesa ya está ocupada en esa fecha y hora', 'warning');
             return;
         }
-
+        
         if (table.classList.contains('selected')) {
             table.classList.remove('selected');
             state.selectedTables = state.selectedTables.filter(id => id !== tableId);
@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnConfirm.addEventListener('click', () => {
             if (!btnConfirm.disabled && modal) {
                 
-                // Formatea la fecha para que quede bonita (Ej: "Jueves, 14 de Abril de 2026")
+                // cambia el formato para mostrar la fecha
                 const [year, month, day] = state.selectedDate.split('-');
                 const dateObj = new Date(year, month - 1, day);
                 const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -360,7 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (modalPeople) modalPeople.textContent = state.people + (state.people > 1 ? " Personas" : " Persona");
                 if (modalTable) modalTable.textContent = "Mesa(s): " + state.selectedTables.join(', ');
 
-                // Mostra modal con animación
+                // animación del model
                 modal.classList.remove('hidden');
                 setTimeout(() => modal.classList.add('active'), 10);
             }
@@ -375,7 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Ejecutar la llamada a la Base de Datos al darle a "Sí, Reservar"
+    // Ejecutar la llamada a la Base de Datos al darle a "Sí, Reservar" per segona vegada
     if (btnModalConfirm) {
         btnModalConfirm.addEventListener('click', async () => {
             const email = getSessionEmail();
@@ -387,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Doble comprobación de mesas ocupadas por seguridad
+            // canvia la mesas selecionades a ocupades
             const mesasOcupadas = state.selectedTables.filter(id => state.occupiedTables.includes(id));
             if (mesasOcupadas.length > 0) {
                 showLuxToast(`Las mesas ${mesasOcupadas.join(', ')} acaban de ser ocupadas.`, 'error');
