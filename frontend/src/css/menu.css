@@ -1,8 +1,6 @@
-/* ========================================= */
-/* src/css/menu.css - CARTA DIGITAL */
-/* ========================================= */
 
-/* 1. HERO DEL MENÚ */
+
+/* Cabecera del menú */
 .menu-hero {
     position: relative;
     height: 40vh;
@@ -12,7 +10,7 @@
 
 .menu-hero img { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
 
-/* Overlay suave para que se lea el texto */
+/* Capa oscura de fondo */
 .hero-overlay {
     position: absolute; inset: 0;
     background: linear-gradient(to bottom, rgba(0,0,0,0.3), #050505);
@@ -28,7 +26,7 @@
 .title-separator { width: 100px; height: 3px; background: #ffd700; margin: 20px auto 0; box-shadow: 0 0 10px rgba(255,215,0,0.5); }
 
 
-/* 2. PESTAÑAS (TABS) */
+/* Pestañas de categorías */
 .menu-tabs {
     display: flex; justify-content: center; gap: 15px; padding: 20px;
     background: #050505; position: sticky; top: 80px; z-index: 40;
@@ -51,7 +49,7 @@
 }
 
 
-/* 3. CONTENIDO CARTA */
+/* Contenido de la carta */
 .menu-container {
     max-width: 1000px; margin: 0 auto; padding: 60px 20px 80px 20px; min-height: 50vh;
 }
@@ -234,7 +232,7 @@
 .menu-category { display: none; animation: fadeIn 0.6s ease forwards; }
 .menu-category.active { display: block; }
 
-/* Título de Categoría (Sustituye a las clases inline) */
+/* Título de categoría */
 .category-title {
     text-align: center; font-family: 'Cormorant Garamond', serif;
     font-size: 24px; color: #aaa; font-style: italic; margin-bottom: 50px;
@@ -242,7 +240,7 @@
 }
 
 
-/* 4. GRID DE PLATOS */
+/* GRID DE PLATOS */
 .menu-grid { display: grid; grid-template-columns: 1fr; gap: 40px; }
 @media (min-width: 768px) { .menu-grid { grid-template-columns: 1fr 1fr; gap: 60px; } }
 

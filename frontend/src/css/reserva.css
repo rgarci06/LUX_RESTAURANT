@@ -22,7 +22,7 @@
     margin-bottom: 50px;
 }
 
-/* --- RESERVATION STEPS --- */
+/* Bloques de paso */
 .reservation-step {
     margin: 50px 0;
     padding: 30px;
@@ -44,7 +44,7 @@
     letter-spacing: 0.1em;
 }
 
-/* --- PEOPLE SELECTOR --- */
+/* Selector de personas */
 .people-selector {
     display: flex;
     align-items: center;
@@ -88,7 +88,7 @@
     font-size: 14px;
 }
 
-/* --- CALENDAR GRID --- */
+/* Cuadrícula de fechas */
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
@@ -153,7 +153,7 @@
     opacity: 0.7;
 }
 
-/* --- TIME SLOTS --- */
+/* Horarios disponibles */
 .time-slots-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -210,7 +210,7 @@
     pointer-events: none;
 }
 
-/* --- TABLE MAP --- */
+/* Mapa de mesas */
 .table-instruction {
     color: #ccc;
     font-size: 14px;
@@ -529,17 +529,17 @@
     box-shadow: 0 5px 15px rgba(212, 175, 55, 0.2);
 }
 
-/* --- UTILITY --- */
+/* Utilidades */
 .hidden {
     display: none;
 }
 
-/* mobile menu highlight for reserva page */
+/* Resalta la página de reserva en el menú móvil */
 #mobile-menu .mobile-link[href$="/reserva.html"] {
     color: #d4af37;
 }
 
-/* --- TOAST --- */
+/* Avisos flotantes */
 .lux-toast-container {
     position: fixed;
     top: 24px;

@@ -1,4 +1,5 @@
-.admin-container {
+/* Panel de administración */ 
+.admin-container { 
     max-width: 1200px;
     margin: 0 auto;
     padding: 130px 20px 60px;
