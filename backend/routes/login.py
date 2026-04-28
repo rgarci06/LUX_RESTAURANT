@@ -1,4 +1,3 @@
-import os
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -104,7 +103,7 @@ def entrar(user: UsuariLogin):
 @router.post("/api/recuperar-password")
 def pedir_recuperacion(datos: RecuperarPassword):
     try:
-        url_destino = os.getenv("RECOVERY_URL", "https://lux-restaurant-six.vercel.app/pages/recovery.html")
+        url_destino = "https://lux-restaurant-six.vercel.app/pages/recovery.html"
         supabase.auth.reset_password_email(datos.email, options={"redirect_to": url_destino})
         return {"mensaje": "Correo de recuperación enviado."}
     except Exception as e:
