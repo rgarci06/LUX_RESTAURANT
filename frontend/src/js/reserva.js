@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
             calendarGrid.appendChild(card);
         }
     }
-
+    // selecciona el dia y muestra las horas disponibles
     function selectDate(card, dayOfWeek) {
         document.querySelectorAll('.day-card').forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
@@ -253,11 +253,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
-        updateTableInstruction();
         validateForm();
     }
 
-    // escojer las mesas
+    // genera el mapa de mesas y cambia el estado de las mesas ocupadas
     function generateTables() {
         if (!tableMap) return;
         tableMap.innerHTML = '';
@@ -288,8 +287,6 @@ document.addEventListener('DOMContentLoaded', () => {
             table.addEventListener('click', () => selectTable(table));
             tableMap.appendChild(table);
         });
-
-        updateTableInstruction();
     }
 
     function selectTable(table) {
@@ -310,19 +307,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        updateTableInstruction();
         validateForm();
     }
 
-    function updateTableInstruction() {
-        if (!tableInstruction) return;
-        const remaining = state.maxTables - state.selectedTables.length;
-        if (state.maxTables === 1) {
-            tableInstruction.textContent = state.selectedTables.length === 0 ? 'Selecciona 1 mesa' : 'Mesa seleccionada';
-        } else {
-            tableInstruction.textContent = remaining > 0 ? `Selecciona ${state.maxTables} mesas (faltan ${remaining})` : `Has seleccionado ${state.maxTables} mesas`;
-        }
-    }
 
     function validateForm() {
         if (!btnConfirm) return;
