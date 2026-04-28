@@ -359,12 +359,16 @@ def admin_eliminar_reserva_grupo(payload: AdminReservaGroupDelete, authorization
         if not reservation_ids:
             raise HTTPException(status_code=400, detail="Debes enviar al menos un id de reserva")
 
+        print(f"[DELETE GRUPO] Token recibido: {authorization[:50] if authorization else 'NONE'}...")
+        print(f"[DELETE GRUPO] IDs a eliminar: {reservation_ids}")
+
         respuesta = _delete_reservations_by_ids(reservation_ids)
 
         return {"ok": True, "data": respuesta.data}
     except HTTPException:
         raise
     except Exception as e:
+        print(f"[DELETE GRUPO] Error: {str(e)}")
         raise HTTPException(status_code=400, detail=f"No se pudo eliminar la reserva en grupo: {e}")
 
 
