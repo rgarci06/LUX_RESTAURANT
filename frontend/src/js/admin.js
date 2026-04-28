@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Función para obtener el token actual dinámicamente
+    // Función para obtener el token actual dinámicamente (importante para logout/login)
     function getTokenDynamic() {
         const sessionData = readSession(sessionStorage);
         if (sessionData.token) return sessionData.token;
