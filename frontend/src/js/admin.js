@@ -404,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (action === 'delete-reserva') {
             if (!confirm('¿Seguro que quieres eliminar esta reserva?')) return;
 
-            const idsToDelete = [...new Set(targetGroup.ids.map((id) => String(id).trim()).filter(Boolean))];
+            const idsToDelete = targetGroup.ids;
             if (!idsToDelete.length) {
                 alert('No se pudo identificar la reserva para eliminarla.');
                 return;
