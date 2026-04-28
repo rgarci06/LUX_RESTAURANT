@@ -92,17 +92,8 @@ def _delete_reservations_by_ids(reservation_ids: list[str]):
                 .in_(col, reservation_ids)
                 .execute()
             )
-
-            if not response.data:
-                raise HTTPException(
-                    status_code=403,
-                    detail="Error: El RLS de Supabase ha bloqueado l'esborrat. Falta la Service Role Key!",
-                )
-
             return response
-        except Exception as e:
-            if isinstance(e, HTTPException):
-                raise e
+        except Exception:
             continue
 
     raise HTTPException(status_code=404, detail="No se encontraron reservas para eliminar")
