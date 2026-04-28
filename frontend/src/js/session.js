@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // este correo lo uso como apoyo por si el rol viene mal guardado
     const ADMIN_EMAIL = 'ddelpe@insdanielblanxart.cat';
-
+    // esta función decodifica el JSON Web Token para extraer información.
     function decodeJwtPayload(token) {
         try {
             const parts = String(token || '').split('.');
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return '';
     }
-
+    // leo la sesión desde el almacenamiento sea sessionStorage o localStorage y devuelvo un objeto con token, email y rol.
     function readSession(storage) {
         return {
             token: storage.getItem('lux_token') || '',
@@ -35,21 +35,24 @@ document.addEventListener('DOMContentLoaded', () => {
             rol: storage.getItem('lux_rol') || ''
         };
     }
-
+    // esta función dice si el usuario esta autenticado o no, y devuelve su sesión actual. Primero mira en sessionStorage y luego en localStorage.
     function resolveCurrentSession() {
         const sessionData = readSession(sessionStorage);
+        
+        // aqui mira si el sessionStorage tiene el token y el email, si lo tiene, da la sesión temporal
         if (sessionData.token && sessionData.email) {
-            return sessionData;
+            return sessionData; 
         }
 
         const localData = readSession(localStorage);
+        
         if (localData.token && localData.email) {
             return localData;
         }
 
         return sessionData.token || sessionData.email || sessionData.rol
             ? sessionData
-            : localData;
+            : localData; 
     }
 
     const authLink = document.getElementById('auth-link');

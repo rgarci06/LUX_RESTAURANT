@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(linkForgot) linkForgot.addEventListener('click', (e) => { e.preventDefault(); switchForm(loginForm, forgotForm, "RECUPERAR CLAVE"); });
     if(btnBackFromForgot) btnBackFromForgot.addEventListener('click', () => switchForm(forgotForm, loginForm, "INICIAR SESIÓN"));
 
+    // este bloque es para mostrar u ocultar las contraseñas
     document.querySelectorAll('.toggle-password').forEach((btn) => {
         btn.addEventListener('click', () => {
             const targetId = btn.getAttribute('data-target');
@@ -77,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.setAttribute('aria-label', show ? 'Ocultar contraseña' : 'Mostrar contraseña');
         });
     });
-
+    // este bloque es para el indicador de seguridad de la contraseña en el registro
     if (registerPassword && registerPasswordStrength) {
         registerPassword.addEventListener('input', () => {
             if (!registerPassword.value) {
@@ -160,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // aqui pido login al backend
             const respuesta = await AuthService.login(emailInput.value, passwordInput.value);
-            
+            // aqui si el usuario pone la opcion de recordar, guardo el token en sessionStorage, si no, en localStorage. Luego redirijo segun el rol.
             if (respuesta.ok) {
                 const storage = isRemembered ? localStorage : sessionStorage;
                 storage.setItem("lux_token", respuesta.dades.token);

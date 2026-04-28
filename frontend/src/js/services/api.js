@@ -1,9 +1,6 @@
 /**
  * CAPA 1: SERVICIOS DE COMUNICACIÓN (Frontend)
- * Este archivo actúa como el "puente" o "mensajero" entre la web y el servidor.
- * QUÉ HACE: Centraliza todas las llamadas HTTP (fetch). 
- * POR QUÉ ES CAPA 1: Porque sigue viviendo en el navegador del usuario, 
- * pero aislamos la lógica de red del diseño visual.
+ * Este archivo hace de puente entre la web y el servidor.
  */
 
 const API_URL = "https://lux-restaurant.onrender.com/api";
