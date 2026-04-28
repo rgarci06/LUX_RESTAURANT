@@ -74,7 +74,7 @@ def _find_reservations_by_ids(reservation_ids: list[str]) -> tuple[str, list[dic
 
 
 def _delete_reservations_by_ids(reservation_ids: list[str]):
-    """Borra reservas: busca por los IDs, extrae el UUID interno y borra por ese."""
+    """Borra reservas uno por uno."""
     if not reservation_ids:
         raise HTTPException(status_code=400, detail="No hay IDs para eliminar")
 
@@ -82,30 +82,35 @@ def _delete_reservations_by_ids(reservation_ids: list[str]):
     if not cleaned_ids:
         raise HTTPException(status_code=400, detail="IDs inválidos")
 
-    # Buscar las filas que coinciden
-    _, rows = _find_reservations_by_ids(cleaned_ids)
-    
-    if not rows:
-        raise HTTPException(status_code=404, detail="No se encontraron reservas para eliminar")
+    deleted_count = 0
+    last_error = None
 
-    # Extraer los UUIDs internos de Supabase (columna 'id')
-    uuid_list = []
-    for row in rows:
-        uuid = row.get("id")
-        if uuid:
-            uuid_list.append(str(uuid).strip())
-    
-    uuid_list = list(dict.fromkeys(uuid_list))  # Deduplicar
-    
-    if not uuid_list:
-        raise HTTPException(status_code=400, detail="No se encontraron UUIDs para eliminar")
+    # Intentar borrar cada ID por cada columna
+    for col in ["id", SUPABASE_RESERVATION_ID_COLUMN, "reservation_id"]:
+        if not col or col == "":
+            continue
+        
+        for reservation_id in cleaned_ids:
+            try:
+                response = (
+                    supabase.table(SUPABASE_RESERVATIONS_TABLE)
+                    .delete()
+                    .eq(col, reservation_id)
+                    .execute()
+                )
+                if response.data is not None:
+                    deleted_count += 1
+            except Exception as e:
+                last_error = str(e)
 
-    # Borrar directamente por el UUID interno
-    try:
-        response = supabase.table(SUPABASE_RESERVATIONS_TABLE).delete().in_("id", uuid_list).execute()
-        return response
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error al eliminar: {str(e)}")
+    if deleted_count > 0:
+        # Retornar algo que indique que se borró
+        return type('Response', (), {'data': [{'deleted': deleted_count}]})()
+    
+    if last_error:
+        raise HTTPException(status_code=400, detail=f"Error: {last_error}")
+    
+    raise HTTPException(status_code=400, detail="No se pudo eliminar las reservas")
 
 
 @router.get("/api/admin/reservas")
