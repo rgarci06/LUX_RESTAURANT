@@ -183,7 +183,8 @@ export const AdminService = {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
-                }
+                },
+                cache: 'no-store'
             });
 
             const dades = await respuesta.json();
