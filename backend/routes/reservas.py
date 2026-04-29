@@ -80,8 +80,8 @@ class ReservaPayload(BaseModel):
 @router.post("/api/reservas")
 def crear_reserva(
     reserva: ReservaPayload,
+    background_tasks: BackgroundTasks,
     authorization: str | None = Header(default=None),
-    background_tasks: BackgroundTasks | None = None,
 ):
     try:
         token = extract_bearer_token(authorization)
