@@ -1,11 +1,9 @@
 from datetime import datetime, timezone
-import os
-import socket
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from fastapi import APIRouter, BackgroundTasks, Header, HTTPException
+from fastapi import APIRouter, Header, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from supabase import Client, create_client
@@ -28,13 +26,8 @@ router = APIRouter()
 
 def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reserva):
     # Envia correo de confirmacion de la reserva con enlace de cancelacion usando SMTP.
-    remitente = (os.getenv("SMTP_USER") or "garciamagroraul5@gmail.com").strip()
-    password = (os.getenv("SMTP_PASSWORD") or "iyxt rqmz jcqu osta").replace(" ", "").strip()
-
-    try:
-        smtp_host = socket.gethostbyname("smtp.gmail.com")
-    except Exception:
-        smtp_host = "smtp.gmail.com"
+    remitente = "darimongamer740@gmail.com"
+    password = "kfmf jhyq duue sqti"
 
     msg = MIMEMultipart()
     msg["From"] = f"LUX Restaurant <{remitente}>"
@@ -67,27 +60,14 @@ def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reser
     msg.attach(MIMEText(html, "html"))
 
     try:
-        server = smtplib.SMTP(smtp_host, 587, timeout=15)
-        try:
-            server.starttls()
-            server.login(remitente, password)
-            server.send_message(msg)
-        finally:
-            server.quit()
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(remitente, password)
+        server.send_message(msg)
+        server.quit()
         print("Correo de confirmacion enviado a:", email_cliente)
     except Exception as e:
-        print("Error al enviar el correo por SMTP 587:", e)
-        print(os.getenv("SMTP_USER"), os.getenv("SMTP_PASSWORD"), "Host resuelto:", smtp_host)  # Debug info
-        try:
-            server = smtplib.SMTP_SSL(smtp_host, 465, timeout=15)
-            try:
-                server.login(remitente, password)
-                server.send_message(msg)
-            finally:
-                server.quit()
-            print("Correo de confirmacion enviado a:", email_cliente, "usando SMTP_SSL 465")
-        except Exception as ssl_error:
-            print("Error al enviar el correo por SMTP_SSL 465:", ssl_error)
+        print("Error al enviar el correo:", e)
 
 
 class ReservaPayload(BaseModel):
@@ -98,11 +78,7 @@ class ReservaPayload(BaseModel):
 
 
 @router.post("/api/reservas")
-def crear_reserva(
-    reserva: ReservaPayload,
-    background_tasks: BackgroundTasks,
-    authorization: str | None = Header(default=None),
-):
+def crear_reserva(reserva: ReservaPayload, authorization: str | None = Header(default=None)):
     try:
         token = extract_bearer_token(authorization)
         if not token:
@@ -138,8 +114,7 @@ def crear_reserva(
             fecha_reserva, hora_reserva = reserva.reservationDatetime.split("T")
             mesas_string = ", ".join([f"T{mesa}" for mesa in reserva.tables])
 
-            background_tasks.add_task(
-                enviar_correo_reserva,
+            enviar_correo_reserva(
                 email_cliente=reserva.user_email,
                 fecha=fecha_reserva,
                 hora=hora_reserva,
