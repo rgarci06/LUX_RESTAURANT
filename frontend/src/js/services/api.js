@@ -267,6 +267,28 @@ export const AdminService = {
             });
 
             const dades = await respuesta.json();
+
+            if (respuesta.status === 404) {
+                const deleted = [];
+
+                for (const reservationId of ids) {
+                    const singleResult = await AdminService.deleteReservation(reservationId, token);
+                    if (!singleResult.ok) {
+                        return singleResult;
+                    }
+                    deleted.push(reservationId);
+                }
+
+                return {
+                    ok: true,
+                    status: 200,
+                    dades: {
+                        ok: true,
+                        data: deleted
+                    }
+                };
+            }
+
             return { ok: respuesta.ok, status: respuesta.status, dades };
         } catch (error) {
             console.error('Error de conexión:', error);
