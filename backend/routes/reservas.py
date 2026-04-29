@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import os
+import socket
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -29,6 +30,11 @@ def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reser
     # Envia correo de confirmacion de la reserva con enlace de cancelacion usando SMTP.
     remitente = (os.getenv("SMTP_USER") or "garciamagroraul5@gmail.com").strip()
     password = (os.getenv("SMTP_PASSWORD") or "iyxt rqmz jcqu osta").strip()
+
+    try:
+        smtp_host = socket.gethostbyname("smtp.gmail.com")
+    except Exception:
+        smtp_host = "smtp.gmail.com"
 
     msg = MIMEMultipart()
     msg["From"] = f"LUX Restaurant <{remitente}>"
@@ -61,7 +67,7 @@ def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reser
     msg.attach(MIMEText(html, "html"))
 
     try:
-        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=15)
+        server = smtplib.SMTP(smtp_host, 587, timeout=15)
         try:
             server.starttls()
             server.login(remitente, password)

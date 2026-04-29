@@ -104,7 +104,10 @@ def entrar(user: UsuariLogin):
 def pedir_recuperacion(datos: RecuperarPassword):
     try:
         url_destino = "https://lux-restaurant-six.vercel.app/pages/recovery.html"
-        supabase.auth.reset_password_email(datos.email, options={"redirect_to": url_destino})
+        supabase.auth.reset_password_email(
+            datos.email, 
+            options={"redirect_to": url_destino}
+        )
         return {"mensaje": "Correo de recuperación enviado."}
     except Exception as e:
         raise HTTPException(status_code=400, detail="Error al enviar el correo: " + str(e))
