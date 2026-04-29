@@ -29,7 +29,7 @@ router = APIRouter()
 def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reserva):
     # Envia correo de confirmacion de la reserva con enlace de cancelacion usando SMTP.
     remitente = (os.getenv("SMTP_USER") or "garciamagroraul5@gmail.com").strip()
-    password = (os.getenv("SMTP_PASSWORD") or "iyxt rqmz jcqu osta").strip()
+    password = (os.getenv("SMTP_PASSWORD") or "iyxt rqmz jcqu osta").replace(" ", "").strip()
 
     try:
         smtp_host = socket.gethostbyname("smtp.gmail.com")
@@ -76,7 +76,17 @@ def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reser
             server.quit()
         print("Correo de confirmacion enviado a:", email_cliente)
     except Exception as e:
-        print("Error al enviar el correo:", e)
+        print("Error al enviar el correo por SMTP 587:", e)
+        try:
+            server = smtplib.SMTP_SSL(smtp_host, 465, timeout=15)
+            try:
+                server.login(remitente, password)
+                server.send_message(msg)
+            finally:
+                server.quit()
+            print("Correo de confirmacion enviado a:", email_cliente, "usando SMTP_SSL 465")
+        except Exception as ssl_error:
+            print("Error al enviar el correo por SMTP_SSL 465:", ssl_error)
 
 
 class ReservaPayload(BaseModel):
