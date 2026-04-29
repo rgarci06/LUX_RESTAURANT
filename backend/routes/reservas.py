@@ -1,7 +1,4 @@
 from datetime import datetime, timezone
-import json
-import os
-import socket
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -29,8 +26,8 @@ router = APIRouter()
 
 def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reserva):
     # Envia correo de confirmacion de la reserva con enlace de cancelacion.
-    remitente = os.getenv("SMTP_USER", "garciamagroraul5@gmail.com")
-    password = os.getenv("SMTP_PASSWORD", "zqkc ftfn qbjw knab")
+    remitente = "garciamagroraul5@gmail.com"
+    password = "zqkc ftfn qbjw knab"
 
     msg = MIMEMultipart()
     msg["From"] = f"LUX Restaurant <{remitente}>"
@@ -62,9 +59,6 @@ def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reser
     """
     msg.attach(MIMEText(html, "html"))
 
-    errores = []
-
-    # Intento 1: SMTP con STARTTLS por IPv4 (evita fallos frecuentes de ruteo IPv6 en algunos hostings)
     try:
         server = smtplib.SMTP("smtp.gmail.com", 587)
         server.starttls()
@@ -72,7 +66,6 @@ def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reser
         server.send_message(msg)
         server.quit()
         print("Correo de confirmacion enviado a:", email_cliente)
-        return
     except Exception as e:
         print("Error al enviar el correo:", e)
 
