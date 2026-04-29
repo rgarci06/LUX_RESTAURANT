@@ -2,8 +2,6 @@ from datetime import datetime, timezone
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import os
-import traceback
 
 from fastapi import APIRouter, Header, HTTPException, BackgroundTasks
 from fastapi.responses import HTMLResponse
@@ -28,11 +26,8 @@ router = APIRouter()
 
 def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reserva):
     # Envia correo de confirmacion de la reserva con enlace de cancelacion usando SMTP.
-    # Leer credenciales desde variables de entorno (recomendado usar App Password para Gmail)
-    smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
-    smtp_port = int(os.getenv("SMTP_PORT", "587"))
-    remitente = os.getenv("SMTP_USER", "garciamagroraul5@gmail.com")
-    password = os.getenv("SMTP_PASS", "zqkc ftfn qbjw knab")
+    remitente = "garciamagroraul5@gmail.com"
+    password = "zqkc ftfn qbjw knab"
 
     msg = MIMEMultipart()
     msg["From"] = f"LUX Restaurant <{remitente}>"
@@ -65,21 +60,14 @@ def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reser
     msg.attach(MIMEText(html, "html"))
 
     try:
-        print(f"[email] Iniciando envio a {email_cliente} via {smtp_host}:{smtp_port}")
-        server = smtplib.SMTP(smtp_host, smtp_port, timeout=20)
-        server.ehlo()
+        server = smtplib.SMTP("smtp.gmail.com", 587)
         server.starttls()
-        server.ehlo()
         server.login(remitente, password)
         server.send_message(msg)
         server.quit()
-        print(f"[email] Enviado correctamente a {email_cliente}")
-    except smtplib.SMTPAuthenticationError:
-        print("[email] Error de autenticacion SMTP. Revisa SMTP_USER/SMTP_PASS (usar App Password si Gmail).")
-        traceback.print_exc()
-    except Exception:
-        print("[email] Error al enviar correo:")
-        traceback.print_exc()
+        print("Correo de confirmacion enviado a:", email_cliente)
+    except Exception as e:
+        print("Error al enviar el correo:", e)
 
 
 class ReservaPayload(BaseModel):
