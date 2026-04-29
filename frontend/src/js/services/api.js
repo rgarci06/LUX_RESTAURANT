@@ -183,7 +183,9 @@ export const AdminService = {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
-                }
+                },
+                // ESTA LÍNEA ES LA QUE ELIMINA LA NECESIDAD DEL DEPLOY MANUAL
+                cache: 'no-store'
             });
 
             const dades = await respuesta.json();
