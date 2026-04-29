@@ -25,69 +25,49 @@ router = APIRouter()
 
 
 def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reserva):
-    # Intentamos enviar el correo usando la función de Supabase Auth cuando sea posible
-    # (similar a /api/recuperar-password que funciona correctamente).
-    # Si Supabase no soporta contenido HTML arbitrario para este caso, se mantiene
-    # una version simple que intenta usar el cliente SMTP local.
+    # Envia correo de confirmacion de la reserva con enlace de cancelacion.
+    remitente = "garciamagroraul5@gmail.com"
+    password = "zqkc ftfn qbjw knab"
+
+    msg = MIMEMultipart()
+    msg["From"] = f"LUX Restaurant <{remitente}>"
+    msg["To"] = email_cliente
+    msg["Subject"] = "Tu reserva en LUX está confirmada"
+
+    url_cancelar = f"https://lux-restaurant-six.vercel.app/pages/cancelacion.html?ids={ids_reserva}"
+
+    html = f"""
+    <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #111111; color: #ffffff; padding: 50px 30px; text-align: center; border: 1px solid #d4af37; border-radius: 8px;">
+        <h1 style="color: #d4af37; letter-spacing: 6px; font-weight: 300; margin-bottom: 5px; text-transform: uppercase;">Lux</h1>
+        <h3 style="color: #aaaaaa; letter-spacing: 4px; font-weight: 300; margin-top: 0; margin-bottom: 40px; font-size: 12px; text-transform: uppercase;">Restaurant</h3>
+
+        <h2 style="font-weight: 400; margin-bottom: 20px; color: #ffffff;">Reserva Confirmada!</h2>
+
+        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.2); padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 30px;">
+            <p style="color: #ccc; margin-bottom: 10px;"><strong>Fecha:</strong> {fecha}</p>
+            <p style="color: #ccc; margin-bottom: 10px;"><strong>Hora:</strong> {hora}</p>
+            <p style="color: #ccc; margin-bottom: 10px;"><strong>Comensales:</strong> {personas}</p>
+            <p style="color: #ccc; margin-bottom: 0;"><strong>Mesa(s):</strong> {mesas}</p>
+        </div>
+
+        <p style="color: #cccccc; font-size: 14px; margin-bottom: 30px;">Si surge algun imprevisto, puedes cancelar tu reserva haciendo clic en el boton inferior con hasta 24 horas de antelacion.</p>
+
+        <a href="{url_cancelar}" style="display: inline-block; background-color: transparent; color: #ff4444; border: 1px solid #ff4444; padding: 12px 25px; text-decoration: none; font-weight: bold; font-size: 12px; border-radius: 4px; letter-spacing: 1px;">
+            CANCELAR RESERVA
+        </a>
+    </div>
+    """
+    msg.attach(MIMEText(html, "html"))
 
     try:
-        # Usamos la API de Supabase Auth para intentar enviar un correo simple.
-        # Esta llamada reutiliza la misma interfaz que la ruta de recuperar-password.
-        # Si no está disponible o falla, caemos al envío SMTP.
-        url_cancelar = f"https://lux-restaurant-six.vercel.app/pages/cancelacion.html?ids={ids_reserva}"
-        body = {
-            "email": email_cliente,
-            "options": {"redirect_to": url_cancelar}
-        }
-
-        # supabase tiene método reset_password_email en el cliente python
-        try:
-            supabase.auth.reset_password_email(email_cliente, options={"redirect_to": url_cancelar})
-            print("Correo de confirmacion (vía Supabase) enviado a:", email_cliente)
-            return
-        except Exception as e_supabase:
-            print("No se pudo enviar vía Supabase, error:", e_supabase)
-
-        # Fallback: intento SMTP clásico (siempre que exista configuración en variables de entorno)
-        remitente = "garciamagroraul5@gmail.com"
-        password = "zqkc ftfn qbjw knab"
-
-        msg = MIMEMultipart()
-        msg["From"] = f"LUX Restaurant <{remitente}>"
-        msg["To"] = email_cliente
-        msg["Subject"] = "Tu reserva en LUX está confirmada"
-
-        html = f"""
-        <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #111111; color: #ffffff; padding: 50px 30px; text-align: center; border: 1px solid #d4af37; border-radius: 8px;">
-            <h1 style="color: #d4af37; letter-spacing: 6px; font-weight: 300; margin-bottom: 5px; text-transform: uppercase;">Lux</h1>
-            <h3 style="color: #aaaaaa; letter-spacing: 4px; font-weight: 300; margin-top: 0; margin-bottom: 40px; font-size: 12px; text-transform: uppercase;">Restaurant</h3>
-
-            <h2 style="font-weight: 400; margin-bottom: 20px; color: #ffffff;">Reserva Confirmada!</h2>
-
-            <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.2); padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 30px;">
-                <p style="color: #ccc; margin-bottom: 10px;"><strong>Fecha:</strong> {fecha}</p>
-                <p style="color: #ccc; margin-bottom: 10px;"><strong>Hora:</strong> {hora}</p>
-                <p style="color: #ccc; margin-bottom: 10px;"><strong>Comensales:</strong> {personas}</p>
-                <p style="color: #ccc; margin-bottom: 0;"><strong>Mesa(s):</strong> {mesas}</p>
-            </div>
-
-            <p style="color: #cccccc; font-size: 14px; margin-bottom: 30px;">Si surge algun imprevisto, puedes cancelar tu reserva haciendo clic en el boton inferior con hasta 24 horas de antelacion.</p>
-
-            <a href="{url_cancelar}" style="display: inline-block; background-color: transparent; color: #ff4444; border: 1px solid #ff4444; padding: 12px 25px; text-decoration: none; font-weight: bold; font-size: 12px; border-radius: 4px; letter-spacing: 1px;">
-                CANCELAR RESERVA
-            </a>
-        </div>
-        """
-        msg.attach(MIMEText(html, "html"))
-
-        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=20)
+        server = smtplib.SMTP("smtp.gmail.com", 587)
         server.starttls()
         server.login(remitente, password)
         server.send_message(msg)
         server.quit()
-        print("Correo de confirmacion enviado (SMTP) a:", email_cliente)
+        print("Correo de confirmacion enviado a:", email_cliente)
     except Exception as e:
-        print("Error al enviar el correo de confirmacion:", e)
+        print("Error al enviar el correo:", e)
 
 
 class ReservaPayload(BaseModel):
