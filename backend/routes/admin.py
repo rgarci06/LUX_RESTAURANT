@@ -92,16 +92,7 @@ def _delete_reservations_by_ids(reservation_ids: list[str]):
                 .in_(col, reservation_ids)
                 .execute()
             )
-
-            if not response.data:
-                raise HTTPException(
-                    status_code=403,
-                    detail="Error RLS: Supabase t'ha bloquejat. Render encara no llegeix la Service Role Key!",
-                )
-
             return response
-        except HTTPException:
-            raise
         except Exception:
             continue
 
