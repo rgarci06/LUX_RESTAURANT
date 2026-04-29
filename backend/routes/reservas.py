@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import smtplib
+import threading
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -60,7 +61,7 @@ def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reser
     msg.attach(MIMEText(html, "html"))
 
     try:
-        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=10)
         server.starttls()
         server.login(remitente, password)
         server.send_message(msg)
@@ -114,14 +115,22 @@ def crear_reserva(reserva: ReservaPayload, authorization: str | None = Header(de
             fecha_reserva, hora_reserva = reserva.reservationDatetime.split("T")
             mesas_string = ", ".join([f"T{mesa}" for mesa in reserva.tables])
 
-            enviar_correo_reserva(
-                email_cliente=reserva.user_email,
-                fecha=fecha_reserva,
-                hora=hora_reserva,
-                personas=reserva.people,
-                mesas=mesas_string,
-                ids_reserva=ids_string,
-            )
+            # Enviar el correo en background para no bloquear la petición HTTP
+            try:
+                threading.Thread(
+                    target=enviar_correo_reserva,
+                    args=(
+                        reserva.user_email,
+                        fecha_reserva,
+                        hora_reserva,
+                        reserva.people,
+                        mesas_string,
+                        ids_string,
+                    ),
+                    daemon=True,
+                ).start()
+            except Exception as e_thread:
+                print(f"Error iniciando hilo de correo: {e_thread}")
         except Exception as e_correo:
             print(f"Error procesando datos para el correo: {e_correo}")
 
