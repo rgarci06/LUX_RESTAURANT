@@ -77,6 +77,7 @@ def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reser
         print("Correo de confirmacion enviado a:", email_cliente)
     except Exception as e:
         print("Error al enviar el correo por SMTP 587:", e)
+        print(os.getenv("SMTP_USER"), os.getenv("SMTP_PASSWORD"), "Host resuelto:", smtp_host)  # Debug info
         try:
             server = smtplib.SMTP_SSL(smtp_host, 465, timeout=15)
             try:
