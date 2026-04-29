@@ -3,7 +3,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Header, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from supabase import Client, create_client
@@ -60,7 +60,7 @@ def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reser
     msg.attach(MIMEText(html, "html"))
 
     try:
-        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=10)
         server.starttls()
         server.login(remitente, password)
         server.send_message(msg)
@@ -78,7 +78,11 @@ class ReservaPayload(BaseModel):
 
 
 @router.post("/api/reservas")
-def crear_reserva(reserva: ReservaPayload, authorization: str | None = Header(default=None)):
+def crear_reserva(
+    reserva: ReservaPayload,
+    authorization: str | None = Header(default=None),
+    background_tasks: BackgroundTasks | None = None,
+):
     try:
         token = extract_bearer_token(authorization)
         if not token:
@@ -114,14 +118,25 @@ def crear_reserva(reserva: ReservaPayload, authorization: str | None = Header(de
             fecha_reserva, hora_reserva = reserva.reservationDatetime.split("T")
             mesas_string = ", ".join([f"T{mesa}" for mesa in reserva.tables])
 
-            enviar_correo_reserva(
-                email_cliente=reserva.user_email,
-                fecha=fecha_reserva,
-                hora=hora_reserva,
-                personas=reserva.people,
-                mesas=mesas_string,
-                ids_reserva=ids_string,
-            )
+            if background_tasks is not None:
+                background_tasks.add_task(
+                    enviar_correo_reserva,
+                    email_cliente=reserva.user_email,
+                    fecha=fecha_reserva,
+                    hora=hora_reserva,
+                    personas=reserva.people,
+                    mesas=mesas_string,
+                    ids_reserva=ids_string,
+                )
+            else:
+                enviar_correo_reserva(
+                    email_cliente=reserva.user_email,
+                    fecha=fecha_reserva,
+                    hora=hora_reserva,
+                    personas=reserva.people,
+                    mesas=mesas_string,
+                    ids_reserva=ids_string,
+                )
         except Exception as e_correo:
             print(f"Error procesando datos para el correo: {e_correo}")
 
