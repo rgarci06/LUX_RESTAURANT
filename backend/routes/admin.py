@@ -74,30 +74,12 @@ def _find_reservations_by_ids(reservation_ids: list[str]) -> tuple[str, list[dic
 
 
 def _delete_reservations_by_ids(reservation_ids: list[str]):
-    lookup_ids = []
-    seen_lookup_ids = set()
-
-    for raw_id in reservation_ids:
-        text_id = str(raw_id).strip()
-        if text_id and text_id not in seen_lookup_ids:
-            lookup_ids.append(text_id)
-            seen_lookup_ids.add(text_id)
-
-        try:
-            numeric_id = int(text_id)
-        except Exception:
-            continue
-
-        if numeric_id not in seen_lookup_ids:
-            lookup_ids.append(numeric_id)
-            seen_lookup_ids.add(numeric_id)
-
     for col in _reservation_id_columns():
         try:
             existing_response = (
                 supabase.table(SUPABASE_RESERVATIONS_TABLE)
                 .select("id")
-                .in_(col, lookup_ids)
+                .in_(col, reservation_ids)
                 .execute()
             )
             existing_rows = existing_response.data if isinstance(existing_response.data, list) else []
@@ -107,18 +89,17 @@ def _delete_reservations_by_ids(reservation_ids: list[str]):
             response = (
                 supabase.table(SUPABASE_RESERVATIONS_TABLE)
                 .delete()
-                .in_(col, lookup_ids)
+                .in_(col, reservation_ids)
                 .execute()
             )
 
-            if response.data:
-                return response
-
-            if existing_rows:
+            if not response.data:
                 raise HTTPException(
                     status_code=403,
                     detail="Error RLS: Supabase t'ha bloquejat. Render encara no llegeix la Service Role Key!",
                 )
+
+            return response
         except HTTPException:
             raise
         except Exception:
