@@ -3,7 +3,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from fastapi import APIRouter, Header, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Header, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from supabase import Client, create_client
@@ -78,7 +78,7 @@ class ReservaPayload(BaseModel):
 
 
 @router.post("/api/reservas")
-def crear_reserva(reserva: ReservaPayload, background: BackgroundTasks, authorization: str | None = Header(default=None)):
+def crear_reserva(reserva: ReservaPayload, authorization: str | None = Header(default=None)):
     try:
         token = extract_bearer_token(authorization)
         if not token:
@@ -114,15 +114,13 @@ def crear_reserva(reserva: ReservaPayload, background: BackgroundTasks, authoriz
             fecha_reserva, hora_reserva = reserva.reservationDatetime.split("T")
             mesas_string = ", ".join([f"T{mesa}" for mesa in reserva.tables])
 
-            # Enviar el correo en segundo plano para no bloquear la respuesta HTTP
-            background.add_task(
-                enviar_correo_reserva,
-                reserva.user_email,
-                fecha_reserva,
-                hora_reserva,
-                reserva.people,
-                mesas_string,
-                ids_string,
+            enviar_correo_reserva(
+                email_cliente=reserva.user_email,
+                fecha=fecha_reserva,
+                hora=hora_reserva,
+                personas=reserva.people,
+                mesas=mesas_string,
+                ids_reserva=ids_string,
             )
         except Exception as e_correo:
             print(f"Error procesando datos para el correo: {e_correo}")
