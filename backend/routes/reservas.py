@@ -3,7 +3,6 @@ import json
 import os
 import socket
 import smtplib
-from urllib import request
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -67,62 +66,15 @@ def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reser
 
     # Intento 1: SMTP con STARTTLS por IPv4 (evita fallos frecuentes de ruteo IPv6 en algunos hostings)
     try:
-        ipv4_host = socket.getaddrinfo("smtp.gmail.com", 587, socket.AF_INET, socket.SOCK_STREAM)[0][4][0]
-        with smtplib.SMTP(ipv4_host, 587, timeout=15) as server:
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-            server.login(remitente, password)
-            server.send_message(msg)
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(remitente, password)
+        server.send_message(msg)
+        server.quit()
         print("Correo de confirmacion enviado a:", email_cliente)
         return
     except Exception as e:
-        errores.append(f"STARTTLS 587 IPv4: {e}")
-
-    # Intento 2: SMTP SSL directo por IPv4 (muchos proveedores permiten 465 aunque bloqueen 587)
-    try:
-        ipv4_host_ssl = socket.getaddrinfo("smtp.gmail.com", 465, socket.AF_INET, socket.SOCK_STREAM)[0][4][0]
-        with smtplib.SMTP_SSL(ipv4_host_ssl, 465, timeout=15) as server:
-            server.ehlo()
-            server.login(remitente, password)
-            server.send_message(msg)
-        print("Correo de confirmacion enviado a:", email_cliente)
-        return
-    except Exception as e:
-        errores.append(f"SSL 465 IPv4: {e}")
-
-    # Intento 3 (fallback): envio por API HTTP de Resend, util cuando SMTP esta bloqueado por hosting
-    resend_api_key = os.getenv("RESEND_API_KEY")
-    if resend_api_key:
-        try:
-            resend_from = os.getenv("RESEND_FROM", f"LUX Restaurant <{remitente}>")
-            payload = {
-                "from": resend_from,
-                "to": [email_cliente],
-                "subject": "Tu reserva en LUX esta confirmada",
-                "html": html,
-            }
-            req = request.Request(
-                "https://api.resend.com/emails",
-                data=json.dumps(payload).encode("utf-8"),
-                headers={
-                    "Authorization": f"Bearer {resend_api_key}",
-                    "Content-Type": "application/json",
-                },
-                method="POST",
-            )
-            with request.urlopen(req, timeout=15) as resp:
-                if 200 <= resp.status < 300:
-                    print("Correo de confirmacion enviado por Resend a:", email_cliente)
-                    return
-                errores.append(f"Resend HTTP status: {resp.status}")
-        except Exception as e:
-            errores.append(f"Resend HTTP: {e}")
-
-    print("Error al enviar el correo. Intentos fallidos:", " | ".join(errores))
-    print(
-        "Sugerencia: el hosting probablemente bloquea salida SMTP. Usa un proveedor HTTP (Resend/SendGrid) o habilita egress SMTP."
-    )
+        print("Error al enviar el correo:", e)
 
 
 class ReservaPayload(BaseModel):
