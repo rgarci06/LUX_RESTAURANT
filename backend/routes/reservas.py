@@ -28,7 +28,7 @@ router = APIRouter()
 def enviar_correo_reserva(email_cliente, fecha, hora, personas, mesas, ids_reserva):
     # Envia correo de confirmacion de la reserva con enlace de cancelacion usando SMTP.
     remitente = (os.getenv("SMTP_USER") or "garciamagroraul5@gmail.com").strip()
-    password = (os.getenv("SMTP_PASSWORD") or "zqkc ftfn qbjw knab").strip()
+    password = (os.getenv("SMTP_PASSWORD") or "iyxt rqmz jcqu osta").strip()
 
     msg = MIMEMultipart()
     msg["From"] = f"LUX Restaurant <{remitente}>"

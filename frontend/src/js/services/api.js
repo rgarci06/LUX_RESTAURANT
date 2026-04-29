@@ -184,7 +184,6 @@ export const AdminService = {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
                 },
-                // ESTA LÍNEA ES LA QUE ELIMINA LA NECESIDAD DEL DEPLOY MANUAL
                 cache: 'no-store'
             });
 
