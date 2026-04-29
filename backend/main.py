@@ -12,6 +12,15 @@ from supabase import Client, create_client
 
 load_dotenv()
 
+
+def _load_cors_origins() -> list[str]:
+    raw_origins = os.getenv(
+        "CORS_ORIGINS",
+        "https://lux-restaurant-six.vercel.app,http://localhost:5173,http://127.0.0.1:5173",
+    )
+    origins = [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
+    return origins or ["https://lux-restaurant-six.vercel.app"]
+
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_SERVICE_ROLE_KEY = (os.getenv("SUPABASE_SERVICE_ROLE_KEY") or "").strip()
 SUPABASE_KEY = SUPABASE_SERVICE_ROLE_KEY or os.getenv("SUPABASE_KEY")
@@ -200,8 +209,8 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=_load_cors_origins(),
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
