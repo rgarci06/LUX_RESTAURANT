@@ -1,9 +1,17 @@
 /**
  * CAPA 1: SERVICIOS DE COMUNICACIÓN (Frontend)
- * Este archivo hace de puente entre la web y el servidor.
+ * Este archivo actúa como el "puente" o "mensajero" entre la web y el servidor.
+ * QUÉ HACE: Centraliza todas las llamadas HTTP (fetch). 
+ * POR QUÉ ES CAPA 1: Porque sigue viviendo en el navegador del usuario, 
+ * pero aislamos la lógica de red del diseño visual.
  */
 
-const API_URL = "https://lux-restaurant.onrender.com/api";
+// Detectamos si el navegador está en modo local o en internet
+const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+
+const API_URL = isLocal 
+    ? "http://localhost:8000/api" 
+    : "https://lux-restaurant.onrender.com/api";
 
 export const AuthService = {
     // Método para Iniciar Sesión
