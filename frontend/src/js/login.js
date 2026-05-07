@@ -160,13 +160,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if(btnLoginSubmit) btnLoginSubmit.innerText = "ACCEDIENDO...";
 
             // aqui pido login al backend
-            const respuesta = await AuthService.login(emailInput.value, passwordInput.value);
-            // aqui si el usuario pone la opcion de recordar, guardo el token en sessionStorage, si no, en localStorage. Luego redirijo segun el rol.
+            const respuesta = await AuthService.login(emailInput.value, passwordInput.value, isRemembered);
+            // El backend guarda la sesion en cookie HttpOnly y aqui solo usamos el rol para redirigir.
             if (respuesta.ok) {
-                const storage = isRemembered ? localStorage : sessionStorage;
-                storage.setItem("lux_token", respuesta.dades.token);
-                storage.setItem("lux_rol", respuesta.dades.rol);
-                storage.setItem("lux_email", emailInput.value);
+                localStorage.removeItem('lux_token');
+                localStorage.removeItem('lux_rol');
+                localStorage.removeItem('lux_email');
+                sessionStorage.removeItem('lux_token');
+                sessionStorage.removeItem('lux_rol');
+                sessionStorage.removeItem('lux_email');
                 
                 const rol = String(respuesta.dades.rol || '').toLowerCase();
                 if (rol === "admin" || rol === "camarero") {

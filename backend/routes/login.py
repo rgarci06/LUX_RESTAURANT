@@ -1,7 +1,15 @@
-from fastapi import APIRouter, HTTPException
+import os
+
+from fastapi import APIRouter, Cookie, HTTPException, Response
 from pydantic import BaseModel
 
-from main import admin_rest_request, supabase
+from main import (
+    SESSION_COOKIE_NAME,
+    admin_rest_request,
+    decode_jwt_payload,
+    resolve_access_token,
+    supabase,
+)
 
 router = APIRouter()
 
@@ -9,6 +17,7 @@ router = APIRouter()
 class UsuariLogin(BaseModel):
     email: str
     password: str
+    remember: bool = False
 
 
 class UsuariRegistre(BaseModel):
@@ -91,13 +100,63 @@ def registrar(user: UsuariRegistre):
 
 
 @router.post("/api/login")
-def entrar(user: UsuariLogin):
+def entrar(user: UsuariLogin, response: Response):
     try:
         respuesta = supabase.auth.sign_in_with_password({"email": user.email, "password": user.password})
+        access_token = str(getattr(respuesta.session, "access_token", "") or "").strip()
+        if not access_token:
+            raise HTTPException(status_code=401, detail="No se pudo iniciar sesion")
+
         rol_usuari = respuesta.user.user_metadata.get("rol", "client")
-        return {"token": respuesta.session.access_token, "rol": rol_usuari}
+
+        max_age = 60 * 60 * 24 * 30 if user.remember else None
+        response.set_cookie(
+            key=SESSION_COOKIE_NAME,
+            value=access_token,
+            httponly=True,
+            secure=True,
+            samesite="none",
+            max_age=max_age,
+            path="/",
+        )
+
+        return {
+            "ok": True,
+            "email": user.email,
+            "rol": rol_usuari,
+            "remember": user.remember,
+        }
     except Exception:
         raise HTTPException(status_code=401, detail="Correu o contrasenya incorrectes")
+
+
+@router.get("/api/session")
+def get_session(session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE_NAME)):
+    token = resolve_access_token(None, session_token)
+    if not token:
+        raise HTTPException(status_code=401, detail="No hay sesion activa")
+
+    payload = decode_jwt_payload(token)
+    email = str(payload.get("email") or "").strip()
+    user_metadata = payload.get("user_metadata") or {}
+    app_metadata = payload.get("app_metadata") or {}
+    rol = str(user_metadata.get("rol") or app_metadata.get("rol") or "client").strip().lower() or "client"
+
+    if not email:
+        raise HTTPException(status_code=401, detail="Sesion invalida")
+
+    return {"ok": True, "email": email, "rol": rol}
+
+
+@router.post("/api/logout")
+def logout(response: Response):
+    response.delete_cookie(
+        key=SESSION_COOKIE_NAME,
+        path="/",
+        secure=True,
+        samesite="none",
+    )
+    return {"ok": True, "message": "Sesion cerrada"}
 
 
 @router.post("/api/recuperar-password")

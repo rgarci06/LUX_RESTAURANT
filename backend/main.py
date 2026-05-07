@@ -12,6 +12,8 @@ from supabase import Client, create_client
 
 load_dotenv()
 
+SESSION_COOKIE_NAME = "lux_session"
+
 
 def _load_cors_origins() -> list[str]:
     raw_origins = os.getenv(
@@ -47,6 +49,15 @@ def extract_bearer_token(authorization: str | None) -> str | None:
         return None
 
     return token.strip()
+
+
+def resolve_access_token(authorization: str | None, session_token: str | None = None) -> str | None:
+    bearer_token = extract_bearer_token(authorization)
+    if bearer_token:
+        return bearer_token
+
+    cookie_token = str(session_token or "").strip()
+    return cookie_token or None
 
 
 # Extrae el user_id del token.
@@ -86,8 +97,8 @@ def decode_jwt_payload(token: str) -> dict:
 
 
 # Valida que el usuario autenticado tenga permisos de administrador.
-def require_admin(authorization: str | None) -> tuple[str, dict]:
-    token = extract_bearer_token(authorization)
+def require_admin(authorization: str | None, session_token: str | None = None) -> tuple[str, dict]:
+    token = resolve_access_token(authorization, session_token)
     if not token:
         raise HTTPException(status_code=401, detail="Necesitas iniciar sesion")
 
@@ -103,8 +114,8 @@ def require_admin(authorization: str | None) -> tuple[str, dict]:
 
 
 # Valida que el usuario tenga permisos para gestionar reservas (admin o camarero).
-def require_reservas_manager(authorization: str | None) -> tuple[str, dict]:
-    token = extract_bearer_token(authorization)
+def require_reservas_manager(authorization: str | None, session_token: str | None = None) -> tuple[str, dict]:
+    token = resolve_access_token(authorization, session_token)
     if not token:
         raise HTTPException(status_code=401, detail="Necesitas iniciar sesion")
 
@@ -210,7 +221,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_load_cors_origins(),
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )

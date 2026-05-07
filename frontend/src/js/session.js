@@ -1,73 +1,21 @@
-document.addEventListener('DOMContentLoaded', () => {
+import { AuthService } from './services/api.js';
+
+document.addEventListener('DOMContentLoaded', async () => {
     // este correo lo uso como apoyo por si el rol viene mal guardado
     const ADMIN_EMAIL = 'ddelpe@insdanielblanxart.cat';
-    // esta función decodifica el JSON Web Token para extraer información.
-    function decodeJwtPayload(token) {
-        try {
-            const parts = String(token || '').split('.');
-            if (parts.length !== 3) return {};
-
-            const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-            const padding = '='.repeat((4 - (payload.length % 4)) % 4);
-            const decoded = atob(payload + padding);
-            const parsed = JSON.parse(decoded);
-            return parsed && typeof parsed === 'object' ? parsed : {};
-        } catch (_) {
-            return {};
-        }
-    }
-
-    function resolveEmail(currentSession) {
-        const directEmail = String(currentSession?.email || '').trim();
-        if (directEmail) return directEmail;
-
-        const payload = decodeJwtPayload(currentSession?.token);
-        const payloadEmail = String(payload?.email || '').trim();
-        if (payloadEmail) return payloadEmail;
-
-        return '';
-    }
-    // leo la sesión desde el almacenamiento sea sessionStorage o localStorage y devuelvo un objeto con token, email y rol.
-    function readSession(storage) {
-        return {
-            token: storage.getItem('lux_token') || '',
-            email: storage.getItem('lux_email') || '',
-            rol: storage.getItem('lux_rol') || ''
-        };
-    }
-    // esta función dice si el usuario esta autenticado o no, y devuelve su sesión actual. Primero mira en sessionStorage y luego en localStorage.
-    function resolveCurrentSession() {
-        const sessionData = readSession(sessionStorage);
-        
-        // aqui mira si el sessionStorage tiene el token y el email, si lo tiene, da la sesión temporal
-        if (sessionData.token && sessionData.email) {
-            return sessionData; 
-        }
-
-        const localData = readSession(localStorage);
-        
-        if (localData.token && localData.email) {
-            return localData;
-        }
-
-        return sessionData.token || sessionData.email || sessionData.rol
-            ? sessionData
-            : localData; 
-    }
-
     const authLink = document.getElementById('auth-link');
     const mobileAuthLink = document.querySelector('.mobile-menu-overlay .mobile-btn');
     const desktopNav = document.querySelector('.desktop-nav');
     const mobileNav = document.getElementById('mobile-nav-content');
-    const currentSession = resolveCurrentSession();
-    const token = currentSession.token;
-    const email = resolveEmail(currentSession);
-    const rol = currentSession.rol || 'client';
+    const sessionResponse = await AuthService.getSession();
+    const currentSession = sessionResponse.ok ? sessionResponse.dades : { email: '', rol: 'client' };
+    const email = String(currentSession.email || '').trim();
+    const rol = String(currentSession.rol || 'client').trim();
     const currentPath = window.location.pathname;
     const protectedRoutes = ['/pages/reserva.html', '/pages/admin.html'];
     const isProtectedRoute = protectedRoutes.some(route => currentPath.endsWith(route));
     const isAdminRoute = currentPath.endsWith('/pages/admin.html');
-    const isAuthenticated = Boolean(token && email);
+    const isAuthenticated = Boolean(email);
     const normalizedRole = String(rol || '').toLowerCase();
     const isAdmin = normalizedRole === 'admin' || (email || '').toLowerCase() === ADMIN_EMAIL;
     const isCamarero = normalizedRole === 'camarero';
@@ -138,9 +86,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function logoutUser() {
-        localStorage.clear();
-        sessionStorage.clear();
+    async function logoutUser() {
+        await AuthService.logout();
+        localStorage.removeItem('lux_token');
+        localStorage.removeItem('lux_rol');
+        localStorage.removeItem('lux_email');
+        sessionStorage.removeItem('lux_token');
+        sessionStorage.removeItem('lux_rol');
+        sessionStorage.removeItem('lux_email');
 
         if (isProtectedRoute) {
             window.location.href = '/index.html';
@@ -166,9 +119,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span>${nomUsuari}</span>
             `;
             authLink.href = "#";
-            authLink.addEventListener('click', (e) => {
+            authLink.addEventListener('click', async (e) => {
                 e.preventDefault();
-                logoutUser();
+                await logoutUser();
             });
             
             // oculto este boton en movil
@@ -184,9 +137,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 mobileAuthLink.href = '#';
                 mobileAuthLink.className = 'mobile-btn mobile-btn-logout';
-                mobileAuthLink.addEventListener('click', (e) => {
+                mobileAuthLink.addEventListener('click', async (e) => {
                     e.preventDefault();
-                    logoutUser();
+                    await logoutUser();
                 });
             }
         } else {

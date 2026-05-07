@@ -3,21 +3,22 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from fastapi import APIRouter, BackgroundTasks, Header, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Cookie, Header, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from supabase import Client, create_client
 
 from main import (
+    SESSION_COOKIE_NAME,
     SUPABASE_KEY,
     SUPABASE_RESERVATIONS_TABLE,
     SUPABASE_RESERVATION_DATETIME_COLUMN,
     SUPABASE_USER_EMAIL_COLUMN,
     SUPABASE_USER_ID_COLUMN,
     SUPABASE_URL,
-    extract_bearer_token,
     extract_user_id_from_jwt,
     parse_iso_datetime,
+    resolve_access_token,
     supabase,
 )
 
@@ -82,9 +83,10 @@ def crear_reserva(
     reserva: ReservaPayload,
     background_tasks: BackgroundTasks,
     authorization: str | None = Header(default=None),
+    session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE_NAME),
 ):
     try:
-        token = extract_bearer_token(authorization)
+        token = resolve_access_token(authorization, session_token)
         if not token:
             raise HTTPException(status_code=401, detail="Necesitas iniciar sesion para crear una reserva")
 

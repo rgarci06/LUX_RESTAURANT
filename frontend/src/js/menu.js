@@ -1,6 +1,6 @@
-import { MenuService } from './services/api.js';
+import { AuthService, MenuService } from './services/api.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const tabs = document.querySelectorAll('.tab-btn');
     const categories = Array.from(document.querySelectorAll('.menu-category'));
     const ADMIN_EMAIL = 'ddelpe@insdanielblanxart.cat';
@@ -29,31 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
         modalItemId: ''
     };
 
-    function readSession(storage) {
-        return {
-            token: storage.getItem('lux_token') || '',
-            email: storage.getItem('lux_email') || '',
-            rol: storage.getItem('lux_rol') || ''
-        };
-    }
-
-    // guarda les dades per saber si l'usuari es admin o no
-    function resolveCurrentSession() {
-        const sessionData = readSession(sessionStorage);
-        if (sessionData.token && sessionData.email) {
-            return sessionData;
-        }
-
-        const localData = readSession(localStorage);
-        if (localData.token && localData.email) {
-            return localData;
-        }
-
-        return sessionData.token || sessionData.email || sessionData.rol ? sessionData : localData;
-    }
-
-    const currentSession = resolveCurrentSession();
-    const token = currentSession.token || '';
+    const sessionResponse = await AuthService.getSession();
+    const currentSession = sessionResponse.ok ? sessionResponse.dades : { email: '', rol: 'client' };
     const normalizedRole = String(currentSession.rol || '').toLowerCase();
     const isAdmin = normalizedRole === 'admin' || String(currentSession.email || '').toLowerCase() === ADMIN_EMAIL;
 
@@ -262,8 +239,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const result = state.modalMode === 'edit'
-            ? await MenuService.updateMenuItem(state.modalItemId, data, token)
-            : await MenuService.createMenuItem(data, token);
+            ? await MenuService.updateMenuItem(state.modalItemId, data)
+            : await MenuService.createMenuItem(data);
 
         if (!result.ok) {
             alert(result.dades?.detail || 'No se pudo guardar el plato.');
@@ -278,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function deleteDish(itemId) {
         if (!confirm('¿Seguro que quieres borrar este plato?')) return;
 
-        const result = await MenuService.deleteMenuItem(itemId, token);
+        const result = await MenuService.deleteMenuItem(itemId);
         if (!result.ok) {
             alert(result.dades?.detail || 'No se pudo borrar el plato.');
             return;

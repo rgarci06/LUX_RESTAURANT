@@ -1,4 +1,4 @@
-import { ReservationService, MesasService } from './services/api.js';
+import { AuthService, ReservationService, MesasService } from './services/api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     function showLuxToast(message, type = 'info', duration = 6000) {
@@ -69,14 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalTime = document.getElementById('modal-time');
     const modalPeople = document.getElementById('modal-people');
     const modalTable = document.getElementById('modal-table');
-
-    function getSessionEmail() {
-        return localStorage.getItem('lux_email') || sessionStorage.getItem('lux_email') || '';
-    }
-
-    function getSessionToken() {
-        return localStorage.getItem('lux_token') || sessionStorage.getItem('lux_token') || '';
-    }
 
     function formatDateLocal(date) {
         const year = date.getFullYear();
@@ -364,10 +356,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ejecutar la llamada a la Base de Datos al darle a "Sí, Reservar" per segona vegada
     if (btnModalConfirm) {
         btnModalConfirm.addEventListener('click', async () => {
-            const email = getSessionEmail();
-            const token = getSessionToken();
+            const session = await AuthService.getSession();
+            const email = String(session.dades?.email || '').trim();
 
-            if (!email) {
+            if (!session.ok || !email) {
                 showLuxToast('Necesitas iniciar sesión para guardar la reserva.', 'warning');
                 setTimeout(() => window.location.href = '../pages/login.html', 2000);
                 return;
@@ -398,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btnModalConfirm.textContent = 'PROCESANDO...';
 
             try {
-                const result = await ReservationService.createReservation(reservation, token);
+                const result = await ReservationService.createReservation(reservation);
 
                 if (result.ok) {
                     window.location.href = 'confirmacion.html';

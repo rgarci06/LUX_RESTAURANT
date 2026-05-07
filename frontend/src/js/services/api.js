@@ -5,17 +5,60 @@
 
 const API_URL = "https://lux-restaurant.onrender.com/api";
 
+async function parseResponse(respuesta) {
+    let dades = {};
+    try {
+        dades = await respuesta.json();
+    } catch (_) {
+        dades = {};
+    }
+    return { ok: respuesta.ok, status: respuesta.status, dades };
+}
+
+async function apiFetch(path, options = {}) {
+    const mergedOptions = {
+        credentials: 'include',
+        ...options
+    };
+    return fetch(`${API_URL}${path}`, mergedOptions);
+}
+
 export const AuthService = {
     // Método para Iniciar Sesión
-    login: async (email, password) => {
+    login: async (email, password, remember = false) => {
         try {
-            const respuesta = await fetch(`${API_URL}/login`, {
+            const respuesta = await apiFetch('/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ email, password, remember })
             });
-            const dades = await respuesta.json();
-            return { ok: respuesta.ok, status: respuesta.status, dades: dades };
+            return parseResponse(respuesta);
+        } catch (error) {
+            console.error("Error de conexión:", error);
+            return { ok: false, status: 0, dades: { detail: "El servidor Backend no responde." } };
+        }
+    },
+
+    getSession: async () => {
+        try {
+            const respuesta = await apiFetch('/session', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            return parseResponse(respuesta);
+        } catch (error) {
+            console.error("Error de conexión:", error);
+            return { ok: false, status: 0, dades: { detail: "El servidor Backend no responde." } };
+        }
+    },
+
+    logout: async () => {
+        try {
+            const respuesta = await apiFetch('/logout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            return parseResponse(respuesta);
         } catch (error) {
             console.error("Error de conexión:", error);
             return { ok: false, status: 0, dades: { detail: "El servidor Backend no responde." } };
@@ -25,13 +68,12 @@ export const AuthService = {
     // Método para Registrar Usuario
     register: async (payload) => {
         try {
-            const respuesta = await fetch(`${API_URL}/register`, {
+            const respuesta = await apiFetch('/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...payload, rol: "client" })
             });
-            const dades = await respuesta.json();
-            return { ok: respuesta.ok, status: respuesta.status, dades: dades };
+            return parseResponse(respuesta);
         } catch (error) {
             console.error("Error de conexión:", error);
             return { ok: false, status: 0, dades: { detail: "El servidor Backend no responde." } };
@@ -41,13 +83,12 @@ export const AuthService = {
     // Método para recuperar contraseña
     recoverPassword: async (email) => {
         try {
-            const respuesta = await fetch(`${API_URL}/recuperar-password`, {
+            const respuesta = await apiFetch('/recuperar-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email })
             });
-            const dades = await respuesta.json();
-            return { ok: respuesta.ok, status: respuesta.status, dades: dades };
+            return parseResponse(respuesta);
         } catch (error) {
             console.error("Error de conexión:", error);
             return { ok: false, status: 0, dades: { detail: "El servidor Backend no responde." } };
@@ -57,13 +98,12 @@ export const AuthService = {
     // Método para confirmar nueva contraseña desde enlace de recuperación
     updatePassword: async (token, refresh, password) => {
         try {
-            const respuesta = await fetch(`${API_URL}/actualizar-password`, {
+            const respuesta = await apiFetch('/actualizar-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token, refresh, password })
             });
-            const dades = await respuesta.json();
-            return { ok: respuesta.ok, status: respuesta.status, dades: dades };
+            return parseResponse(respuesta);
         } catch (error) {
             console.error("Error de conexión:", error);
             return { ok: false, status: 0, dades: { detail: "El servidor Backend no responde." } };
@@ -72,22 +112,14 @@ export const AuthService = {
 };
 
 export const ReservationService = {
-    createReservation: async (reservation, token) => {
+    createReservation: async (reservation) => {
         try {
-            const headers = { 'Content-Type': 'application/json' };
-
-            if (token) {
-                headers.Authorization = `Bearer ${token}`;
-            }
-
-            const respuesta = await fetch(`${API_URL}/reservas`, {
+            const respuesta = await apiFetch('/reservas', {
                 method: 'POST',
-                headers,
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(reservation)
             });
-
-            const dades = await respuesta.json();
-            return { ok: respuesta.ok, status: respuesta.status, dades };
+            return parseResponse(respuesta);
         } catch (error) {
             console.error('Error de conexión:', error);
             return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
@@ -99,15 +131,13 @@ export const MenuService = {
     // Trae toda la carta agrupada por categoria.
     listMenu: async () => {
         try {
-            const respuesta = await fetch(`${API_URL}/menu`, {
+            const respuesta = await apiFetch('/menu', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
-
-            const dades = await respuesta.json();
-            return { ok: respuesta.ok, status: respuesta.status, dades };
+            return parseResponse(respuesta);
         } catch (error) {
             console.error('Error de conexión:', error);
             return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
@@ -115,19 +145,16 @@ export const MenuService = {
     },
 
     // Crea un plato nuevo (solo admin).
-    createMenuItem: async (payload, token) => {
+    createMenuItem: async (payload) => {
         try {
-            const respuesta = await fetch(`${API_URL}/admin/menu`, {
+            const respuesta = await apiFetch('/admin/menu', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload)
             });
-
-            const dades = await respuesta.json();
-            return { ok: respuesta.ok, status: respuesta.status, dades };
+            return parseResponse(respuesta);
         } catch (error) {
             console.error('Error de conexión:', error);
             return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
@@ -135,19 +162,16 @@ export const MenuService = {
     },
 
     // Edita un plato por id (solo admin).
-    updateMenuItem: async (itemId, payload, token) => {
+    updateMenuItem: async (itemId, payload) => {
         try {
-            const respuesta = await fetch(`${API_URL}/admin/menu/${itemId}`, {
+            const respuesta = await apiFetch(`/admin/menu/${itemId}`, {
                 method: 'PATCH',
                 headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload)
             });
-
-            const dades = await respuesta.json();
-            return { ok: respuesta.ok, status: respuesta.status, dades };
+            return parseResponse(respuesta);
         } catch (error) {
             console.error('Error de conexión:', error);
             return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
@@ -155,18 +179,15 @@ export const MenuService = {
     },
 
     // Borra un plato por id (solo admin).
-    deleteMenuItem: async (itemId, token) => {
+    deleteMenuItem: async (itemId) => {
         try {
-            const respuesta = await fetch(`${API_URL}/admin/menu/${itemId}`, {
+            const respuesta = await apiFetch(`/admin/menu/${itemId}`, {
                 method: 'DELETE',
                 headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 }
             });
-
-            const dades = await respuesta.json();
-            return { ok: respuesta.ok, status: respuesta.status, dades };
+            return parseResponse(respuesta);
         } catch (error) {
             console.error('Error de conexión:', error);
             return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
@@ -176,19 +197,16 @@ export const MenuService = {
 
 export const AdminService = {
     // Trae las reservas activas para el panel admin.
-    listReservations: async (token) => {
+    listReservations: async () => {
         try {
-            const respuesta = await fetch(`${API_URL}/admin/reservas`, {
+            const respuesta = await apiFetch('/admin/reservas', {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 cache: 'no-store'
             });
-
-            const dades = await respuesta.json();
-            return { ok: respuesta.ok, status: respuesta.status, dades };
+            return parseResponse(respuesta);
         } catch (error) {
             console.error('Error de conexión:', error);
             return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
@@ -196,19 +214,16 @@ export const AdminService = {
     },
 
     // Edita una reserva concreta por su id.
-    updateReservation: async (reservationId, payload, token) => {
+    updateReservation: async (reservationId, payload) => {
         try {
-            const respuesta = await fetch(`${API_URL}/admin/reservas/${reservationId}`, {
+            const respuesta = await apiFetch(`/admin/reservas/${reservationId}`, {
                 method: 'PATCH',
                 headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload)
             });
-
-            const dades = await respuesta.json();
-            return { ok: respuesta.ok, status: respuesta.status, dades };
+            return parseResponse(respuesta);
         } catch (error) {
             console.error('Error de conexión:', error);
             return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
@@ -216,19 +231,16 @@ export const AdminService = {
     },
 
     // Edita una reserva lógica (grupo de filas) en una sola operación.
-    updateReservationGroup: async (payload, token) => {
+    updateReservationGroup: async (payload) => {
         try {
-            const respuesta = await fetch(`${API_URL}/admin/reservas/grupo/update`, {
+            const respuesta = await apiFetch('/admin/reservas/grupo/update', {
                 method: 'PATCH',
                 headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload)
             });
-
-            const dades = await respuesta.json();
-            return { ok: respuesta.ok, status: respuesta.status, dades };
+            return parseResponse(respuesta);
         } catch (error) {
             console.error('Error de conexión:', error);
             return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
@@ -236,18 +248,15 @@ export const AdminService = {
     },
 
     // Elimina una reserva concreta por su id.
-    deleteReservation: async (reservationId, token) => {
+    deleteReservation: async (reservationId) => {
         try {
-            const respuesta = await fetch(`${API_URL}/admin/reservas/${reservationId}`, {
+            const respuesta = await apiFetch(`/admin/reservas/${reservationId}`, {
                 method: 'DELETE',
                 headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 }
             });
-
-            const dades = await respuesta.json();
-            return { ok: respuesta.ok, status: respuesta.status, dades };
+            return parseResponse(respuesta);
         } catch (error) {
             console.error('Error de conexión:', error);
             return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
@@ -255,19 +264,16 @@ export const AdminService = {
     },
 
     // Elimina una reserva lógica (grupo de filas) en una sola operación.
-    deleteReservationGroup: async (ids, token) => {
+    deleteReservationGroup: async (ids) => {
         try {
-            const respuesta = await fetch(`${API_URL}/admin/reservas/grupo/delete`, {
+            const respuesta = await apiFetch('/admin/reservas/grupo/delete', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ ids })
             });
-
-            const dades = await respuesta.json();
-            return { ok: respuesta.ok, status: respuesta.status, dades };
+            return parseResponse(respuesta);
         } catch (error) {
             console.error('Error de conexión:', error);
             return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
@@ -275,18 +281,15 @@ export const AdminService = {
     },
 
     // Lista usuarios creados (para poder gestionarlos en admin).
-    listUsers: async (token) => {
+    listUsers: async () => {
         try {
-            const respuesta = await fetch(`${API_URL}/admin/users`, {
+            const respuesta = await apiFetch('/admin/users', {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 }
             });
-
-            const dades = await respuesta.json();
-            return { ok: respuesta.ok, status: respuesta.status, dades };
+            return parseResponse(respuesta);
         } catch (error) {
             console.error('Error de conexión:', error);
             return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
@@ -294,19 +297,16 @@ export const AdminService = {
     },
 
     // Cambia datos del usuario (por ejemplo el rol).
-    updateUser: async (userId, payload, token) => {
+    updateUser: async (userId, payload) => {
         try {
-            const respuesta = await fetch(`${API_URL}/admin/users/${userId}`, {
+            const respuesta = await apiFetch(`/admin/users/${userId}`, {
                 method: 'PATCH',
                 headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload)
             });
-
-            const dades = await respuesta.json();
-            return { ok: respuesta.ok, status: respuesta.status, dades };
+            return parseResponse(respuesta);
         } catch (error) {
             console.error('Error de conexión:', error);
             return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
@@ -314,18 +314,15 @@ export const AdminService = {
     },
 
     // Borra un usuario por id.
-    deleteUser: async (userId, token) => {
+    deleteUser: async (userId) => {
         try {
-            const respuesta = await fetch(`${API_URL}/admin/users/${userId}`, {
+            const respuesta = await apiFetch(`/admin/users/${userId}`, {
                 method: 'DELETE',
                 headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 }
             });
-
-            const dades = await respuesta.json();
-            return { ok: respuesta.ok, status: respuesta.status, dades };
+            return parseResponse(respuesta);
         } catch (error) {
             console.error('Error de conexión:', error);
             return { ok: false, status: 0, dades: { detail: 'El servidor Backend no responde.' } };
@@ -340,11 +337,11 @@ export const MesasService = {
             const url = `${API_URL}/mesas/disponibles?fecha=${fecha}&hora=${hora}`;
             console.log('Consultando mesas disponibles:', url);
             
-            const respuesta = await fetch(url);
-            const dades = await respuesta.json();
+            const respuesta = await fetch(url, { credentials: 'include' });
+            const datos = await parseResponse(respuesta);
             
-            console.log('Respuesta de mesas:', dades);
-            return { ok: respuesta.ok, status: respuesta.status, dades };
+            console.log('Respuesta de mesas:', datos.dades);
+            return datos;
         } catch (error) {
             console.error('Error al obtener mesas:', error);
             return { ok: false, status: 0, dades: { detail: error.message, ocupadas: [] } };
