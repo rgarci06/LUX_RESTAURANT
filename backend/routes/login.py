@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter, Cookie, HTTPException, Response
 from pydantic import BaseModel
 
@@ -10,6 +12,20 @@ from main import (
 )
 
 router = APIRouter()
+
+
+def _cookie_security_options() -> tuple[bool, str]:
+    secure_raw = str(os.getenv("COOKIE_SECURE", "true")).strip().lower()
+    secure = secure_raw not in {"0", "false", "no", "off"}
+
+    samesite = str(os.getenv("COOKIE_SAMESITE", "none")).strip().lower()
+    if samesite not in {"lax", "strict", "none"}:
+        samesite = "none"
+
+    if samesite == "none" and not secure:
+        secure = True
+
+    return secure, samesite
 
 
 class UsuariLogin(BaseModel):
@@ -108,12 +124,13 @@ def entrar(user: UsuariLogin, response: Response):
         rol_usuari = respuesta.user.user_metadata.get("rol", "client")
 
         max_age = 60 * 60 * 24 * 30 if user.remember else None
+        secure_cookie, same_site_cookie = _cookie_security_options()
         response.set_cookie(
             key=SESSION_COOKIE_NAME,
             value=access_token,
             httponly=True,
-            secure=True,
-            samesite="none",
+            secure=secure_cookie,
+            samesite=same_site_cookie,
             max_age=max_age,
             path="/",
         )
@@ -148,11 +165,12 @@ def get_session(session_token: str | None = Cookie(default=None, alias=SESSION_C
 
 @router.post("/api/logout")
 def logout(response: Response):
+    secure_cookie, same_site_cookie = _cookie_security_options()
     response.delete_cookie(
         key=SESSION_COOKIE_NAME,
         path="/",
-        secure=True,
-        samesite="none",
+        secure=secure_cookie,
+        samesite=same_site_cookie,
     )
     return {"ok": True, "message": "Sesion cerrada"}
 
