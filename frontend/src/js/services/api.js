@@ -1,8 +1,3 @@
-/**
- * CAPA 1: SERVICIOS DE COMUNICACIÓN (Frontend)
- * Este archivo hace de puente entre la web y el servidor.
- */
-
 const API_URL = "https://lux-restaurant.onrender.com/api";
 
 async function parseResponse(respuesta) {
