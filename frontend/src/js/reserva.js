@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const middaySlots = document.getElementById('midday-slots');
     const eveningSlots = document.getElementById('evening-slots');
     const tableMap = document.getElementById('table-map');
+    const tableSelectionInfo = document.getElementById('table-selection-info');
     const btnConfirm = document.getElementById('btn-confirm');
     const stepContact = document.getElementById('step-contact');
     const stepDate = document.getElementById('step-date');
@@ -77,21 +78,46 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${year}-${month}-${day}`;
     }
 
+    function getRequiredTablesForPeople(people) {
+        if (people <= 4) return 1;
+        if (people <= 6) return 2;
+        if (people <= 8) return 3;
+        return 0;
+    }
+
+    function updateTableSelectionInfo() {
+        if (!tableSelectionInfo) return;
+
+        if (state.people > 8) {
+            tableSelectionInfo.textContent = '';
+            return;
+        }
+
+        const required = state.maxTables;
+        const selected = state.selectedTables.length;
+        const tableWord = required === 1 ? 'mesa' : 'mesas';
+
+        if (selected === 0) {
+            tableSelectionInfo.textContent = `Debes elegir ${required} ${tableWord}.`;
+            return;
+        }
+
+        tableSelectionInfo.textContent = `Debes elegir ${required} ${tableWord}. Seleccionadas: ${selected}/${required}.`;
+    }
+
     // elegir cuanta gente va a venir
     function updatePeopleCount(delta) {
         state.people = Math.max(1, Math.min(20, state.people + delta));
         if (peopleCount) peopleCount.textContent = state.people;
         state.selectedDate = null;
         state.selectedTime = null;
+        state.maxTables = getRequiredTablesForPeople(state.people);
         
         if (state.people <= 4) {
-            state.maxTables = 1;
             if (peopleInfo) peopleInfo.textContent = 'Reservarás 1 mesa';
         } else if (state.people <= 6) {
-            state.maxTables = 2;
             if (peopleInfo) peopleInfo.textContent = 'Reservarás 2 mesas';
         } else if (state.people <= 8) {
-            state.maxTables = 3;
             if (peopleInfo) peopleInfo.textContent = 'Reservarás 3 mesas';
         } else {
             if (peopleInfo) peopleInfo.textContent = 'Por favor, contacta con nosotros para grupos grandes';
@@ -111,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
             generateTables();
         }
 
+        updateTableSelectionInfo();
         validateForm();
     }
 
@@ -295,15 +322,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (state.selectedTables.length < state.maxTables) {
                 table.classList.add('selected');
                 state.selectedTables.push(tableId);
+            } else {
+                showLuxToast(`Debes elegir ${state.maxTables} ${state.maxTables === 1 ? 'mesa' : 'mesas'} para ${state.people} ${state.people === 1 ? 'persona' : 'personas'}.`, 'info');
             }
         }
 
+        updateTableSelectionInfo();
         validateForm();
     }
 
 
     function validateForm() {
         if (!btnConfirm) return;
+        updateTableSelectionInfo();
         const isValid = state.people <= 8 
             && state.selectedDate 
             && state.selectedTime 
